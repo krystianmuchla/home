@@ -1,0 +1,3 @@
+[submodule "src/main/resources/static/art-verse"]
+	path = src/main/resources/static/art-verse
+	url = https://github.com/k-muchla/art-verse.git
