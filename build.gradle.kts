@@ -24,7 +24,8 @@ dependencies {
 	implementation("org.springframework.boot:spring-boot-starter-thymeleaf")
 	implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
 	implementation("org.jetbrains.kotlin:kotlin-reflect")
-	implementation("com.mysql:mysql-connector-j:8.1.0")
+	implementation("com.mysql:mysql-connector-j")
+	implementation("org.liquibase:liquibase-core")
 	testImplementation("org.springframework.boot:spring-boot-starter-test")
 }
 
