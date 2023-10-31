@@ -1,6 +1,8 @@
 package com.example.skyr.note
 
 import com.example.skyr.Dao
+import com.example.skyr.pagination.PaginatedResult
+import com.example.skyr.pagination.Pagination
 import org.springframework.jdbc.core.JdbcTemplate
 import org.springframework.stereotype.Component
 import java.util.*
@@ -20,10 +22,20 @@ class NoteDao(val jdbcTemplate: JdbcTemplate) : Dao() {
     fun get(noteId: UUID): Note? {
         val result = jdbcTemplate.query(
             "SELECT BIN_TO_UUID(id) AS id, title, content FROM note WHERE id = UUID_TO_BIN(?)",
-            { resultSet, _ -> Note.of(resultSet) },
+            { resultSet, _ -> note(resultSet) },
             noteId.toString()
         )
         return resolveSingleResult(result)
+    }
+
+    fun get(pagination: Pagination): PaginatedResult<Note> {
+        val result = jdbcTemplate.query(
+            "SELECT BIN_TO_UUID(id) AS id, title, content FROM note LIMIT ? OFFSET ?",
+            { resultSet, _ -> note(resultSet) },
+            limit(pagination.pageSize),
+            offset(pagination.pageNumber, pagination.pageSize)
+        )
+        return resolvePaginatedResult(pagination, result)
     }
 
     fun updateTitle(noteId: UUID, title: String) {

@@ -4,6 +4,10 @@ import com.example.skyr.api.ApiController
 import com.example.skyr.api.IdResponse
 import com.example.skyr.note.Note
 import com.example.skyr.note.NoteService
+import com.example.skyr.pagination.api.PaginatedResponse
+import com.example.skyr.pagination.api.PaginationRequest
+import com.example.skyr.pagination.api.paginationResponse
+import com.example.skyr.pagination.pagination
 import jakarta.validation.Valid
 import jakarta.validation.constraints.Size
 import org.springframework.http.HttpStatus
@@ -32,6 +36,12 @@ class NoteController(val noteService: NoteService) : ApiController {
     fun getNote(@PathVariable noteId: UUID): NoteResponse {
         val note = noteService.getNote(noteId)
         return NoteResponse(note.title, note.content)
+    }
+
+    @GetMapping(value = ["/notes"], produces = ["application/json"])
+    fun getNotes(request: PaginationRequest): PaginatedResponse<Note> {
+        val paginatedResult = noteService.getNotes(pagination(request))
+        return paginationResponse(paginatedResult)
     }
 
     @Validated

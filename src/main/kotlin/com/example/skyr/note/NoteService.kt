@@ -1,5 +1,7 @@
 package com.example.skyr.note
 
+import com.example.skyr.pagination.PaginatedResult
+import com.example.skyr.pagination.Pagination
 import org.springframework.stereotype.Service
 import java.util.*
 
@@ -25,6 +27,10 @@ class NoteService(val noteDao: NoteDao) {
             Note::class.java.simpleName,
             noteId.toString()
         )
+    }
+
+    fun getNotes(pagination: Pagination): PaginatedResult<Note> {
+        return noteDao.get(pagination)
     }
 
     fun updateNote(noteId: UUID, title: String?, content: String?) {

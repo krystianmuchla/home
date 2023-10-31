@@ -8,13 +8,6 @@ class Note(id: UUID, title: String, content: String) {
     companion object {
         const val TITLE_MAX_LENGHT = 255
         const val CONTENT_MAX_LENGTH = 65535
-
-        fun of(resultSet: ResultSet): Note {
-            val id = UUID.fromString(resultSet.getString("id"))
-            val title = resultSet.getString("title")
-            val content = resultSet.getString("content")
-            return Note(id, title, content)
-        }
     }
 
     private val id: UUID
@@ -32,4 +25,11 @@ class Note(id: UUID, title: String, content: String) {
         this.title = title
         this.content = content
     }
+}
+
+fun note(resultSet: ResultSet): Note {
+    val id = UUID.fromString(resultSet.getString("id"))
+    val title = resultSet.getString("title")
+    val content = resultSet.getString("content")
+    return Note(id, title, content)
 }
