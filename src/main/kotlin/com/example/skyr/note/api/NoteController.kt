@@ -52,12 +52,12 @@ class NoteController(val noteService: NoteService) : ApiController {
     }
 
     data class AddNoteRequest(
-        @field:Size(max = Note.TITLE_MAX_LENGHT) val title: String,
+        @field:Size(max = Note.TITLE_MAX_LENGTH) val title: String,
         @field:Size(max = Note.CONTENT_MAX_LENGTH) val content: String
     )
 
     data class UpdateNoteRequest(
-        @field:Size(max = Note.TITLE_MAX_LENGHT) val title: String?,
+        @field:Size(max = Note.TITLE_MAX_LENGTH) val title: String?,
         @field:Size(max = Note.CONTENT_MAX_LENGTH) val content: String?
     )
 

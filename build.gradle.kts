@@ -28,6 +28,8 @@ dependencies {
 	implementation("com.mysql:mysql-connector-j")
 	implementation("org.liquibase:liquibase-core")
 	testImplementation("org.springframework.boot:spring-boot-starter-test")
+	testImplementation("org.testcontainers:mysql")
+	testImplementation("org.testcontainers:junit-jupiter")
 }
 
 tasks.withType<KotlinCompile> {
