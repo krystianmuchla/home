@@ -4,5 +4,8 @@ import com.example.skyr.pagination.PaginatedResult
 
 data class PaginatedResponse<T>(val data: List<T>, val pagination: PaginationResponse)
 
-fun <T> paginationResponse(paginatedResult: PaginatedResult<T>) =
-    PaginatedResponse(paginatedResult.data, paginationResponse(paginatedResult.pagination))
+fun <T, U> paginatedResponse(paginatedResult: PaginatedResult<U>, transformer: (U) -> T) =
+    PaginatedResponse(
+        paginatedResult.data.stream().map { element -> transformer(element) }.toList(),
+        paginationResponse(paginatedResult.pagination)
+    )
