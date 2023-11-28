@@ -1,27 +1,29 @@
 package com.example.skyr.note
 
+import com.example.skyr.InstantFactory
 import com.example.skyr.pagination.PaginatedResult
 import com.example.skyr.pagination.Pagination
 import org.springframework.stereotype.Service
+import java.time.Instant
 import java.util.*
 
 @Service
-class NoteService(val noteDao: NoteDao) {
+class NoteService(private val noteDao: NoteDao) {
 
-    fun addNote(title: String, content: String): UUID {
+    fun add(title: String, content: String): UUID {
         val id = UUID.randomUUID()
         noteDao.create(id, title, content)
         return id
     }
 
-    fun removeNote(noteId: UUID) {
+    fun remove(noteId: UUID) {
         val result = noteDao.delete(noteId)
         if (!result) {
             throw MissingResourceException("Note not found", Note::class.java.simpleName, noteId.toString())
         }
     }
 
-    fun getNote(noteId: UUID): Note {
+    fun get(noteId: UUID): Note {
         return noteDao.read(noteId) ?: throw MissingResourceException(
             "Note not found",
             Note::class.java.simpleName,
@@ -29,17 +31,11 @@ class NoteService(val noteDao: NoteDao) {
         )
     }
 
-    fun getNotes(pagination: Pagination): PaginatedResult<Note> {
+    fun get(pagination: Pagination): PaginatedResult<Note> {
         return noteDao.read(pagination)
     }
 
-    fun updateNote(noteId: UUID, title: String?, content: String?) {
-        if (title != null && content != null) {
-            noteDao.update(noteId, title, content)
-        } else if (title != null) {
-            noteDao.updateTitle(noteId, title)
-        } else if (content != null) {
-            noteDao.updateContent(noteId, content)
-        }
+    fun update(noteId: UUID, title: String?, content: String?) {
+        noteDao.update(noteId, title, content, modificationTime = InstantFactory.create())
     }
 }

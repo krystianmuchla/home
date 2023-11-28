@@ -1,6 +1,5 @@
 package com.example.skyr.note.api
 
-import com.example.skyr.api.ApiController
 import com.example.skyr.api.IdResponse
 import com.example.skyr.note.Note
 import com.example.skyr.note.NoteService
@@ -16,39 +15,44 @@ import org.springframework.web.bind.annotation.*
 import java.util.*
 
 @RestController
-class NoteController(val noteService: NoteService) : ApiController {
+class NoteController(private val noteService: NoteService) {
 
     @Validated
     @ResponseStatus(HttpStatus.CREATED)
-    @PostMapping(value = ["/notes"], consumes = ["application/json"], produces = ["application/json"])
+    @PostMapping(value = ["/api/notes"], consumes = ["application/json"], produces = ["application/json"])
     fun postNote(@Valid @RequestBody request: AddNoteRequest): IdResponse<UUID> {
-        val noteId = noteService.addNote(request.title, request.content)
+        val noteId = noteService.add(request.title, request.content)
         return IdResponse(noteId)
     }
 
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    @DeleteMapping(value = ["/notes/{noteId}"])
+    @DeleteMapping(value = ["/api/notes/{noteId}"])
     fun deleteNote(@PathVariable noteId: UUID) {
-        noteService.removeNote(noteId)
+        noteService.remove(noteId)
     }
 
-    @GetMapping(value = ["/notes/{noteId}"], produces = ["application/json"])
+    @GetMapping(value = ["/api/notes/{noteId}"], produces = ["application/json"])
     fun getNote(@PathVariable noteId: UUID): NoteResponse {
-        val note = noteService.getNote(noteId)
-        return NoteResponse(title = note.title, content = note.content)
+        val note = noteService.get(noteId)
+        return NoteResponse(
+            title = note.title,
+            content = note.content,
+            creationDate = note.creationTime,
+            modificationDate = note.modificationTime
+        )
     }
 
-    @GetMapping(value = ["/notes"], produces = ["application/json"])
+    @GetMapping(value = ["/api/notes"], produces = ["application/json"])
     fun getNotes(request: PaginationRequest): PaginatedResponse<NoteResponse> {
-        val paginatedResult = noteService.getNotes(pagination(request))
+        val paginatedResult = noteService.get(pagination(request))
         return paginatedResponse(paginatedResult) { note: Note -> noteResponse(note) }
     }
 
     @Validated
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    @PutMapping(value = ["/notes/{noteId}"], consumes = ["application/json"])
+    @PutMapping(value = ["/api/notes/{noteId}"], consumes = ["application/json"])
     fun putNote(@PathVariable noteId: UUID, @Valid @RequestBody request: UpdateNoteRequest) {
-        noteService.updateNote(noteId, request.title, request.content)
+        noteService.update(noteId, request.title, request.content)
     }
 
     data class AddNoteRequest(
@@ -60,8 +64,4 @@ class NoteController(val noteService: NoteService) : ApiController {
         @field:Size(max = Note.TITLE_MAX_LENGTH) val title: String?,
         @field:Size(max = Note.CONTENT_MAX_LENGTH) val content: String?
     )
-
-    data class NoteResponse(val id: UUID? = null, val title: String, val content: String)
-
-    fun noteResponse(note: Note) = NoteResponse(note.id, note.title, note.content)
 }

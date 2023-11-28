@@ -13,6 +13,10 @@ import org.springframework.jdbc.core.JdbcTemplate
 import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.*
+import java.sql.Timestamp
+import java.time.Instant
+import java.time.LocalDateTime
+import java.time.ZoneOffset
 import java.util.*
 
 @AutoConfigureMockMvc
@@ -38,10 +42,10 @@ class NoteControllerTest : IntegrationTest() {
             post("/api/notes").contentType("application/json")
                 .content(
                     """
-                    {
-                      "title": "$noteTitle",
-                      "content": "$noteContent"
-                    }
+                        {
+                          "title": "$noteTitle",
+                          "content": "$noteContent"
+                        }
                     """.trimIndent()
                 )
         )
@@ -58,12 +62,15 @@ class NoteControllerTest : IntegrationTest() {
         assertThat(note.id).isEqualTo(UUID.fromString(noteId))
         assertThat(note.title).isEqualTo(noteTitle)
         assertThat(note.content).isEqualTo(noteContent)
+        assertThat(note.creationTime).isNotNull()
+        assertThat(note.modificationTime).isNotNull()
     }
 
     @Test
     fun shouldDeleteNote() {
         val noteId = UUID.fromString("946a95dd-8cb5-4d59-ae7e-101ac3ea715b")
-        create(Note(noteId, "Note title", "Note content"))
+        val date = Instant.parse("2011-11-11T11:11:11Z")
+        create(Note(noteId, "Note title", "Note content", date, date))
 
         val resultActions = mockMvc.perform(delete("/api/notes/$noteId"))
 
@@ -76,7 +83,15 @@ class NoteControllerTest : IntegrationTest() {
         val noteId = UUID.fromString("81f6d5f3-9226-437f-bf5d-3e9eba985eb7")
         val noteTitle = "Note title"
         val noteContent = "noteContent"
-        create(Note(noteId, noteTitle, noteContent))
+        create(
+            Note(
+                noteId,
+                noteTitle,
+                noteContent,
+                Instant.parse("2010-10-10T10:10:10Z"),
+                Instant.parse("2011-11-11T11:11:11.1111Z")
+            )
+        )
 
         val resultActions = mockMvc.perform(get("/api/notes/$noteId"))
 
@@ -84,6 +99,8 @@ class NoteControllerTest : IntegrationTest() {
             .andExpect(header().string("Content-Type", "application/json"))
             .andExpect(jsonPath("\$.title").value(noteTitle))
             .andExpect(jsonPath("\$.content").value(noteContent))
+            .andExpect(jsonPath("\$.creationDate").value("2010-10-10T10:10:10.000Z"))
+            .andExpect(jsonPath("\$.modificationDate").value("2011-11-11T11:11:11.111Z"))
     }
 
     @Test
@@ -91,7 +108,17 @@ class NoteControllerTest : IntegrationTest() {
         val noteId = UUID.fromString("7a07f782-d2c0-4dc5-9cf2-a984b9ad9690")
         val noteTitle = "Note title"
         val noteContent = "Note content"
-        create(Note(noteId, noteTitle, noteContent))
+        val noteCreationDate = "2010-10-10T10:10:10.100Z"
+        val noteModificationDate = "2011-11-11T11:11:11.111Z"
+        create(
+            Note(
+                noteId,
+                noteTitle,
+                noteContent,
+                Instant.parse(noteCreationDate),
+                Instant.parse(noteModificationDate)
+            )
+        )
 
         val resultActions = mockMvc.perform(get("/api/notes"))
 
@@ -101,6 +128,8 @@ class NoteControllerTest : IntegrationTest() {
             .andExpect(jsonPath("\$.data[0].id").value(noteId.toString()))
             .andExpect(jsonPath("\$.data[0].title").value(noteTitle))
             .andExpect(jsonPath("\$.data[0].content").value(noteContent))
+            .andExpect(jsonPath("\$.data[0].creationDate").value(noteCreationDate))
+            .andExpect(jsonPath("\$.data[0].modificationDate").value(noteModificationDate))
             .andExpect(jsonPath("\$.pagination.next").value(false))
             .andExpect(jsonPath("\$.pagination.previous").value(false))
     }
@@ -108,7 +137,17 @@ class NoteControllerTest : IntegrationTest() {
     @Test
     fun shouldPutNote() {
         val noteId = UUID.fromString("d4630597-d447-4b81-ab7f-839f839a6931")
-        create(Note(noteId, "Note title", "Note content"))
+        val noteCreationDate = Instant.parse("2010-10-10T10:10:10.100Z")
+        val noteModificationDate = Instant.parse("2011-11-11T11:11:11.111Z")
+        create(
+            Note(
+                noteId,
+                "Note title",
+                "Note content",
+                noteCreationDate,
+                noteModificationDate
+            )
+        )
         val noteTitle = "New note title"
         val noteContent = "New note content"
 
@@ -116,10 +155,10 @@ class NoteControllerTest : IntegrationTest() {
             put("/api/notes/$noteId").contentType("application/json")
                 .content(
                     """
-                    {
-                      "title": "$noteTitle",
-                      "content": "$noteContent"
-                    }
+                        {
+                          "title": "$noteTitle",
+                          "content": "$noteContent"
+                        }
                     """.trimIndent()
                 )
         )
@@ -131,30 +170,36 @@ class NoteControllerTest : IntegrationTest() {
         assertThat(note.id).isEqualTo(noteId)
         assertThat(note.title).isEqualTo(noteTitle)
         assertThat(note.content).isEqualTo(noteContent)
+        assertThat(note.creationTime).isEqualTo(noteCreationDate)
+        assertThat(note.modificationTime).isAfter(noteModificationDate)
     }
 
     private fun create(note: Note) {
         jdbcTemplate.update(
-            "INSERT INTO note VALUES (UUID_TO_BIN(?), ?, ?)",
+            "INSERT INTO note VALUES (?, ?, ?, ?, ?)",
             note.id.toString(),
             note.title,
-            note.content
+            note.content,
+            Timestamp.valueOf(LocalDateTime.ofInstant(note.creationTime, ZoneOffset.UTC)).toString(),
+            Timestamp.valueOf(LocalDateTime.ofInstant(note.modificationTime, ZoneOffset.UTC)).toString()
         )
-    }
-
-    private fun delete() {
-        jdbcTemplate.update("DELETE FROM note")
     }
 
     private fun read(): List<Note> {
         return jdbcTemplate.query(
-            "SELECT BIN_TO_UUID(id) AS id, title, content FROM note"
+            "SELECT * FROM note"
         ) { resultSet, _ ->
             Note(
                 UUID.fromString(resultSet.getString("id")),
                 resultSet.getString("title"),
-                resultSet.getString("content")
+                resultSet.getString("content"),
+                resultSet.getTimestamp("creation_time").toLocalDateTime().toInstant(ZoneOffset.UTC),
+                resultSet.getTimestamp("modification_time").toLocalDateTime().toInstant(ZoneOffset.UTC)
             )
         }
+    }
+
+    private fun delete() {
+        jdbcTemplate.update("DELETE FROM note")
     }
 }
