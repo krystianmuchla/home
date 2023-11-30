@@ -1,6 +1,7 @@
 package com.example.skyr.note
 
 import com.example.skyr.InstantFactory
+import com.example.skyr.exception.NotFoundException
 import com.example.skyr.pagination.PaginatedResult
 import com.example.skyr.pagination.Pagination
 import org.springframework.stereotype.Service
@@ -18,17 +19,11 @@ class NoteService(private val noteDao: NoteDao) {
 
     fun remove(noteId: UUID) {
         val result = noteDao.delete(noteId)
-        if (!result) {
-            throw MissingResourceException("Note not found", Note::class.java.simpleName, noteId.toString())
-        }
+        if (!result) throw NotFoundException("Note not found")
     }
 
     fun get(noteId: UUID): Note {
-        return noteDao.read(noteId) ?: throw MissingResourceException(
-            "Note not found",
-            Note::class.java.simpleName,
-            noteId.toString()
-        )
+        return noteDao.read(noteId) ?: throw NotFoundException("Note not found")
     }
 
     fun get(pagination: Pagination): PaginatedResult<Note> {

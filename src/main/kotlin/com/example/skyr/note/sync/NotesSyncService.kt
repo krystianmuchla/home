@@ -1,5 +1,8 @@
 package com.example.skyr.note.sync
 
+import com.example.skyr.exception.ClientErrorException
+import com.example.skyr.exception.NotFoundException
+import com.example.skyr.exception.ServiceErrorException
 import com.example.skyr.note.Note
 import com.example.skyr.note.NoteDao
 import org.springframework.stereotype.Service
@@ -42,34 +45,27 @@ class NotesSyncService(private val notesSyncDao: NotesSyncDao, private val noteD
     }
 
     private fun getWithLock(): NotesSync {
-        return notesSyncDao.read(writeLock = true) ?: throw MissingResourceException(
-            "NoteSync not found",
-            NotesSync::class.java.simpleName,
-            "1"
-        )
+        return notesSyncDao.read(writeLock = true) ?: throw NotFoundException("NoteSync not found")
     }
 
     private fun getNotesWithLock(externalSyncTime: Instant) =
         noteDao.read(externalSyncTime, writeLock = true).associateBy { it.id }
 
     private fun validate(externalSyncTime: Instant, externalNotes: List<Note>) {
-        externalNotes.forEach { if (it.modificationTime <= externalSyncTime) throw RuntimeException("todo") }
+        externalNotes.forEach { if (it.modificationTime <= externalSyncTime) throw ClientErrorException("Provided note's modification time is not after sync time") }
     }
 
     private fun validate(externalSyncTime: Instant, syncTime: Instant) {
         if (externalSyncTime.isAfter(syncTime)) {
-            throw RuntimeException("todo")
+            throw ClientErrorException("Provided sync time is after persisted sync time")
         }
     }
 
-    private fun resolveSyncTime(
-        notes: Collection<Note>,
-        externalNotes: List<Note>
-    ): Instant {
+    private fun resolveSyncTime(notes: Collection<Note>, externalNotes: List<Note>): Instant {
         val modificationTime = notes.maxByOrNull { it.modificationTime }
         val externalModificationTime = externalNotes.maxByOrNull { it.modificationTime }
         if (modificationTime == null && externalModificationTime == null) {
-            throw RuntimeException("todo")
+            throw ServiceErrorException("Notes and external notes cannot be null at the same time")
         }
         return maxOf(
             modificationTime?.modificationTime ?: Instant.MIN,
