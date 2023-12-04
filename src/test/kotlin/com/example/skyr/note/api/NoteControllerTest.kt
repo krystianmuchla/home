@@ -69,8 +69,8 @@ class NoteControllerTest : IntegrationTest() {
     @Test
     fun shouldDeleteNote() {
         val noteId = UUID.fromString("946a95dd-8cb5-4d59-ae7e-101ac3ea715b")
-        val date = Instant.parse("2011-11-11T11:11:11Z")
-        create(Note(noteId, "Note title", "Note content", date, date))
+        val time = Instant.parse("2011-11-11T11:11:11Z")
+        create(Note(noteId, "Note title", "Note content", time, time))
 
         val resultActions = mockMvc.perform(delete("/api/notes/$noteId"))
 
@@ -99,8 +99,8 @@ class NoteControllerTest : IntegrationTest() {
             .andExpect(header().string("Content-Type", "application/json"))
             .andExpect(jsonPath("\$.title").value(noteTitle))
             .andExpect(jsonPath("\$.content").value(noteContent))
-            .andExpect(jsonPath("\$.creationDate").value("2010-10-10T10:10:10.000Z"))
-            .andExpect(jsonPath("\$.modificationDate").value("2011-11-11T11:11:11.111Z"))
+            .andExpect(jsonPath("\$.creationTime").value("2010-10-10T10:10:10.000Z"))
+            .andExpect(jsonPath("\$.modificationTime").value("2011-11-11T11:11:11.111Z"))
     }
 
     @Test
@@ -108,15 +108,15 @@ class NoteControllerTest : IntegrationTest() {
         val noteId = UUID.fromString("7a07f782-d2c0-4dc5-9cf2-a984b9ad9690")
         val noteTitle = "Note title"
         val noteContent = "Note content"
-        val noteCreationDate = "2010-10-10T10:10:10.100Z"
-        val noteModificationDate = "2011-11-11T11:11:11.111Z"
+        val noteCreationTime = "2010-10-10T10:10:10.100Z"
+        val noteModificationTime = "2011-11-11T11:11:11.111Z"
         create(
             Note(
                 noteId,
                 noteTitle,
                 noteContent,
-                Instant.parse(noteCreationDate),
-                Instant.parse(noteModificationDate)
+                Instant.parse(noteCreationTime),
+                Instant.parse(noteModificationTime)
             )
         )
 
@@ -128,8 +128,8 @@ class NoteControllerTest : IntegrationTest() {
             .andExpect(jsonPath("\$.data[0].id").value(noteId.toString()))
             .andExpect(jsonPath("\$.data[0].title").value(noteTitle))
             .andExpect(jsonPath("\$.data[0].content").value(noteContent))
-            .andExpect(jsonPath("\$.data[0].creationDate").value(noteCreationDate))
-            .andExpect(jsonPath("\$.data[0].modificationDate").value(noteModificationDate))
+            .andExpect(jsonPath("\$.data[0].creationTime").value(noteCreationTime))
+            .andExpect(jsonPath("\$.data[0].modificationTime").value(noteModificationTime))
             .andExpect(jsonPath("\$.pagination.next").value(false))
             .andExpect(jsonPath("\$.pagination.previous").value(false))
     }
@@ -137,15 +137,15 @@ class NoteControllerTest : IntegrationTest() {
     @Test
     fun shouldPutNote() {
         val noteId = UUID.fromString("d4630597-d447-4b81-ab7f-839f839a6931")
-        val noteCreationDate = Instant.parse("2010-10-10T10:10:10.100Z")
-        val noteModificationDate = Instant.parse("2011-11-11T11:11:11.111Z")
+        val noteCreationTime = Instant.parse("2010-10-10T10:10:10.100Z")
+        val noteModificationTime = Instant.parse("2011-11-11T11:11:11.111Z")
         create(
             Note(
                 noteId,
                 "Note title",
                 "Note content",
-                noteCreationDate,
-                noteModificationDate
+                noteCreationTime,
+                noteModificationTime
             )
         )
         val noteTitle = "New note title"
@@ -170,8 +170,8 @@ class NoteControllerTest : IntegrationTest() {
         assertThat(note.id).isEqualTo(noteId)
         assertThat(note.title).isEqualTo(noteTitle)
         assertThat(note.content).isEqualTo(noteContent)
-        assertThat(note.creationTime).isEqualTo(noteCreationDate)
-        assertThat(note.modificationTime).isAfter(noteModificationDate)
+        assertThat(note.creationTime).isEqualTo(noteCreationTime)
+        assertThat(note.modificationTime).isAfter(noteModificationTime)
     }
 
     private fun create(note: Note) {
