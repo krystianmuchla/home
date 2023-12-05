@@ -1,5 +1,7 @@
-package com.github.krystianmuchla.skyr.note;
+package com.github.krystianmuchla.skyr.note.api;
 
+import com.github.krystianmuchla.skyr.note.Note;
+import com.github.krystianmuchla.skyr.note.NoteService;
 import com.github.krystianmuchla.skyr.note.api.NoteResponse;
 import com.github.krystianmuchla.skyr.api.IdResponse;
 import com.github.krystianmuchla.skyr.note.api.NoteResponseFactory;
