@@ -7,6 +7,7 @@ import com.github.krystianmuchla.skyr.pagination.Pagination;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.time.Instant;
 import java.util.UUID;
 
 @Service
@@ -27,9 +28,7 @@ public class NoteService {
 
     public Note get(final UUID id) {
         final var note = noteDao.read(id);
-        if (note == null) {
-            throw new NotFoundException("Note not found");
-        }
+        if (note == null) throw new NotFoundException("Note not found");
         return note;
     }
 
@@ -37,7 +36,20 @@ public class NoteService {
         return noteDao.read(pagination);
     }
 
-    public void update(final UUID noteId, final String title, final String content) {
-        noteDao.update(noteId, title, content, null, InstantFactory.create());
+    public void update(final Note note) {
+        update(note.id(), note.title(), note.content(), note.creationTime(), note.modificationTime());
+    }
+
+    public void update(final UUID id, final String title, final String content) {
+        update(id, title, content, null, InstantFactory.create());
+    }
+
+    private void update(final UUID noteId,
+                        final String title,
+                        final String content,
+                        final Instant creationTime,
+                        final Instant modificationTime) {
+        final var result = noteDao.update(noteId, title, content, creationTime, modificationTime);
+        if (!result) throw new NotFoundException("Note not found");
     }
 }

@@ -2,7 +2,7 @@ package com.github.krystianmuchla.skyr.note;
 
 import com.github.krystianmuchla.skyr.Dao;
 import com.github.krystianmuchla.skyr.InstantFactory;
-import com.github.krystianmuchla.skyr.exception.ServiceErrorException;
+import com.github.krystianmuchla.skyr.exception.ServerErrorException;
 import com.github.krystianmuchla.skyr.pagination.PaginatedResult;
 import com.github.krystianmuchla.skyr.pagination.Pagination;
 import lombok.RequiredArgsConstructor;
@@ -59,12 +59,8 @@ public final class NoteDao extends Dao {
         return singleResult(result);
     }
 
-    public List<Note> readWithLock(final Instant modificationTimeCursor) {
-        return jdbcTemplate.query(
-                "SELECT * FROM note WHERE modification_time > ? ORDER BY modification_time FOR UPDATE",
-                mapper(),
-                timestamp(modificationTimeCursor)
-        );
+    public List<Note> readWithLock() {
+        return jdbcTemplate.query("SELECT * FROM note FOR UPDATE", mapper());
     }
 
     public PaginatedResult<Note> read(final Pagination pagination) {
@@ -77,31 +73,28 @@ public final class NoteDao extends Dao {
         return paginatedResult(pagination, result);
     }
 
-    public void update(final Note note) {
-        update(note.id(), note.title(), note.content(), note.creationTime(), note.modificationTime());
-    }
-
-    public void update(final UUID id,
-                       final String title,
-                       final String content,
-                       final Instant creationTime,
-                       final Instant modificationTime) {
+    public boolean update(final UUID id,
+                          final String title,
+                          final String content,
+                          final Instant creationTime,
+                          final Instant modificationTime) {
         final var parameters = new LinkedHashMap<String, String>();
         if (title != null) parameters.put(Note.TITLE, title);
         if (content != null) parameters.put(Note.CONTENT, content);
         if (creationTime != null) parameters.put(Note.CREATION_TIME, timestamp(creationTime).toString());
         if (modificationTime != null) parameters.put(Note.MODIFICATION_TIME, timestamp(modificationTime).toString());
-        if (parameters.isEmpty()) throw new ServiceErrorException("Update parameters cannot be empty");
+        if (parameters.isEmpty()) throw new ServerErrorException("Update parameters cannot be empty");
         final var setters = parameters
                 .keySet()
                 .stream()
                 .map(key -> key + " = ?")
                 .collect(Collectors.joining(", "));
         parameters.put(Note.ID, id.toString());
-        jdbcTemplate.update(
+        final var result = jdbcTemplate.update(
                 "UPDATE note SET " + setters + " WHERE id = ?",
                 parameters.values().toArray()
         );
+        return isUpdated(result);
     }
 
     private RowMapper<Note> mapper() {

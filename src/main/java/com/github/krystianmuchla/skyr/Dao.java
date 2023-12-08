@@ -1,6 +1,6 @@
 package com.github.krystianmuchla.skyr;
 
-import com.github.krystianmuchla.skyr.exception.ServiceErrorException;
+import com.github.krystianmuchla.skyr.exception.ServerErrorException;
 import com.github.krystianmuchla.skyr.pagination.PaginationResult;
 import com.github.krystianmuchla.skyr.pagination.PaginatedResult;
 import com.github.krystianmuchla.skyr.pagination.Pagination;
@@ -18,8 +18,8 @@ public abstract class Dao {
 
     protected <T> T singleResult(final List<T> result) {
         if (result.isEmpty()) return null;
-        if (result.size() == 1) return result.get(0);
-        throw new ServiceErrorException("Could not resolve single result");
+        if (result.size() == 1) return result.getFirst();
+        throw new ServerErrorException("Could not resolve single result");
     }
 
     protected <T> PaginatedResult<T> paginatedResult(final Pagination pagination, final List<T> result) {

@@ -3,42 +3,44 @@ package com.github.krystianmuchla.skyr.note.sync.api;
 import com.github.krystianmuchla.skyr.note.Note;
 import com.github.krystianmuchla.skyr.note.api.NoteResponse;
 import com.github.krystianmuchla.skyr.note.api.NoteResponseFactory;
-import com.github.krystianmuchla.skyr.note.sync.NotesSyncService;
+import com.github.krystianmuchla.skyr.note.sync.NoteSyncService;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.time.Instant;
 import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.UUID;
 
 @RestController
 @RequiredArgsConstructor
-public final class NotesSyncController {
-    private final NotesSyncService notesSyncService;
+public final class NoteSyncController {
+    private final NoteSyncService noteSyncService;
 
+    @Validated
     @PutMapping(
             value = "/api/notes/sync",
             consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE
     )
-    public NotesSyncResponse syncNotes(@RequestBody final SyncNotesRequest request) {
-        final var notesSyncResult = notesSyncService.sync(
+    public NoteSyncResponse syncNotes(@Valid @RequestBody final SyncNotesRequest request) {
+        final var notesSyncResult = noteSyncService.sync(
                 request.syncId,
-                request.syncTime.toInstant(),
                 map(request.modifiedNotes)
         );
-        return new NotesSyncResponse(
+        return new NoteSyncResponse(
                 notesSyncResult.syncId(),
-                notesSyncResult.syncTime(),
                 NoteResponseFactory.create(notesSyncResult.modifiedNotes())
         );
     }
 
     private List<Note> map(final List<NoteRequest> notes) {
+        if (notes == null) return List.of();
         return notes.stream().map(note -> new Note(
                 note.id,
                 note.title,
@@ -48,16 +50,16 @@ public final class NotesSyncController {
         ).toList();
     }
 
-    public record SyncNotesRequest(UUID syncId, ZonedDateTime syncTime, List<NoteRequest> modifiedNotes) {
+    public record SyncNotesRequest(@NotNull UUID syncId, @Valid List<NoteRequest> modifiedNotes) {
     }
 
-    public record NoteRequest(UUID id,
-                              String title,
+    public record NoteRequest(@NotNull UUID id,
+                              @NotNull String title,
                               String content,
-                              ZonedDateTime creationTime,
-                              ZonedDateTime modificationTime) {
+                              @NotNull ZonedDateTime creationTime,
+                              @NotNull ZonedDateTime modificationTime) {
     }
 
-    public record NotesSyncResponse(UUID syncId, Instant syncTime, List<NoteResponse> modifiedNotes) {
+    public record NoteSyncResponse(UUID syncId, List<NoteResponse> modifiedNotes) {
     }
 }

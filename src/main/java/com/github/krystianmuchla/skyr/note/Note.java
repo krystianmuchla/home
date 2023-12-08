@@ -13,11 +13,15 @@ public record Note(UUID id, String title, String content, Instant creationTime, 
     public static final int CONTENT_MAX_LENGTH = 65535;
 
     public Note {
-        if (title.length() > TITLE_MAX_LENGTH) {
+        if (title != null && title.length() > TITLE_MAX_LENGTH) {
             throw new IllegalArgumentException("Note title exceeded max length of " + TITLE_MAX_LENGTH);
         }
-        if (content.length() > CONTENT_MAX_LENGTH) {
+        if (content != null && content.length() > CONTENT_MAX_LENGTH) {
             throw new IllegalArgumentException("Note content exceeded max length of " + CONTENT_MAX_LENGTH);
         }
+    }
+
+    public boolean hasContent() {
+        return content != null;
     }
 }

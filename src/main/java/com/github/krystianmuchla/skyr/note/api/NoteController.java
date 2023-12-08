@@ -1,15 +1,14 @@
 package com.github.krystianmuchla.skyr.note.api;
 
+import com.github.krystianmuchla.skyr.api.IdResponse;
 import com.github.krystianmuchla.skyr.note.Note;
 import com.github.krystianmuchla.skyr.note.NoteService;
-import com.github.krystianmuchla.skyr.note.api.NoteResponse;
-import com.github.krystianmuchla.skyr.api.IdResponse;
-import com.github.krystianmuchla.skyr.note.api.NoteResponseFactory;
 import com.github.krystianmuchla.skyr.pagination.PaginationFactory;
 import com.github.krystianmuchla.skyr.pagination.api.PaginatedResponse;
 import com.github.krystianmuchla.skyr.pagination.api.PaginatedResponseFactory;
 import com.github.krystianmuchla.skyr.pagination.api.PaginationRequest;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -62,8 +61,8 @@ public final class NoteController {
         noteService.update(noteId, request.title, request.content);
     }
 
-    public record AddNoteRequest(@Size(max = Note.TITLE_MAX_LENGTH) String title,
-                                 @Size(max = Note.CONTENT_MAX_LENGTH) String content) {
+    public record AddNoteRequest(@NotNull @Size(max = Note.TITLE_MAX_LENGTH) String title,
+                                 @NotNull @Size(max = Note.CONTENT_MAX_LENGTH) String content) {
     }
 
     public record UpdateNoteRequest(@Size(max = Note.TITLE_MAX_LENGTH) String title,

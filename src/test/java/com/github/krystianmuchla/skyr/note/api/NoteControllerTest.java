@@ -36,7 +36,7 @@ class NoteControllerTest extends IntegrationTest {
     }
 
     @Test
-    void shouldPostNote() throws Exception {
+    void shouldAddNote() throws Exception {
         final var noteTitle = "Note title";
         final var noteContent = "Note content";
 
@@ -69,7 +69,7 @@ class NoteControllerTest extends IntegrationTest {
     }
 
     @Test
-    void shouldDeleteNote() throws Exception {
+    void shouldRemoveNote() throws Exception {
         final var noteId = UUID.fromString("946a95dd-8cb5-4d59-ae7e-101ac3ea715b");
         final var time = Instant.parse("2011-11-11T11:11:11Z");
         createNote(new Note(noteId, "Note title", "Note content", time, time));
@@ -135,7 +135,7 @@ class NoteControllerTest extends IntegrationTest {
     }
 
     @Test
-    void shouldPutNote() throws Exception {
+    void shouldUpdateNote() throws Exception {
         final var noteId = UUID.fromString("d4630597-d447-4b81-ab7f-839f839a6931");
         final var noteCreationTime = Instant.parse("2010-10-10T10:10:10.100Z");
         final var noteModificationTime = Instant.parse("2011-11-11T11:11:11.111Z");
