@@ -19,7 +19,7 @@ import java.util.UUID;
 
 @RestController
 @RequiredArgsConstructor
-public final class NoteSyncController {
+public class NoteSyncController {
     private final NoteSyncService noteSyncService;
 
     @Validated
@@ -29,18 +29,11 @@ public final class NoteSyncController {
             produces = MediaType.APPLICATION_JSON_VALUE
     )
     public NoteSyncResponse syncNotes(@Valid @RequestBody final SyncNotesRequest request) {
-        final var notesSyncResult = noteSyncService.sync(
-                request.syncId,
-                map(request.modifiedNotes)
-        );
-        return new NoteSyncResponse(
-                notesSyncResult.syncId(),
-                NoteResponseFactory.create(notesSyncResult.modifiedNotes())
-        );
+        final var notes = noteSyncService.sync(map(request.notes));
+        return new NoteSyncResponse(NoteResponseFactory.create(notes));
     }
 
     private List<Note> map(final List<NoteRequest> notes) {
-        if (notes == null) return List.of();
         return notes.stream().map(note -> new Note(
                 note.id,
                 note.title,
@@ -50,16 +43,16 @@ public final class NoteSyncController {
         ).toList();
     }
 
-    public record SyncNotesRequest(@NotNull UUID syncId, @Valid List<NoteRequest> modifiedNotes) {
+    public record SyncNotesRequest(@Valid @NotNull List<NoteRequest> notes) {
     }
 
     public record NoteRequest(@NotNull UUID id,
-                              @NotNull String title,
+                              String title,
                               String content,
-                              @NotNull ZonedDateTime creationTime,
+                              ZonedDateTime creationTime,
                               @NotNull ZonedDateTime modificationTime) {
     }
 
-    public record NoteSyncResponse(UUID syncId, List<NoteResponse> modifiedNotes) {
+    public record NoteSyncResponse(List<NoteResponse> notes) {
     }
 }

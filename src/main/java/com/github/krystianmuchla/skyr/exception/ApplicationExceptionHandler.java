@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 
 @Slf4j
 @ControllerAdvice
-public final class ApplicationExceptionHandler {
+public class ApplicationExceptionHandler {
     private static final String UNEXPECTED_ERROR_MESSAGE = "Unexpected error occurred";
 
     @ExceptionHandler

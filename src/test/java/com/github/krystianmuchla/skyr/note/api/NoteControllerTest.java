@@ -33,6 +33,7 @@ class NoteControllerTest extends IntegrationTest {
     @AfterEach
     void afterEachTest() {
         deleteNotes();
+        deleteNoteGraves();
     }
 
     @Test
@@ -197,5 +198,9 @@ class NoteControllerTest extends IntegrationTest {
 
     private void deleteNotes() {
         jdbcTemplate.update("DELETE FROM note");
+    }
+
+    private void deleteNoteGraves() {
+        jdbcTemplate.update("DELETE FROM note_grave");
     }
 }

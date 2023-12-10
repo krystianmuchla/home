@@ -20,7 +20,7 @@ import java.util.UUID;
 
 @RestController
 @RequiredArgsConstructor
-public final class NoteController {
+public class NoteController {
     private final NoteService noteService;
 
     @Validated

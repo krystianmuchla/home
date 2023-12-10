@@ -1,7 +1,6 @@
 package com.github.krystianmuchla.skyr.note;
 
 import com.github.krystianmuchla.skyr.Dao;
-import com.github.krystianmuchla.skyr.InstantFactory;
 import com.github.krystianmuchla.skyr.exception.ServerErrorException;
 import com.github.krystianmuchla.skyr.pagination.PaginatedResult;
 import com.github.krystianmuchla.skyr.pagination.Pagination;
@@ -18,17 +17,8 @@ import java.util.stream.Collectors;
 
 @Component
 @RequiredArgsConstructor
-public final class NoteDao extends Dao {
+public class NoteDao extends Dao {
     private final JdbcTemplate jdbcTemplate;
-
-    public void create(final Note note) {
-        create(note.id(), note.title(), note.content(), note.creationTime(), note.modificationTime());
-    }
-
-    public void create(final UUID id, final String title, final String content) {
-        final var creationTime = InstantFactory.create();
-        create(id, title, content, creationTime, creationTime);
-    }
 
     public void create(final UUID id,
                        final String title,
@@ -59,6 +49,10 @@ public final class NoteDao extends Dao {
         return singleResult(result);
     }
 
+    public List<Note> read() {
+        return jdbcTemplate.query("SELECT * FROM note", mapper());
+    }
+
     public List<Note> readWithLock() {
         return jdbcTemplate.query("SELECT * FROM note FOR UPDATE", mapper());
     }
@@ -84,11 +78,7 @@ public final class NoteDao extends Dao {
         if (creationTime != null) parameters.put(Note.CREATION_TIME, timestamp(creationTime).toString());
         if (modificationTime != null) parameters.put(Note.MODIFICATION_TIME, timestamp(modificationTime).toString());
         if (parameters.isEmpty()) throw new ServerErrorException("Update parameters cannot be empty");
-        final var setters = parameters
-                .keySet()
-                .stream()
-                .map(key -> key + " = ?")
-                .collect(Collectors.joining(", "));
+        final var setters = setters(parameters);
         parameters.put(Note.ID, id.toString());
         final var result = jdbcTemplate.update(
                 "UPDATE note SET " + setters + " WHERE id = ?",

@@ -9,7 +9,9 @@ import java.sql.Timestamp;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public abstract class Dao {
     protected boolean isUpdated(final int updatedRows) {
@@ -41,5 +43,9 @@ public abstract class Dao {
     protected Timestamp timestamp(final Instant instant) {
         if (instant == null) return null;
         return Timestamp.valueOf(LocalDateTime.ofInstant(instant, ZoneOffset.UTC));
+    }
+
+    protected String setters(final LinkedHashMap<String, String> parameters) {
+        return parameters.keySet().stream().map(key -> key + " = ?").collect(Collectors.joining(", "));
     }
 }
