@@ -2,10 +2,8 @@ package com.github.krystianmuchla.home.pagination;
 
 public record Pagination(int pageNumber, int pageSize) {
     public static final int MIN_PAGE_NUMBER = 1;
-    public static final int DEFAULT_PAGE_NUMBER = 1;
     public static final int MIN_PAGE_SIZE = 1;
     public static final int MAX_PAGE_SIZE = 1000;
-    public static final int DEFAULT_PAGE_SIZE = 20;
 
     public Pagination {
         if (pageNumber < MIN_PAGE_NUMBER) {
@@ -17,5 +15,9 @@ public record Pagination(int pageNumber, int pageSize) {
         if (pageSize > MAX_PAGE_SIZE) {
             throw new IllegalArgumentException("Page size exceeded max length of " + MAX_PAGE_SIZE);
         }
+    }
+
+    public Pagination(final PaginationRequest request) {
+        this(request.getPageNumber(), request.getPageSize());
     }
 }
