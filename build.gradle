@@ -1,11 +1,11 @@
 plugins {
-    id 'java'
-    id 'groovy'
     id 'application'
+    id 'groovy'
+    id 'java'
 }
 
 group = 'com.github.krystianmuchla'
-version = '1.0'
+version = '1.0.1'
 
 repositories {
     mavenCentral()
@@ -40,7 +40,8 @@ dependencies {
 
 application {
     applicationDefaultJvmArgs = [
-        '-Ddatabase.url=jdbc:mysql://localhost:3306/home',
+        '-Dport=8080',
+        '-Ddatabase.url=jdbc:mysql://localhost:3307/home',
         '-Ddatabase.user=root',
         '-Ddatabase.password=root',
         '-Dnote-grave-cleaner.enabled=true',
@@ -50,6 +51,18 @@ application {
         '-Dnote-grave-cleaner.threshold-unit=MINUTES'
     ]
     mainClass = 'com.github.krystianmuchla.home.App'
+}
+
+jar {
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+    manifest {
+        attributes(
+            'Main-Class': 'com.github.krystianmuchla.home.App'
+        )
+    }
+    from {
+        configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
+    }
 }
 
 test {

@@ -4,12 +4,12 @@ services:
   database:
     image: mysql:8.1.0
     ports:
-      - '3306:3306'
+      - '3307:3306'
     environment:
       MYSQL_DATABASE: 'home'
       MYSQL_ROOT_PASSWORD: 'root'
     volumes:
-      - local-database:/var/lib/mysql
+      - database:/var/lib/mysql
 
 volumes:
-  local-database:
+  database:
