@@ -3,7 +3,6 @@ package com.github.krystianmuchla.home.api;
 import jakarta.servlet.http.HttpServletRequest;
 
 import java.io.IOException;
-import java.util.Objects;
 import java.util.function.Function;
 
 import static java.lang.System.lineSeparator;
@@ -37,7 +36,7 @@ public class RequestReader {
         final Class<T> clazz
     ) throws IOException {
         final var contentType = request.getHeader("Content-Type");
-        if (!Objects.equals(contentType, "application/json")) {
+        if (contentType != null && !contentType.contains("application/json")) {
             throw new IllegalArgumentException();
         }
         final var requestBody = request.getReader().lines().collect(joining(lineSeparator()));
