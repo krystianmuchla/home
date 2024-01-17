@@ -1,12 +1,13 @@
 package com.github.krystianmuchla.home.api;
 
 import jakarta.servlet.http.HttpServletResponse;
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
 
 import java.io.IOException;
 
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class ResponseWriter {
-    private ResponseWriter() {
-    }
 
     public static void writeJson(final HttpServletResponse response, final Object object) throws IOException {
         final var objectMapper = ObjectMapperHolder.INSTANCE;

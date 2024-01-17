@@ -9,6 +9,8 @@ import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
 import com.fasterxml.jackson.databind.ser.std.StdSerializer;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
 
 import java.io.IOException;
 import java.time.Instant;
@@ -17,6 +19,7 @@ import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class ObjectMapperHolder {
     public static final ObjectMapper INSTANCE;
 
@@ -24,9 +27,6 @@ public class ObjectMapperHolder {
         INSTANCE = new ObjectMapper();
         INSTANCE.setSerializationInclusion(JsonInclude.Include.NON_NULL);
         INSTANCE.registerModule(createTimeModule());
-    }
-
-    private ObjectMapperHolder() {
     }
 
     private static JavaTimeModule createTimeModule() {

@@ -1,7 +1,10 @@
 package com.github.krystianmuchla.home.db;
 
 import com.github.krystianmuchla.home.Config;
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
 
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class DbConfig extends Config {
     public static final String URL;
     public static final String USER;
@@ -17,8 +20,5 @@ public class DbConfig extends Config {
         final var password = resolve("database.password", "HOME_DATABASE_PASSWORD");
         if (password == null) throw new IllegalStateException("Database password is not specified");
         PASSWORD = password;
-    }
-
-    private DbConfig() {
     }
 }

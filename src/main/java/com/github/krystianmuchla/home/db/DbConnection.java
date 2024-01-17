@@ -1,14 +1,15 @@
 package com.github.krystianmuchla.home.db;
 
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
+
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class DbConnection {
     private static Connection instance;
-
-    private DbConnection() {
-    }
 
     public static Connection getInstance() {
         if (instance == null) {

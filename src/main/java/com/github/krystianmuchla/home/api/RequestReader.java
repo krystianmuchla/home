@@ -1,6 +1,8 @@
 package com.github.krystianmuchla.home.api;
 
 import jakarta.servlet.http.HttpServletRequest;
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
 
 import java.io.IOException;
 import java.util.function.Function;
@@ -8,9 +10,8 @@ import java.util.function.Function;
 import static java.lang.System.lineSeparator;
 import static java.util.stream.Collectors.joining;
 
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class RequestReader {
-    private RequestReader() {
-    }
 
     public static String readPathParameter(final HttpServletRequest request) {
         final var pathParameter = request.getPathInfo();

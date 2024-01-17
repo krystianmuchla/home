@@ -1,9 +1,12 @@
 package com.github.krystianmuchla.home.mnemo.grave;
 
 import com.github.krystianmuchla.home.Config;
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
 
 import java.time.temporal.ChronoUnit;
 
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class NoteGraveCleanerConfig extends Config {
     public static final Boolean ENABLED;
     public static final Integer RATE;
@@ -22,8 +25,5 @@ public class NoteGraveCleanerConfig extends Config {
         THRESHOLD = threshold == null ? null : Integer.valueOf(threshold);
         final var thresholdUnit = resolve("note-grave-cleaner.threshold-unit", "NOTE_GRAVE_CLEANER_THRESHOLD_UNIT");
         THRESHOLD_UNIT = thresholdUnit == null ? null : ChronoUnit.valueOf(thresholdUnit);
-    }
-
-    private NoteGraveCleanerConfig() {
     }
 }

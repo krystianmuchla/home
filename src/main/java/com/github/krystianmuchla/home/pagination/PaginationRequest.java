@@ -1,7 +1,9 @@
 package com.github.krystianmuchla.home.pagination;
 
 import jakarta.servlet.http.HttpServletRequest;
+import lombok.Getter;
 
+@Getter
 public class PaginationRequest {
     private final int pageNumber;
     private final int pageSize;
@@ -22,13 +24,5 @@ public class PaginationRequest {
             if (this.pageSize < Pagination.MIN_PAGE_SIZE) throw new IllegalArgumentException();
             if (this.pageSize > Pagination.MAX_PAGE_SIZE) throw new IllegalArgumentException();
         }
-    }
-
-    public int getPageNumber() {
-        return pageNumber;
-    }
-
-    public int getPageSize() {
-        return pageSize;
     }
 }

@@ -3,6 +3,7 @@ package com.github.krystianmuchla.home;
 import com.github.krystianmuchla.home.pagination.PaginatedResult;
 import com.github.krystianmuchla.home.pagination.Pagination;
 import com.github.krystianmuchla.home.pagination.PaginationResult;
+import lombok.AllArgsConstructor;
 
 import java.sql.Connection;
 import java.sql.ResultSet;
@@ -17,12 +18,9 @@ import java.util.List;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+@AllArgsConstructor
 public class Dao {
     private final Connection dbConnection;
-
-    public Dao(final Connection dbConnection) {
-        this.dbConnection = dbConnection;
-    }
 
     public <T> List<T> executeQuery(
         final String sql,
