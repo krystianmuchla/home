@@ -13,7 +13,6 @@ import lombok.SneakyThrows;
 
 import java.sql.Connection;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicReference;
 
 public class NoteSyncController extends HttpServlet implements Transactional {
     public static final String PATH = "/api/notes/sync";
@@ -30,11 +29,11 @@ public class NoteSyncController extends HttpServlet implements Transactional {
     @SneakyThrows
     protected void doPut(final HttpServletRequest request, final HttpServletResponse response) {
         final var syncNotesRequest = RequestReader.readJson(request, SyncNotesRequest.class);
-        final var notes = new AtomicReference<List<Note>>(null);
-        transactional(dbConnection, () -> {
-            notes.set(noteSyncService.sync(fromRequest(syncNotesRequest.notes())));
-        });
-        ResponseWriter.writeJson(response, new NoteSyncResponse(toResponse(notes.get())));
+        final var notes = transactional(
+            dbConnection,
+            () -> noteSyncService.sync(fromRequest(syncNotesRequest.notes()))
+        );
+        ResponseWriter.writeJson(response, new NoteSyncResponse(toResponse(notes)));
     }
 
     private static List<Note> fromRequest(final List<NoteRequest> notes) {

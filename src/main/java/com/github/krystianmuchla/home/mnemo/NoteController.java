@@ -16,7 +16,6 @@ import lombok.SneakyThrows;
 import java.io.IOException;
 import java.sql.Connection;
 import java.util.UUID;
-import java.util.concurrent.atomic.AtomicReference;
 
 public class NoteController extends HttpServlet implements Transactional {
     public static final String PATH = "/api/notes/*";
@@ -39,10 +38,10 @@ public class NoteController extends HttpServlet implements Transactional {
             return;
         }
         final var createNoteRequest = RequestReader.readJson(request, CreateNoteRequest.class);
-        final var noteId = new AtomicReference<>(null);
-        transactional(dbConnection, () -> {
-            noteId.set(noteService.create(createNoteRequest.title(), createNoteRequest.content()));
-        });
+        final var noteId = transactional(
+            dbConnection,
+            () -> noteService.create(createNoteRequest.title(), createNoteRequest.content())
+        );
         ResponseWriter.writeJson(response, new IdResponse<>(noteId));
         response.setStatus(201);
     }
