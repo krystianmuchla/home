@@ -1,6 +1,6 @@
 package com.github.krystianmuchla.home;
 
-import org.junit.jupiter.api.Test;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.IOException;
 import java.net.URI;
@@ -10,15 +10,21 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.util.Optional;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 
-class HealthControllerTest extends AppTest {
+class HealthControllerTest {
+
+    @BeforeAll
+    static void beforeAllTests() throws Exception {
+        AppContext.init();
+    }
 
     @Test
     void shouldGetHealth() throws URISyntaxException, IOException, InterruptedException {
         final var client = HttpClient.newHttpClient();
         final var request = HttpRequest.newBuilder()
-            .uri(new URI(APP_HOST + "/api/health"))
+            .uri(new URI(AppContext.HOST + "/api/health"))
             .GET()
             .build();
 

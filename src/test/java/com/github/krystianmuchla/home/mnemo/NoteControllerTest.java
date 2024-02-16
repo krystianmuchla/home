@@ -1,14 +1,6 @@
 package com.github.krystianmuchla.home.mnemo;
 
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.github.krystianmuchla.home.AppTest;
-import com.github.krystianmuchla.home.Dao;
-import com.github.krystianmuchla.home.db.DbConnection;
-import lombok.SneakyThrows;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Test;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.IOException;
 import java.net.URI;
@@ -16,7 +8,6 @@ import java.net.URISyntaxException;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
-import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
@@ -29,25 +20,32 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Function;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 
-class NoteControllerTest extends AppTest {
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.github.krystianmuchla.home.AppContext;
+import com.github.krystianmuchla.home.Dao;
+import com.github.krystianmuchla.home.db.ConnectionManager;
 
-    private static Connection dbConnection;
+import lombok.SneakyThrows;
+
+class NoteControllerTest {
     private static Dao dao;
 
     @BeforeAll
-    protected static void beforeAllTests() throws Exception {
-        AppTest.beforeAllTests();
-        dbConnection = DbConnection.create();
-        dao = new Dao(dbConnection);
+    static void beforeAllTests() throws Exception {
+        AppContext.init();
+        dao = new Dao();
     }
 
     @AfterEach
     void afterEachTest() throws SQLException {
         dao.executeUpdate("DELETE FROM note");
         dao.executeUpdate("DELETE FROM note_grave");
-        dbConnection.commit();
+        ConnectionManager.get().commit();
     }
 
     @Test
@@ -56,7 +54,7 @@ class NoteControllerTest extends AppTest {
         final var noteContent = "Note content";
         final var client = HttpClient.newHttpClient();
         final var request = HttpRequest.newBuilder()
-            .uri(new URI(APP_HOST + "/api/notes"))
+            .uri(new URI(AppContext.HOST + "/api/notes"))
             .headers("Content-Type", "application/json")
             .POST(HttpRequest.BodyPublishers.ofString("""
                 {
@@ -105,7 +103,7 @@ class NoteControllerTest extends AppTest {
         );
         final var client = HttpClient.newHttpClient();
         final var request = HttpRequest.newBuilder()
-            .uri(new URI(APP_HOST + "/api/notes/" + noteId))
+            .uri(new URI(AppContext.HOST + "/api/notes/" + noteId))
             .GET()
             .build();
 
@@ -141,7 +139,7 @@ class NoteControllerTest extends AppTest {
         );
         final var client = HttpClient.newHttpClient();
         final var request = HttpRequest.newBuilder()
-            .uri(new URI(APP_HOST + "/api/notes"))
+            .uri(new URI(AppContext.HOST + "/api/notes"))
             .GET()
             .build();
 
@@ -181,7 +179,7 @@ class NoteControllerTest extends AppTest {
         final var noteContent = "New note content";
         final var client = HttpClient.newHttpClient();
         final var request = HttpRequest.newBuilder()
-            .uri(new URI(APP_HOST + "/api/notes/" + noteId))
+            .uri(new URI(AppContext.HOST + "/api/notes/" + noteId))
             .headers("Content-Type", "application/json")
             .PUT(HttpRequest.BodyPublishers.ofString("""
                 {
@@ -218,7 +216,7 @@ class NoteControllerTest extends AppTest {
         );
         final var client = HttpClient.newHttpClient();
         final var request = HttpRequest.newBuilder()
-            .uri(new URI(APP_HOST + "/api/notes/" + noteId))
+            .uri(new URI(AppContext.HOST + "/api/notes/" + noteId))
             .DELETE()
             .build();
 
@@ -245,7 +243,7 @@ class NoteControllerTest extends AppTest {
             Timestamp.valueOf(LocalDateTime.ofInstant(creationTime, ZoneOffset.UTC)).toString(),
             Timestamp.valueOf(LocalDateTime.ofInstant(modificationTime, ZoneOffset.UTC)).toString()
         );
-        dbConnection.commit();
+        ConnectionManager.get().commit();
     }
 
     private static List<Note> readNotes() {

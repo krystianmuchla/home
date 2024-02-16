@@ -1,21 +1,24 @@
 package com.github.krystianmuchla.home;
 
-import org.junit.jupiter.api.BeforeAll;
 import org.testcontainers.containers.MySQLContainer;
 
-public abstract class AppTest {
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
 
-    protected static final String APP_PORT = "80";
-    protected static final String APP_HOST = "http://localhost:" + APP_PORT;
-    protected static MySQLContainer<?> dbContainer;
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
+public class AppContext {
+
+    public static final String PORT = "80";
+    public static final String HOST = "http://localhost:" + PORT;
+    public static MySQLContainer<?> dbContainer;
+
     private static boolean initialized = false;
 
-    @BeforeAll
-    protected static void beforeAllTests() throws Exception {
+    public static void init() throws Exception {
         if (!initialized) {
             dbContainer = new MySQLContainer<>("mysql:8.1.0");
             dbContainer.start();
-            System.setProperty("port", APP_PORT);
+            System.setProperty("port", PORT);
             System.setProperty("database.url", dbContainer.getJdbcUrl());
             System.setProperty("database.user", dbContainer.getUsername());
             System.setProperty("database.password", dbContainer.getPassword());

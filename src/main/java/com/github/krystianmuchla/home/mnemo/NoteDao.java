@@ -1,19 +1,20 @@
 package com.github.krystianmuchla.home.mnemo;
 
+import java.time.Instant;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.UUID;
+
 import com.github.krystianmuchla.home.Dao;
 import com.github.krystianmuchla.home.pagination.PaginatedResult;
 import com.github.krystianmuchla.home.pagination.Pagination;
 
-import java.sql.Connection;
-import java.time.Instant;
-import java.util.*;
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
 
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class NoteDao extends Dao {
-    private static final Map<Connection, NoteDao> INSTANCES = new HashMap<>();
-
-    public NoteDao(final Connection dbConnection) {
-        super(dbConnection);
-    }
+    public static final NoteDao INSTANCE = new NoteDao();
 
     public void create(
         final UUID id,
@@ -80,14 +81,5 @@ public class NoteDao extends Dao {
     public boolean delete(final UUID id) {
         final var result = executeUpdate("DELETE FROM note WHERE id = ?", id.toString());
         return isUpdated(result);
-    }
-
-    public static NoteDao getInstance(final Connection dbConnection) {
-        var instance = INSTANCES.get(dbConnection);
-        if (instance == null) {
-            instance = new NoteDao(dbConnection);
-            INSTANCES.put(dbConnection, instance);
-        }
-        return instance;
     }
 }

@@ -1,6 +1,6 @@
 package com.github.krystianmuchla.home;
 
-import com.github.krystianmuchla.home.db.DbConnection;
+import com.github.krystianmuchla.home.db.ConnectionManager;
 import com.github.krystianmuchla.home.mnemo.NoteController;
 import com.github.krystianmuchla.home.mnemo.grave.NoteGraveCleaner;
 import com.github.krystianmuchla.home.mnemo.grave.NoteGraveCleanerConfig;
@@ -21,7 +21,7 @@ public class App {
     }
 
     private static void updateDbSchema() throws LiquibaseException {
-        final var dbConnection = DbConnection.create();
+        final var dbConnection = ConnectionManager.get();
         final var jdbcConnection = new JdbcConnection(dbConnection);
         final var database = DatabaseFactory.getInstance().findCorrectDatabaseImplementation(jdbcConnection);
         final var liquibase = new Liquibase("db-changelog.sql", new ClassLoaderResourceAccessor(), database);

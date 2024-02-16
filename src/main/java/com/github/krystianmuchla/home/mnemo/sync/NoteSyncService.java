@@ -1,28 +1,29 @@
 package com.github.krystianmuchla.home.mnemo.sync;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
 import com.github.krystianmuchla.home.mnemo.Note;
 import com.github.krystianmuchla.home.mnemo.NoteDao;
 import com.github.krystianmuchla.home.mnemo.NoteService;
 import com.github.krystianmuchla.home.mnemo.grave.NoteGrave;
 import com.github.krystianmuchla.home.mnemo.grave.NoteGraveDao;
 
-import java.sql.Connection;
-import java.util.*;
-import java.util.function.Function;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
 
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class NoteSyncService {
-    private static final Map<Connection, NoteSyncService> INSTANCES = new HashMap<>();
-    private final NoteDao noteDao;
-    private final NoteGraveDao noteGraveDao;
-    private final NoteService noteService;
+    public static final NoteSyncService INSTANCE = new NoteSyncService();
 
-    public NoteSyncService(final Connection dbConnection) {
-        noteDao = NoteDao.getInstance(dbConnection);
-        noteGraveDao = NoteGraveDao.getInstance(dbConnection);
-        noteService = NoteService.getInstance(dbConnection);
-    }
+    private final NoteDao noteDao = NoteDao.INSTANCE;
+    private final NoteGraveDao noteGraveDao = NoteGraveDao.INSTANCE;
+    private final NoteService noteService = NoteService.INSTANCE;
 
     public List<Note> sync(final List<Note> externalNotes) {
         if (externalNotes == null || externalNotes.isEmpty()) {
@@ -66,14 +67,5 @@ public class NoteSyncService {
             notes.stream(),
             noteGraves.stream().map(NoteGrave::toNote)
         ).collect(Collectors.toMap(Note::id, Function.identity()));
-    }
-
-    public static NoteSyncService getInstance(final Connection dbConnection) {
-        var instance = INSTANCES.get(dbConnection);
-        if (instance == null) {
-            instance = new NoteSyncService(dbConnection);
-            INSTANCES.put(dbConnection, instance);
-        }
-        return instance;
     }
 }

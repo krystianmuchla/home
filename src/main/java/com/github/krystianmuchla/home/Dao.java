@@ -1,13 +1,6 @@
 package com.github.krystianmuchla.home;
 
-import com.github.krystianmuchla.home.pagination.PaginatedResult;
-import com.github.krystianmuchla.home.pagination.Pagination;
-import com.github.krystianmuchla.home.pagination.PaginationResult;
-import lombok.AllArgsConstructor;
-
-import java.sql.Connection;
 import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.time.LocalDateTime;
@@ -18,16 +11,23 @@ import java.util.List;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-@AllArgsConstructor
-public class Dao {
-    private final Connection dbConnection;
+import com.github.krystianmuchla.home.db.ConnectionManager;
+import com.github.krystianmuchla.home.pagination.PaginatedResult;
+import com.github.krystianmuchla.home.pagination.Pagination;
+import com.github.krystianmuchla.home.pagination.PaginationResult;
 
+import lombok.SneakyThrows;
+
+public class Dao {
+
+    @SneakyThrows
     public <T> List<T> executeQuery(
         final String sql,
         final Function<ResultSet, T> mapper,
         final Object... parameters
     ) {
-        try (final var preparedStatement = dbConnection.prepareStatement(sql)) {
+        final var connection = ConnectionManager.get();
+        try (final var preparedStatement = connection.prepareStatement(sql)) {
             for (int index = 0; index < parameters.length; index++) {
                 preparedStatement.setObject(index + 1, parameters[index]);
             }
@@ -35,19 +35,17 @@ public class Dao {
             final var result = new ArrayList<T>();
             while (resultSet.next()) result.add(mapper.apply(resultSet));
             return result;
-        } catch (final SQLException exception) {
-            throw new RuntimeException(exception);
         }
     }
 
+    @SneakyThrows
     public int executeUpdate(final String sql, final Object... parameters) {
-        try (final var preparedStatement = dbConnection.prepareStatement(sql)) {
+        final var connection = ConnectionManager.get();
+        try (final var preparedStatement = connection.prepareStatement(sql)) {
             for (int index = 0; index < parameters.length; index++) {
                 preparedStatement.setObject(index + 1, parameters[index]);
             }
             return preparedStatement.executeUpdate();
-        } catch (final SQLException exception) {
-            throw new RuntimeException(exception);
         }
     }
 

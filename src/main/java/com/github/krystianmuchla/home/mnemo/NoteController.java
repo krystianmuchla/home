@@ -1,34 +1,26 @@
 package com.github.krystianmuchla.home.mnemo;
 
+import java.io.IOException;
+import java.util.UUID;
+
 import com.github.krystianmuchla.home.api.IdResponse;
 import com.github.krystianmuchla.home.api.RequestReader;
 import com.github.krystianmuchla.home.api.ResponseWriter;
-import com.github.krystianmuchla.home.db.DbConnection;
-import com.github.krystianmuchla.home.db.Transactional;
+import com.github.krystianmuchla.home.db.Transaction;
 import com.github.krystianmuchla.home.pagination.PaginatedResponse;
 import com.github.krystianmuchla.home.pagination.Pagination;
 import com.github.krystianmuchla.home.pagination.PaginationRequest;
+
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.SneakyThrows;
 
-import java.io.IOException;
-import java.sql.Connection;
-import java.util.UUID;
-
-public class NoteController extends HttpServlet implements Transactional {
+public class NoteController extends HttpServlet {
     public static final String PATH = "/api/notes/*";
 
-    private final Connection dbConnection;
-    private final NoteDao noteDao;
-    private final NoteService noteService;
-
-    public NoteController() {
-        dbConnection = DbConnection.getInstance();
-        noteDao = NoteDao.getInstance(dbConnection);
-        noteService = NoteService.getInstance(dbConnection);
-    }
+    private final NoteDao noteDao = NoteDao.INSTANCE;
+    private final NoteService noteService = NoteService.INSTANCE;
 
     @Override
     @SneakyThrows
@@ -38,8 +30,7 @@ public class NoteController extends HttpServlet implements Transactional {
             return;
         }
         final var createNoteRequest = RequestReader.readJson(request, CreateNoteRequest.class);
-        final var noteId = transactional(
-            dbConnection,
+        final var noteId = Transaction.run(
             () -> noteService.create(createNoteRequest.title(), createNoteRequest.content())
         );
         ResponseWriter.writeJson(response, new IdResponse<>(noteId));
@@ -68,9 +59,9 @@ public class NoteController extends HttpServlet implements Transactional {
             return;
         }
         final var updateNoteRequest = RequestReader.readJson(request, UpdateNoteRequest.class);
-        transactional(dbConnection, () -> {
-            noteService.update(noteId, updateNoteRequest.title(), updateNoteRequest.content());
-        });
+        Transaction.run(
+            () -> noteService.update(noteId, updateNoteRequest.title(), updateNoteRequest.content())
+        );
         response.setStatus(204);
     }
 
@@ -82,9 +73,7 @@ public class NoteController extends HttpServlet implements Transactional {
             super.doDelete(request, response);
             return;
         }
-        transactional(dbConnection, () -> {
-            noteService.delete(noteId);
-        });
+        Transaction.run(() -> noteService.delete(noteId));
         response.setStatus(204);
     }
 }

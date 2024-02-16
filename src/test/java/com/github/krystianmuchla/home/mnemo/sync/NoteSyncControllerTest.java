@@ -1,23 +1,6 @@
 package com.github.krystianmuchla.home.mnemo.sync;
 
-import com.fasterxml.jackson.core.JsonGenerator;
-import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.DeserializationContext;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializerProvider;
-import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
-import com.fasterxml.jackson.databind.ser.std.StdSerializer;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import com.github.krystianmuchla.home.AppTest;
-import com.github.krystianmuchla.home.Dao;
-import com.github.krystianmuchla.home.db.DbConnection;
-import com.github.krystianmuchla.home.mnemo.Note;
-import com.github.krystianmuchla.home.mnemo.grave.NoteGrave;
-import lombok.SneakyThrows;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Test;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.IOException;
 import java.net.URI;
@@ -25,7 +8,6 @@ import java.net.URISyntaxException;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
-import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
@@ -40,18 +22,35 @@ import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 
-class NoteSyncControllerTest extends AppTest {
-    private static Connection dbConnection;
+import com.fasterxml.jackson.core.JsonGenerator;
+import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.DeserializationContext;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializerProvider;
+import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
+import com.fasterxml.jackson.databind.ser.std.StdSerializer;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import com.github.krystianmuchla.home.AppContext;
+import com.github.krystianmuchla.home.Dao;
+import com.github.krystianmuchla.home.db.ConnectionManager;
+import com.github.krystianmuchla.home.mnemo.Note;
+import com.github.krystianmuchla.home.mnemo.grave.NoteGrave;
+
+import lombok.SneakyThrows;
+
+class NoteSyncControllerTest {
     private static Dao dao;
     private static ObjectMapper objectMapper;
 
     @BeforeAll
-    protected static void beforeAllTests() throws Exception {
-        AppTest.beforeAllTests();
-        dbConnection = DbConnection.create();
-        dao = new Dao(dbConnection);
+    static void beforeAllTests() throws Exception {
+        AppContext.init();
+        dao = new Dao();
         objectMapper = new ObjectMapper();
         final var module = new JavaTimeModule();
         module.addDeserializer(Instant.class, new StdDeserializer<>(Instant.class) {
@@ -75,7 +74,7 @@ class NoteSyncControllerTest extends AppTest {
     void afterEachTest() throws SQLException {
         dao.executeUpdate("DELETE FROM note");
         dao.executeUpdate("DELETE FROM note_grave");
-        dbConnection.commit();
+        ConnectionManager.get().commit();
     }
 
     @Test
@@ -244,7 +243,7 @@ class NoteSyncControllerTest extends AppTest {
         createNoteGraves(noteGraves);
         final var client = HttpClient.newHttpClient();
         final var request = HttpRequest.newBuilder()
-            .uri(new URI(APP_HOST + "/api/notes/sync"))
+            .uri(new URI(AppContext.HOST + "/api/notes/sync"))
             .headers("Content-Type", "application/json")
             .PUT(HttpRequest.BodyPublishers.ofString(requestBody))
             .build();
@@ -305,7 +304,7 @@ class NoteSyncControllerTest extends AppTest {
             Timestamp.valueOf(LocalDateTime.ofInstant(note.creationTime(), ZoneOffset.UTC)).toString(),
             Timestamp.valueOf(LocalDateTime.ofInstant(note.modificationTime(), ZoneOffset.UTC)).toString()
         );
-        dbConnection.commit();
+        ConnectionManager.get().commit();
     }
 
     private static void createNotes(final Note... notes) throws SQLException {
@@ -336,7 +335,7 @@ class NoteSyncControllerTest extends AppTest {
             noteGrave.id().toString(),
             Timestamp.valueOf(LocalDateTime.ofInstant(noteGrave.creationTime(), ZoneOffset.UTC)).toString()
         );
-        dbConnection.commit();
+        ConnectionManager.get().commit();
     }
 
     private static void createNoteGraves(final NoteGrave... noteGraves) throws SQLException {

@@ -1,19 +1,18 @@
 package com.github.krystianmuchla.home.mnemo.grave;
 
-import com.github.krystianmuchla.home.InstantFactory;
-import com.github.krystianmuchla.home.db.DbConnection;
-import com.github.krystianmuchla.home.db.Transactional;
-import lombok.SneakyThrows;
-
-import java.sql.Connection;
 import java.time.Duration;
 import java.time.temporal.ChronoUnit;
 import java.time.temporal.TemporalUnit;
 import java.util.Objects;
 
-public class NoteGraveCleaner implements Runnable, Transactional {
-    private final Connection dbConnection;
-    private final NoteGraveDao noteGraveDao;
+import com.github.krystianmuchla.home.InstantFactory;
+import com.github.krystianmuchla.home.db.ConnectionManager;
+import com.github.krystianmuchla.home.db.Transaction;
+
+import lombok.SneakyThrows;
+
+public class NoteGraveCleaner implements Runnable {
+    private final NoteGraveDao noteGraveDao = NoteGraveDao.INSTANCE;
     private boolean enabled;
     private final int rate;
     private final TemporalUnit rateUnit;
@@ -27,8 +26,6 @@ public class NoteGraveCleaner implements Runnable, Transactional {
         final Integer threshold,
         final ChronoUnit thresholdUnit
     ) {
-        dbConnection = DbConnection.create();
-        noteGraveDao = NoteGraveDao.getInstance(dbConnection);
         this.enabled = Objects.requireNonNullElse(enabled, true);
         this.rate = Objects.requireNonNullElse(rate, 1);
         this.rateUnit = Objects.requireNonNullElse(rateUnit, ChronoUnit.DAYS);
@@ -39,11 +36,10 @@ public class NoteGraveCleaner implements Runnable, Transactional {
     @Override
     @SneakyThrows
     public void run() {
+        ConnectionManager.register();
         while (enabled) {
             final var creationTimeThreshold = InstantFactory.create().minus(threshold, thresholdUnit);
-            transactional(dbConnection, () -> {
-                noteGraveDao.delete(creationTimeThreshold);
-            });
+            Transaction.run(() -> noteGraveDao.delete(creationTimeThreshold));
             try {
                 Thread.sleep(Duration.of(rate, rateUnit));
             } catch (final InterruptedException ignored) {

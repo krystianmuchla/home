@@ -1,22 +1,19 @@
 package com.github.krystianmuchla.home.mnemo;
 
+import java.util.UUID;
+
 import com.github.krystianmuchla.home.InstantFactory;
 import com.github.krystianmuchla.home.mnemo.grave.NoteGraveDao;
 
-import java.sql.Connection;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
 
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class NoteService {
-    private final static Map<Connection, NoteService> INSTANCES = new HashMap<>();
-    private final NoteDao noteDao;
-    private final NoteGraveDao noteGraveDao;
+    public static final NoteService INSTANCE = new NoteService();
 
-    private NoteService(final Connection dbConnection) {
-        this.noteDao = NoteDao.getInstance(dbConnection);
-        this.noteGraveDao = NoteGraveDao.getInstance(dbConnection);
-    }
+    private final NoteDao noteDao = NoteDao.INSTANCE;
+    private final NoteGraveDao noteGraveDao = NoteGraveDao.INSTANCE;
 
     public UUID create(final String title, final String content) {
         final var id = UUID.randomUUID();
@@ -50,14 +47,5 @@ public class NoteService {
         final var result = noteDao.delete(note.id());
         if (!result) throw new IllegalArgumentException();
         noteGraveDao.create(note);
-    }
-
-    public static NoteService getInstance(final Connection dbConnection) {
-        var instance = INSTANCES.get(dbConnection);
-        if (instance == null) {
-            instance = new NoteService(dbConnection);
-            INSTANCES.put(dbConnection, instance);
-        }
-        return instance;
     }
 }
