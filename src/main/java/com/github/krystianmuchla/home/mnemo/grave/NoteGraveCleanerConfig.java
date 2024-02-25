@@ -1,12 +1,9 @@
 package com.github.krystianmuchla.home.mnemo.grave;
 
-import com.github.krystianmuchla.home.Config;
-import lombok.AccessLevel;
-import lombok.NoArgsConstructor;
-
 import java.time.temporal.ChronoUnit;
 
-@NoArgsConstructor(access = AccessLevel.PRIVATE)
+import com.github.krystianmuchla.home.Config;
+
 public class NoteGraveCleanerConfig extends Config {
     public static final Boolean ENABLED;
     public static final Integer RATE;

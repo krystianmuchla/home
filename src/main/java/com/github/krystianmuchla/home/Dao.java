@@ -18,15 +18,14 @@ import com.github.krystianmuchla.home.pagination.PaginationResult;
 
 import lombok.SneakyThrows;
 
-public class Dao {
-
+public abstract class Dao {
     @SneakyThrows
     public <T> List<T> executeQuery(
         final String sql,
         final Function<ResultSet, T> mapper,
         final Object... parameters
     ) {
-        final var connection = ConnectionManager.get();
+        final var connection = ConnectionManager.getConnection();
         try (final var preparedStatement = connection.prepareStatement(sql)) {
             for (int index = 0; index < parameters.length; index++) {
                 preparedStatement.setObject(index + 1, parameters[index]);
@@ -40,7 +39,7 @@ public class Dao {
 
     @SneakyThrows
     public int executeUpdate(final String sql, final Object... parameters) {
-        final var connection = ConnectionManager.get();
+        final var connection = ConnectionManager.getConnection();
         try (final var preparedStatement = connection.prepareStatement(sql)) {
             for (int index = 0; index < parameters.length; index++) {
                 preparedStatement.setObject(index + 1, parameters[index]);

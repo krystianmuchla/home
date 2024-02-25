@@ -40,7 +40,7 @@ application {
         '-Ddatabase.url=jdbc:mysql://localhost:3307/home',
         '-Ddatabase.user=root',
         '-Ddatabase.password=root',
-        '-Dnote-grave-cleaner.enabled=true',
+        '-Dnote-grave-cleaner.enabled=false',
         '-Dnote-grave-cleaner.rate=10',
         '-Dnote-grave-cleaner.rate-unit=SECONDS',
         '-Dnote-grave-cleaner.threshold=1',

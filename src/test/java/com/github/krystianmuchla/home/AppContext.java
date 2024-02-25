@@ -2,10 +2,8 @@ package com.github.krystianmuchla.home;
 
 import org.testcontainers.containers.MySQLContainer;
 
-import lombok.AccessLevel;
-import lombok.NoArgsConstructor;
+import lombok.SneakyThrows;
 
-@NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class AppContext {
 
     public static final String PORT = "80";
@@ -14,7 +12,8 @@ public class AppContext {
 
     private static boolean initialized = false;
 
-    public static void init() throws Exception {
+    @SneakyThrows
+    public static void init() {
         if (!initialized) {
             dbContainer = new MySQLContainer<>("mysql:8.1.0");
             dbContainer.start();

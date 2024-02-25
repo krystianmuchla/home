@@ -1,22 +1,20 @@
 package com.github.krystianmuchla.home.db;
 
-import java.sql.SQLException;
 import java.util.function.Supplier;
 
-import lombok.AccessLevel;
-import lombok.NoArgsConstructor;
+import lombok.SneakyThrows;
 
-@NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class Transaction {
-    public static void run(final Runnable runnable) throws SQLException {
+    public static void run(final Runnable runnable) {
         run(() -> {
             runnable.run();
             return null;
         });
     }
 
-    public static <T> T run(final Supplier<T> supplier) throws SQLException {
-        final var connection = ConnectionManager.get();
+    @SneakyThrows
+    public static <T> T run(final Supplier<T> supplier) {
+        final var connection = ConnectionManager.getConnection();
         try {
             final var result = supplier.get();
             connection.commit();

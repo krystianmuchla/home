@@ -2,251 +2,95 @@ package com.github.krystianmuchla.home.mnemo.sync;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.io.IOException;
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Timestamp;
 import java.time.Instant;
-import java.time.LocalDateTime;
-import java.time.ZoneOffset;
-import java.time.format.DateTimeFormatter;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
-import com.fasterxml.jackson.core.JsonGenerator;
-import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializerProvider;
-import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
-import com.fasterxml.jackson.databind.ser.std.StdSerializer;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.github.krystianmuchla.home.AppContext;
-import com.github.krystianmuchla.home.Dao;
-import com.github.krystianmuchla.home.db.ConnectionManager;
+import com.github.krystianmuchla.home.api.ObjectMapperHolder;
+import com.github.krystianmuchla.home.db.Transaction;
+import com.github.krystianmuchla.home.id.session.SessionManager;
+import com.github.krystianmuchla.home.id.user.User;
 import com.github.krystianmuchla.home.mnemo.Note;
+import com.github.krystianmuchla.home.mnemo.NoteDao;
+import com.github.krystianmuchla.home.mnemo.NoteResponse;
 import com.github.krystianmuchla.home.mnemo.grave.NoteGrave;
+import com.github.krystianmuchla.home.mnemo.grave.NoteGraveDao;
 
-import lombok.SneakyThrows;
+import jakarta.servlet.http.Cookie;
 
 class NoteSyncControllerTest {
-    private static Dao dao;
     private static ObjectMapper objectMapper;
+    private static User user;
+    private static Cookie[] cookies;
+    private static String cookie;
+    private static NoteDao noteDao;
+    private static NoteGraveDao noteGraveDao;
 
     @BeforeAll
     static void beforeAllTests() throws Exception {
         AppContext.init();
-        dao = new Dao();
-        objectMapper = new ObjectMapper();
-        final var module = new JavaTimeModule();
-        module.addDeserializer(Instant.class, new StdDeserializer<>(Instant.class) {
-            @Override
-            public Instant deserialize(final JsonParser parser, final DeserializationContext context) throws IOException {
-                final var time = parser.getValueAsString();
-                return Instant.parse(time);
-            }
-        });
-        module.addSerializer(new StdSerializer<>(Instant.class) {
-            @Override
-            public void serialize(final Instant time, final JsonGenerator generator, final SerializerProvider provider) throws IOException {
-                final var formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'").withZone(ZoneOffset.UTC);
-                generator.writeString(formatter.format(time));
-            }
-        });
-        objectMapper.registerModule(module);
+        noteDao = NoteDao.INSTANCE;
+        noteGraveDao = NoteGraveDao.INSTANCE;
+        objectMapper = ObjectMapperHolder.INSTANCE;
+        user = new User(UUID.fromString("5b55e2c9-1fb4-4128-a5a4-9c1597fdfe19"));
+        cookies = SessionManager.createSession("test", user);
+        cookie = "login=%s; token=%s".formatted(cookies[0].getValue(), cookies[1].getValue());
     }
 
     @AfterEach
-    void afterEachTest() throws SQLException {
-        dao.executeUpdate("DELETE FROM note");
-        dao.executeUpdate("DELETE FROM note_grave");
-        ConnectionManager.get().commit();
+    void afterEachTest() throws Exception {
+        Transaction.run(() -> {
+            noteDao.delete();
+            noteGraveDao.delete();
+        });
+    }
+
+    @AfterAll
+    static void afterAllTests() {
+        SessionManager.removeSession(cookies);
     }
 
     @Test
-    void shouldSyncNotes() throws URISyntaxException, IOException, InterruptedException, SQLException {
-        final var externalNotes = new Note[]{
-            new Note(
-                UUID.fromString("4d8af443-bfa9-4d47-a886-b1ddc82a958d"),
-                "External note",
-                "4d8af443-bfa9-4d47-a886-b1ddc82a958d",
-                Instant.parse("2010-10-10T10:10:10Z"),
-                Instant.parse("2010-10-10T10:10:10Z")
-            ),
-            new Note(
-                UUID.fromString("cb8b51f8-63e5-4964-94e4-0b3b7944e7d4"),
-                "External note with same id and earlier modification time",
-                "cb8b51f8-63e5-4964-94e4-0b3b7944e7d4",
-                Instant.parse("2000-01-01T00:00:00Z"),
-                Instant.parse("2000-01-01T00:00:00Z")
-            ),
-            new Note(
-                UUID.fromString("2109af10-c870-4e8d-8f53-7220d693ca78"),
-                "External note with same id and same modification time",
-                "2109af10-c870-4e8d-8f53-7220d693ca78",
-                Instant.parse("2010-10-10T10:10:10Z"),
-                Instant.parse("2010-10-10T10:10:10Z")
-            ),
-            new Note(
-                UUID.fromString("2f6772bc-2a58-4e25-9318-3a60d4fb52dc"),
-                "External note with same id and later modification time",
-                "2f6772bc-2a58-4e25-9318-3a60d4fb52dc",
-                Instant.parse("2020-12-31T23:59:59Z"),
-                Instant.parse("2020-12-31T23:59:59Z")
-            ),
-            new Note(
-                UUID.fromString("fb9e3586-9e71-49dd-a4f7-a6ed86a8999e"),
-                "External note with no content",
-                null,
-                Instant.parse("2010-10-10T10:10:10Z"),
-                Instant.parse("2010-10-10T10:10:10Z")
-            ),
-            new Note(
-                UUID.fromString("7bf721b5-30de-4697-92aa-1a6b61a418a9"),
-                "External note with same id and no content and earlier modification time",
-                null,
-                Instant.parse("2000-01-01T00:00:00Z"),
-                Instant.parse("2000-01-01T00:00:00Z")
-            ),
-            new Note(
-                UUID.fromString("c0dc5769-d1df-4e4f-8a49-87e3d8651c6e"),
-                "External note with same id and no content and same modification time",
-                null,
-                Instant.parse("2010-10-10T10:10:10Z"),
-                Instant.parse("2010-10-10T10:10:10Z")
-            ),
-            new Note(
-                UUID.fromString("caa96b92-1469-43cd-b58e-59a4c271a270"),
-                "External note with same id and no content and later modification time",
-                null,
-                Instant.parse("2020-12-31T23:59:59Z"),
-                Instant.parse("2020-12-31T23:59:59Z")
-            ),
-            new Note(
-                UUID.fromString("009bac89-770c-4bcc-ad93-e2d0986e105e"),
-                "External note with same id as grave and earlier modification time",
-                "009bac89-770c-4bcc-ad93-e2d0986e105e",
-                Instant.parse("2000-01-01T00:00:00Z"),
-                Instant.parse("2000-01-01T00:00:00Z")
-            ),
-            new Note(
-                UUID.fromString("41f40e37-5b18-4637-8241-dc05dd8b52ba"),
-                "External note with same id as grave and same modification time",
-                "41f40e37-5b18-4637-8241-dc05dd8b52ba",
-                Instant.parse("2010-10-10T10:10:10Z"),
-                Instant.parse("2010-10-10T10:10:10Z")
-            ),
-            new Note(
-                UUID.fromString("528c8c2f-ac76-4543-a333-b66135b0749a"),
-                "External note with same id as grave and later modification time",
-                "528c8c2f-ac76-4543-a333-b66135b0749a",
-                Instant.parse("2020-12-31T23:59:59Z"),
-                Instant.parse("2020-12-31T23:59:59Z")
-            ),
-            new Note(
-                UUID.fromString("a884e780-476d-4fcb-b41b-4dd8e5f7754e"),
-                "External note with same id as grave and no content and earlier modification time",
-                null,
-                Instant.parse("2000-01-01T00:00:00Z"),
-                Instant.parse("2000-01-01T00:00:00Z")
-            ),
-            new Note(
-                UUID.fromString("2a4cef21-ffa9-48a7-9659-7e03da2d7e01"),
-                "External note with same id as grave and no content and same modification time",
-                null,
-                Instant.parse("2010-10-10T10:10:10Z"),
-                Instant.parse("2010-10-10T10:10:10Z")
-            ),
-            new Note(
-                UUID.fromString("dd2529d5-7380-496e-a52f-d5b4e7adf44d"),
-                "External note with same id as grave and no content and later modification time",
-                null,
-                Instant.parse("2020-12-31T23:59:59Z"),
-                Instant.parse("2020-12-31T23:59:59Z")
-            )
-        };
-        final var notes = new Note[]{
-            new Note(
-                UUID.fromString("0981a57b-9ccd-455e-956d-2daf39e45480"),
-                "0981a57b-9ccd-455e-956d-2daf39e45480",
-                "0981a57b-9ccd-455e-956d-2daf39e45480",
-                Instant.parse("2010-10-10T10:10:10Z"),
-                Instant.parse("2010-10-10T10:10:10Z")
-            ),
-            new Note(
-                externalNotes[1].id(),
-                externalNotes[1].id().toString(),
-                externalNotes[1].id().toString(),
-                externalNotes[1].creationTime(),
-                Instant.parse("2010-10-10T10:10:10Z")
-            ),
-            new Note(
-                externalNotes[2].id(),
-                externalNotes[2].id().toString(),
-                externalNotes[2].id().toString(),
-                externalNotes[2].creationTime(),
-                Instant.parse("2010-10-10T10:10:10Z")
-            ),
-            new Note(
-                externalNotes[3].id(),
-                externalNotes[3].id().toString(),
-                externalNotes[3].id().toString(),
-                externalNotes[3].creationTime(),
-                Instant.parse("2010-10-10T10:10:10Z")
-            ),
-            new Note(
-                externalNotes[5].id(),
-                externalNotes[5].id().toString(),
-                externalNotes[5].id().toString(),
-                externalNotes[5].creationTime(),
-                Instant.parse("2010-10-10T10:10:10Z")
-            ),
-            new Note(
-                externalNotes[6].id(),
-                externalNotes[6].id().toString(),
-                externalNotes[6].id().toString(),
-                externalNotes[6].creationTime(),
-                Instant.parse("2010-10-10T10:10:10Z")
-            ),
-            new Note(
-                externalNotes[7].id(),
-                externalNotes[7].id().toString(),
-                externalNotes[7].id().toString(),
-                externalNotes[7].creationTime(),
-                Instant.parse("2010-10-10T10:10:10Z")
-            )
-        };
-        final var noteGraves = new NoteGrave[]{
-            new NoteGrave(externalNotes[8].id(), Instant.parse("2010-10-10T10:10:10Z")),
-            new NoteGrave(externalNotes[9].id(), Instant.parse("2010-10-10T10:10:10Z")),
-            new NoteGrave(externalNotes[10].id(), Instant.parse("2010-10-10T10:10:10Z")),
-            new NoteGrave(externalNotes[11].id(), Instant.parse("2010-10-10T10:10:10Z")),
-            new NoteGrave(externalNotes[12].id(), Instant.parse("2010-10-10T10:10:10Z")),
-            new NoteGrave(externalNotes[13].id(), Instant.parse("2010-10-10T10:10:10Z"))
-        };
-        final var requestBody = createRequestBody(externalNotes);
-        createNotes(notes);
-        createNoteGraves(noteGraves);
+    void shouldWriteExternalNotes() throws Exception {
         final var client = HttpClient.newHttpClient();
         final var request = HttpRequest.newBuilder()
-            .uri(new URI(AppContext.HOST + "/api/notes/sync"))
-            .headers("Content-Type", "application/json")
-            .PUT(HttpRequest.BodyPublishers.ofString(requestBody))
-            .build();
+                .uri(new URI(AppContext.HOST + "/api/notes/sync"))
+                .header("Content-Type", "application/json")
+                .header("Cookie", cookie)
+                .PUT(HttpRequest.BodyPublishers.ofString("""
+                        {
+                            "notes": [
+                                {
+                                    "id": "4d8af443-bfa9-4d47-a886-b1ddc82a958d",
+                                    "title": "External note title",
+                                    "content": "External note content",
+                                    "creationTime": "2010-10-10T10:10:10Z",
+                                    "modificationTime": "2010-10-10T10:10:10Z"
+                                },
+                                {
+                                    "id": "cb8b51f8-63e5-4964-94e4-0b3b7944e7d4",
+                                    "title": "External note title",
+                                    "content": null,
+                                    "creationTime": "2010-10-10T10:10:10Z",
+                                    "modificationTime": "2010-10-10T10:10:10Z"
+                                }
+                            ]
+                        }
+                        """))
+                .build();
 
         final var response = client.send(request, HttpResponse.BodyHandlers.ofString());
 
@@ -255,118 +99,306 @@ class NoteSyncControllerTest {
         final var responseTree = objectMapper.readTree(response.body());
         assertThat(responseTree.size()).isEqualTo(1);
         final var notesResponse = objectMapper.readValue(
-            responseTree.get("notes").toString(),
-            new TypeReference<List<Note>>() {
-            }
-        );
-        assertThat(notesResponse).hasSize(9).contains(
-            notes[0],
-            notes[1],
-            notes[2],
-            notes[4],
-            notes[5],
-            noteGraves[0].toNote(),
-            noteGraves[1].toNote(),
-            noteGraves[3].toNote(),
-            noteGraves[4].toNote()
-        );
-        final var notesDb = readNotes();
-        assertThat(notesDb).hasSize(8).contains(
-            externalNotes[0],
-            externalNotes[3],
-            externalNotes[10],
-            notes[0],
-            notes[1],
-            notes[2],
-            notes[4],
-            notes[5]
-        );
-        final var noteGravesDb = readNoteGraves();
-        assertThat(noteGravesDb).hasSize(6).contains(
-            new NoteGrave(
-                externalNotes[7].id(),
-                externalNotes[7].modificationTime()
-            ),
-            noteGraves[0],
-            noteGraves[1],
-            noteGraves[3],
-            noteGraves[4],
-            noteGraves[5]
-        );
+                responseTree.get("notes").toString(),
+                new TypeReference<List<NoteResponse>>() {
+                });
+        assertThat(notesResponse).hasSize(0);
+        final var notesDb = noteDao.read();
+        assertThat(notesDb).hasSize(1);
+        final var noteDb = notesDb.get(0);
+        assertThat(noteDb.id()).isEqualTo(UUID.fromString("4d8af443-bfa9-4d47-a886-b1ddc82a958d"));
+        assertThat(noteDb.userId()).isEqualTo(user.id());
+        assertThat(noteDb.title()).isEqualTo("External note title");
+        assertThat(noteDb.content()).isEqualTo("External note content");
+        assertThat(noteDb.creationTime()).isEqualTo(Instant.parse("2010-10-10T10:10:10Z"));
+        assertThat(noteDb.modificationTime()).isEqualTo(Instant.parse("2010-10-10T10:10:10Z"));
+        final var noteGravesDb = noteGraveDao.read();
+        assertThat(noteGravesDb).hasSize(0);
     }
 
-    private static void createNote(final Note note) throws SQLException {
-        dao.executeUpdate(
-            "INSERT INTO note VALUES (?, ?, ?, ?, ?)",
-            note.id().toString(),
-            note.title(),
-            note.content(),
-            Timestamp.valueOf(LocalDateTime.ofInstant(note.creationTime(), ZoneOffset.UTC)).toString(),
-            Timestamp.valueOf(LocalDateTime.ofInstant(note.modificationTime(), ZoneOffset.UTC)).toString()
-        );
-        ConnectionManager.get().commit();
-    }
-
-    private static void createNotes(final Note... notes) throws SQLException {
-        for (final var note : notes) {
-            createNote(note);
-        }
-    }
-
-    private static List<Note> readNotes() throws SQLException {
-        return dao.executeQuery("SELECT * FROM note", new Function<>() {
-            @Override
-            @SneakyThrows
-            public Note apply(ResultSet resultSet) {
-                return new Note(
-                    UUID.fromString(resultSet.getString("id")),
-                    resultSet.getString("title"),
-                    resultSet.getString("content"),
-                    resultSet.getTimestamp("creation_time").toLocalDateTime().toInstant(ZoneOffset.UTC),
-                    resultSet.getTimestamp("modification_time").toLocalDateTime().toInstant(ZoneOffset.UTC)
-                );
-            }
+    @Test
+    void shouldOverwriteInternalNotes() throws Exception {
+        Transaction.run(() -> {
+            noteDao.create(
+                    new Note(
+                            UUID.fromString("6765b952-1db7-40ae-938c-51b49cac69ed"),
+                            user.id(),
+                            "Note title",
+                            "Note content",
+                            Instant.parse("2010-10-10T10:10:10Z")),
+                    new Note(
+                            UUID.fromString("3b03610e-50c3-4602-aca4-280841a72496"),
+                            user.id(),
+                            "Note title",
+                            "Note content",
+                            Instant.parse("2010-10-10T10:10:10Z")));
+            noteGraveDao.create(
+                    new NoteGrave(
+                            UUID.fromString("292e3117-59f1-4374-afe8-d8b751e0b6e3"),
+                            user.id(),
+                            Instant.parse("2010-10-10T10:10:10Z")),
+                    new NoteGrave(
+                            UUID.fromString("65b276f5-417d-458b-ad2c-0c6ffa7f5488"),
+                            user.id(),
+                            Instant.parse("2010-10-10T10:10:10Z")));
         });
+        final var client = HttpClient.newHttpClient();
+        final var request = HttpRequest.newBuilder()
+                .uri(new URI(AppContext.HOST + "/api/notes/sync"))
+                .header("Content-Type", "application/json")
+                .header("Cookie", cookie)
+                .PUT(HttpRequest.BodyPublishers.ofString("""
+                        {
+                            "notes": [
+                                {
+                                    "id": "6765b952-1db7-40ae-938c-51b49cac69ed",
+                                    "title": "External note title",
+                                    "content": "External note content",
+                                    "creationTime": "2010-10-10T10:10:10Z",
+                                    "modificationTime": "2011-11-11T11:11:11Z"
+                                },
+                                {
+                                    "id": "3b03610e-50c3-4602-aca4-280841a72496",
+                                    "title": "External note title",
+                                    "content": null,
+                                    "creationTime": "2010-10-10T10:10:10Z",
+                                    "modificationTime": "2011-11-11T11:11:11Z"
+                                },
+                                {
+                                    "id": "292e3117-59f1-4374-afe8-d8b751e0b6e3",
+                                    "title": "External note title",
+                                    "content": null,
+                                    "creationTime": "2010-10-10T10:10:10Z",
+                                    "modificationTime": "2011-11-11T11:11:11Z"
+                                },
+                                {
+                                    "id": "65b276f5-417d-458b-ad2c-0c6ffa7f5488",
+                                    "title": "External note title",
+                                    "content": "External note content",
+                                    "creationTime": "2010-10-10T10:10:10Z",
+                                    "modificationTime": "2011-11-11T11:11:11Z"
+                                }
+                            ]
+                        }
+                        """))
+                .build();
+
+        final var response = client.send(request, HttpResponse.BodyHandlers.ofString());
+
+        assertThat(response.statusCode()).isEqualTo(200);
+        assertThat(response.headers().firstValue("Content-Type")).isEqualTo(Optional.of("application/json"));
+        final var responseTree = objectMapper.readTree(response.body());
+        assertThat(responseTree.size()).isEqualTo(1);
+        final var notesResponse = objectMapper.readValue(
+                responseTree.get("notes").toString(),
+                new TypeReference<List<NoteResponse>>() {
+                });
+        assertThat(notesResponse).hasSize(0);
+        final var notesDb = noteDao.read();
+        assertThat(notesDb).hasSize(2);
+        assertThat(notesDb.get(0).id()).isEqualTo(UUID.fromString("65b276f5-417d-458b-ad2c-0c6ffa7f5488"));
+        assertThat(notesDb.get(0).userId()).isEqualTo(user.id());
+        assertThat(notesDb.get(0).title()).isEqualTo("External note title");
+        assertThat(notesDb.get(0).content()).isEqualTo("External note content");
+        assertThat(notesDb.get(0).creationTime()).isEqualTo(Instant.parse("2010-10-10T10:10:10Z"));
+        assertThat(notesDb.get(0).modificationTime()).isEqualTo(Instant.parse("2011-11-11T11:11:11Z"));
+        assertThat(notesDb.get(1).id()).isEqualTo(UUID.fromString("6765b952-1db7-40ae-938c-51b49cac69ed"));
+        assertThat(notesDb.get(1).userId()).isEqualTo(user.id());
+        assertThat(notesDb.get(1).title()).isEqualTo("External note title");
+        assertThat(notesDb.get(1).content()).isEqualTo("External note content");
+        assertThat(notesDb.get(1).creationTime()).isEqualTo(Instant.parse("2010-10-10T10:10:10Z"));
+        assertThat(notesDb.get(1).modificationTime()).isEqualTo(Instant.parse("2011-11-11T11:11:11Z"));
+        final var noteGravesDb = noteGraveDao.read();
+        assertThat(noteGravesDb).hasSize(2);
+        assertThat(noteGravesDb.get(0).id()).isEqualTo(UUID.fromString("292e3117-59f1-4374-afe8-d8b751e0b6e3"));
+        assertThat(noteGravesDb.get(0).userId()).isEqualTo(user.id());
+        assertThat(noteGravesDb.get(0).creationTime()).isEqualTo(Instant.parse("2011-11-11T11:11:11Z"));
+        assertThat(noteGravesDb.get(1).id()).isEqualTo(UUID.fromString("3b03610e-50c3-4602-aca4-280841a72496"));
+        assertThat(noteGravesDb.get(1).userId()).isEqualTo(user.id());
+        assertThat(noteGravesDb.get(1).creationTime()).isEqualTo(Instant.parse("2011-11-11T11:11:11Z"));
     }
 
-    private static void createNoteGrave(final NoteGrave noteGrave) throws SQLException {
-        dao.executeUpdate(
-            "INSERT INTO note_grave VALUES (?, ?)",
-            noteGrave.id().toString(),
-            Timestamp.valueOf(LocalDateTime.ofInstant(noteGrave.creationTime(), ZoneOffset.UTC)).toString()
-        );
-        ConnectionManager.get().commit();
-    }
-
-    private static void createNoteGraves(final NoteGrave... noteGraves) throws SQLException {
-        for (final var noteGrave : noteGraves) {
-            createNoteGrave(noteGrave);
-        }
-    }
-
-    private static List<NoteGrave> readNoteGraves() {
-        return dao.executeQuery("SELECT * FROM note_grave", new Function<>() {
-            @Override
-            @SneakyThrows
-            public NoteGrave apply(ResultSet resultSet) {
-                return new NoteGrave(
-                    UUID.fromString(resultSet.getString("id")),
-                    resultSet.getTimestamp("creation_time").toLocalDateTime().toInstant(ZoneOffset.UTC)
-                );
-            }
+    @Test
+    void shouldOutputInternalNotes() throws Exception {
+        Transaction.run(() -> {
+            noteDao.create(
+                    new Note(
+                            UUID.fromString("416b5888-4ee0-4460-8c4e-0531e62c029c"),
+                            user.id(),
+                            "Note title",
+                            "Note content",
+                            Instant.parse("2010-10-10T10:10:10Z")));
+            noteGraveDao.create(
+                    new NoteGrave(
+                            UUID.fromString("884f33f5-2b79-4f68-9118-73cabffc4f8a"),
+                            user.id(),
+                            Instant.parse("2010-10-10T10:10:10Z")));
         });
+        final var client = HttpClient.newHttpClient();
+        final var request = HttpRequest.newBuilder()
+                .uri(new URI(AppContext.HOST + "/api/notes/sync"))
+                .header("Content-Type", "application/json")
+                .header("Cookie", cookie)
+                .PUT(HttpRequest.BodyPublishers.ofString("""
+                        {
+                            "notes": []
+                        }
+                        """))
+                .build();
+
+        final var response = client.send(request, HttpResponse.BodyHandlers.ofString());
+
+        assertThat(response.statusCode()).isEqualTo(200);
+        assertThat(response.headers().firstValue("Content-Type")).isEqualTo(Optional.of("application/json"));
+        final var responseTree = objectMapper.readTree(response.body());
+        assertThat(responseTree.size()).isEqualTo(1);
+        final var notesResponse = objectMapper.readValue(
+                responseTree.get("notes").toString(),
+                new TypeReference<List<NoteResponse>>() {
+                });
+        assertThat(notesResponse).hasSize(1);
+        final var noteResponse = notesResponse.get(0);
+        assertThat(noteResponse.id()).isEqualTo(UUID.fromString("416b5888-4ee0-4460-8c4e-0531e62c029c"));
+        assertThat(noteResponse.title()).isEqualTo("Note title");
+        assertThat(noteResponse.content()).isEqualTo("Note content");
+        assertThat(noteResponse.creationTime()).isEqualTo(Instant.parse("2010-10-10T10:10:10Z"));
+        assertThat(noteResponse.modificationTime()).isEqualTo(Instant.parse("2010-10-10T10:10:10Z"));
+        final var notesDb = noteDao.read();
+        assertThat(notesDb).hasSize(1);
+        final var noteDb = notesDb.get(0);
+        assertThat(noteDb.id()).isEqualTo(UUID.fromString("416b5888-4ee0-4460-8c4e-0531e62c029c"));
+        assertThat(noteDb.userId()).isEqualTo(user.id());
+        assertThat(noteDb.title()).isEqualTo("Note title");
+        assertThat(noteDb.content()).isEqualTo("Note content");
+        assertThat(noteDb.creationTime()).isEqualTo(Instant.parse("2010-10-10T10:10:10Z"));
+        assertThat(noteDb.modificationTime()).isEqualTo(Instant.parse("2010-10-10T10:10:10Z"));
+        final var noteGravesDb = noteGraveDao.read();
+        assertThat(noteGravesDb).hasSize(1);
+        final var noteGraveDb = noteGravesDb.get(0);
+        assertThat(noteGraveDb.id()).isEqualTo(UUID.fromString("884f33f5-2b79-4f68-9118-73cabffc4f8a"));
+        assertThat(noteGraveDb.userId()).isEqualTo(user.id());
+        assertThat(noteGraveDb.creationTime()).isEqualTo(Instant.parse("2010-10-10T10:10:10Z"));
     }
 
-    private static String createRequestBody(final Note[] notes) {
-        final var noteRequests = Arrays.stream(notes)
-            .map(new Function<Note, String>() {
-                @Override
-                @SneakyThrows
-                public String apply(Note note) {
-                    return objectMapper.writeValueAsString(note);
-                }
-            })
-            .collect(Collectors.joining(","));
-        return "{\"notes\":[" + noteRequests + "]}";
+    @Test
+    void shouldOverwriteExternalNotes() throws Exception {
+        Transaction.run(() -> {
+            noteDao.create(
+                    new Note(
+                            UUID.fromString("8b4ae3f2-02b9-47e2-b1d1-fbb761e2dccf"),
+                            user.id(),
+                            "Note title",
+                            "Note content",
+                            Instant.parse("2010-10-10T10:10:10Z"),
+                            Instant.parse("2011-11-11T11:11:11Z")),
+                    new Note(
+                            UUID.fromString("0c73c9f7-4af4-4fff-8b30-384636d12a00"),
+                            user.id(),
+                            "Note title",
+                            "Note content",
+                            Instant.parse("2010-10-10T10:10:10Z"),
+                            Instant.parse("2011-11-11T11:11:11Z")));
+            noteGraveDao.create(
+                    new NoteGrave(
+                            UUID.fromString("6d9e6e4d-be5e-4768-bd33-bc37f7b80284"),
+                            user.id(),
+                            Instant.parse("2011-11-11T11:11:11Z")),
+                    new NoteGrave(
+                            UUID.fromString("dc5c2ee8-ba84-4019-b8f2-0a8d93e170cd"),
+                            user.id(),
+                            Instant.parse("2011-11-11T11:11:11Z")));
+        });
+        final var client = HttpClient.newHttpClient();
+        final var request = HttpRequest.newBuilder()
+                .uri(new URI(AppContext.HOST + "/api/notes/sync"))
+                .header("Content-Type", "application/json")
+                .header("Cookie", cookie)
+                .PUT(HttpRequest.BodyPublishers.ofString("""
+                        {
+                            "notes": [
+                                {
+                                    "id": "8b4ae3f2-02b9-47e2-b1d1-fbb761e2dccf",
+                                    "title": "External note title",
+                                    "content": "External note content",
+                                    "creationTime": "2010-10-10T10:10:10Z",
+                                    "modificationTime": "2010-10-10T10:10:10Z"
+                                },
+                                {
+                                    "id": "0c73c9f7-4af4-4fff-8b30-384636d12a00",
+                                    "title": "External note title",
+                                    "content": null,
+                                    "creationTime": "2010-10-10T10:10:10Z",
+                                    "modificationTime": "2010-10-10T10:10:10Z"
+                                },
+                                {
+                                    "id": "6d9e6e4d-be5e-4768-bd33-bc37f7b80284",
+                                    "title": "External note title",
+                                    "content": null,
+                                    "creationTime": "2010-10-10T10:10:10Z",
+                                    "modificationTime": "2010-10-10T10:10:10Z"
+                                },
+                                {
+                                    "id": "dc5c2ee8-ba84-4019-b8f2-0a8d93e170cd",
+                                    "title": "External note title",
+                                    "content": "External note content",
+                                    "creationTime": "2010-10-10T10:10:10Z",
+                                    "modificationTime": "2010-10-10T10:10:10Z"
+                                }
+                            ]
+                        }
+                        """))
+                .build();
+
+        final var response = client.send(request, HttpResponse.BodyHandlers.ofString());
+
+        assertThat(response.statusCode()).isEqualTo(200);
+        assertThat(response.headers().firstValue("Content-Type")).isEqualTo(Optional.of("application/json"));
+        final var responseTree = objectMapper.readTree(response.body());
+        assertThat(responseTree.size()).isEqualTo(1);
+        final var notesResponse = objectMapper.readValue(
+                responseTree.get("notes").toString(),
+                new TypeReference<List<NoteResponse>>() {
+                });
+        assertThat(notesResponse).hasSize(3);
+        assertThat(notesResponse.get(0).id())
+                .isEqualTo(UUID.fromString("0c73c9f7-4af4-4fff-8b30-384636d12a00"));
+        assertThat(notesResponse.get(0).title()).isEqualTo("Note title");
+        assertThat(notesResponse.get(0).content()).isEqualTo("Note content");
+        assertThat(notesResponse.get(0).creationTime()).isEqualTo(Instant.parse("2010-10-10T10:10:10Z"));
+        assertThat(notesResponse.get(0).modificationTime()).isEqualTo(Instant.parse("2011-11-11T11:11:11Z"));
+        assertThat(notesResponse.get(1).id())
+                .isEqualTo(UUID.fromString("8b4ae3f2-02b9-47e2-b1d1-fbb761e2dccf"));
+        assertThat(notesResponse.get(1).title()).isEqualTo("Note title");
+        assertThat(notesResponse.get(1).content()).isEqualTo("Note content");
+        assertThat(notesResponse.get(1).creationTime()).isEqualTo(Instant.parse("2010-10-10T10:10:10Z"));
+        assertThat(notesResponse.get(1).modificationTime()).isEqualTo(Instant.parse("2011-11-11T11:11:11Z"));
+        assertThat(notesResponse.get(2).id())
+                .isEqualTo(UUID.fromString("dc5c2ee8-ba84-4019-b8f2-0a8d93e170cd"));
+        assertThat(notesResponse.get(2).title()).isNull();
+        assertThat(notesResponse.get(2).content()).isNull();
+        assertThat(notesResponse.get(2).creationTime()).isNull();
+        assertThat(notesResponse.get(2).modificationTime()).isEqualTo(Instant.parse("2011-11-11T11:11:11Z"));
+        final var notesDb = noteDao.read();
+        assertThat(notesDb).hasSize(2);
+        assertThat(notesDb.get(0).id()).isEqualTo(UUID.fromString("0c73c9f7-4af4-4fff-8b30-384636d12a00"));
+        assertThat(notesDb.get(0).userId()).isEqualTo(user.id());
+        assertThat(notesDb.get(0).title()).isEqualTo("Note title");
+        assertThat(notesDb.get(0).content()).isEqualTo("Note content");
+        assertThat(notesDb.get(0).creationTime()).isEqualTo(Instant.parse("2010-10-10T10:10:10Z"));
+        assertThat(notesDb.get(0).modificationTime()).isEqualTo(Instant.parse("2011-11-11T11:11:11Z"));
+        assertThat(notesDb.get(1).id()).isEqualTo(UUID.fromString("8b4ae3f2-02b9-47e2-b1d1-fbb761e2dccf"));
+        assertThat(notesDb.get(1).userId()).isEqualTo(user.id());
+        assertThat(notesDb.get(1).title()).isEqualTo("Note title");
+        assertThat(notesDb.get(1).content()).isEqualTo("Note content");
+        assertThat(notesDb.get(1).creationTime()).isEqualTo(Instant.parse("2010-10-10T10:10:10Z"));
+        assertThat(notesDb.get(1).modificationTime()).isEqualTo(Instant.parse("2011-11-11T11:11:11Z"));
+        final var noteGravesDb = noteGraveDao.read();
+        assertThat(noteGravesDb).hasSize(2);
+        assertThat(noteGravesDb.get(0).id()).isEqualTo(UUID.fromString("6d9e6e4d-be5e-4768-bd33-bc37f7b80284"));
+        assertThat(noteGravesDb.get(0).userId()).isEqualTo(user.id());
+        assertThat(noteGravesDb.get(0).creationTime()).isEqualTo(Instant.parse("2011-11-11T11:11:11Z"));
+        assertThat(noteGravesDb.get(1).id()).isEqualTo(UUID.fromString("dc5c2ee8-ba84-4019-b8f2-0a8d93e170cd"));
+        assertThat(noteGravesDb.get(1).userId()).isEqualTo(user.id());
+        assertThat(noteGravesDb.get(1).creationTime()).isEqualTo(Instant.parse("2011-11-11T11:11:11Z"));
     }
 }

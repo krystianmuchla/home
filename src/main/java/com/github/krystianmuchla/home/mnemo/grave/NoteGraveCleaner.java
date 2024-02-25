@@ -36,7 +36,7 @@ public class NoteGraveCleaner implements Runnable {
     @Override
     @SneakyThrows
     public void run() {
-        ConnectionManager.register();
+        ConnectionManager.registerConnection();
         while (enabled) {
             final var creationTimeThreshold = InstantFactory.create().minus(threshold, thresholdUnit);
             Transaction.run(() -> noteGraveDao.delete(creationTimeThreshold));
