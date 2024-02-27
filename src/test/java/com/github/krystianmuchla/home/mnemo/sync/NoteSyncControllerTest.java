@@ -281,6 +281,63 @@ class NoteSyncControllerTest {
     }
 
     @Test
+    void shouldNotOutputInternalNotesOfOtherUser() throws Exception {
+        final UUID userId = UUID.fromString("2ad341c6-e59e-42f3-94d8-8c089addc9a0");
+        Transaction.run(() -> {
+            noteDao.create(
+                    new Note(
+                            UUID.fromString("8b4ae3f2-02b9-47e2-b1d1-fbb761e2dccf"),
+                            userId,
+                            "Note title",
+                            "Note content",
+                            Instant.parse("2010-10-10T10:10:10Z")));
+            noteGraveDao.create(
+                    new NoteGrave(
+                            UUID.fromString("dc5c2ee8-ba84-4019-b8f2-0a8d93e170cd"),
+                            userId,
+                            Instant.parse("2010-10-10T10:10:10Z")));
+        });
+        final var client = HttpClient.newHttpClient();
+        final var request = HttpRequest.newBuilder()
+                .uri(new URI(AppContext.HOST + "/api/notes/sync"))
+                .header("Content-Type", "application/json")
+                .header("Cookie", cookie)
+                .PUT(HttpRequest.BodyPublishers.ofString("""
+                        {
+                            "notes": []
+                        }
+                        """))
+                .build();
+
+        final var response = client.send(request, HttpResponse.BodyHandlers.ofString());
+
+        assertThat(response.statusCode()).isEqualTo(200);
+        assertThat(response.headers().firstValue("Content-Type")).isEqualTo(Optional.of("application/json"));
+        final var responseTree = objectMapper.readTree(response.body());
+        assertThat(responseTree.size()).isEqualTo(1);
+        final var notesResponse = objectMapper.readValue(
+                responseTree.get("notes").toString(),
+                new TypeReference<List<NoteResponse>>() {
+                });
+        assertThat(notesResponse).hasSize(0);
+        final var notesDb = noteDao.read();
+        assertThat(notesDb).hasSize(1);
+        final var noteDb = notesDb.get(0);
+        assertThat(noteDb.id()).isEqualTo(UUID.fromString("8b4ae3f2-02b9-47e2-b1d1-fbb761e2dccf"));
+        assertThat(noteDb.userId()).isEqualTo(userId);
+        assertThat(noteDb.title()).isEqualTo("Note title");
+        assertThat(noteDb.content()).isEqualTo("Note content");
+        assertThat(noteDb.creationTime()).isEqualTo(Instant.parse("2010-10-10T10:10:10Z"));
+        assertThat(noteDb.modificationTime()).isEqualTo(Instant.parse("2010-10-10T10:10:10Z"));
+        final var noteGravesDb = noteGraveDao.read();
+        assertThat(noteGravesDb).hasSize(1);
+        final var noteGraveDb = noteGravesDb.get(0);
+        assertThat(noteGraveDb.id()).isEqualTo(UUID.fromString("dc5c2ee8-ba84-4019-b8f2-0a8d93e170cd"));
+        assertThat(noteGraveDb.userId()).isEqualTo(userId);
+        assertThat(noteGraveDb.creationTime()).isEqualTo(Instant.parse("2010-10-10T10:10:10Z"));
+    }
+
+    @Test
     void shouldOverwriteExternalNotes() throws Exception {
         Transaction.run(() -> {
             noteDao.create(
@@ -400,5 +457,19 @@ class NoteSyncControllerTest {
         assertThat(noteGravesDb.get(1).id()).isEqualTo(UUID.fromString("dc5c2ee8-ba84-4019-b8f2-0a8d93e170cd"));
         assertThat(noteGravesDb.get(1).userId()).isEqualTo(user.id());
         assertThat(noteGravesDb.get(1).creationTime()).isEqualTo(Instant.parse("2011-11-11T11:11:11Z"));
+    }
+
+    @Test
+    void shouldNotSyncWithoutAuthorization() throws Exception {
+        final var client = HttpClient.newHttpClient();
+        final var request = HttpRequest.newBuilder()
+                .uri(new URI(AppContext.HOST + "/api/notes/sync"))
+                .header("Content-Type", "application/json")
+                .PUT(HttpRequest.BodyPublishers.ofString("{}"))
+                .build();
+
+        final var response = client.send(request, HttpResponse.BodyHandlers.ofString());
+
+        assertThat(response.statusCode()).isGreaterThan(299);
     }
 }
