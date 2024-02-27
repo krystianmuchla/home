@@ -37,7 +37,7 @@ public class NoteGraveDao extends Dao {
             noteGrave.id().toString(),
             noteGrave.userId().toString()
         );
-        return isUpdated(result);
+        return boolResult(result);
     }
 
     public void delete() {

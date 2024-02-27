@@ -7,34 +7,20 @@ import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.ServerConnector;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 
-import com.github.krystianmuchla.home.db.ConnectionManager;
+import com.github.krystianmuchla.home.db.changelog.ChangelogService;
 import com.github.krystianmuchla.home.id.SignInController;
 import com.github.krystianmuchla.home.id.SignOutController;
 import com.github.krystianmuchla.home.id.SignUpController;
 import com.github.krystianmuchla.home.mnemo.NoteController;
-import com.github.krystianmuchla.home.mnemo.grave.NoteGraveCleaner;
-import com.github.krystianmuchla.home.mnemo.grave.NoteGraveCleanerConfig;
+import com.github.krystianmuchla.home.mnemo.grave.NoteGraveJob;
+import com.github.krystianmuchla.home.mnemo.grave.NoteGraveJobConfig;
 import com.github.krystianmuchla.home.mnemo.sync.NoteSyncController;
-
-import liquibase.Liquibase;
-import liquibase.database.DatabaseFactory;
-import liquibase.database.jvm.JdbcConnection;
-import liquibase.exception.LiquibaseException;
-import liquibase.resource.ClassLoaderResourceAccessor;
 
 public class App {
     public static void main(final String... args) throws Exception {
-        updateDbSchema();
+        ChangelogService.INSTANCE.update();
         startHttpServer();
-        startSchedulers();
-    }
-
-    private static void updateDbSchema() throws LiquibaseException {
-        final var connection = ConnectionManager.getConnection();
-        final var jdbcConnection = new JdbcConnection(connection);
-        final var database = DatabaseFactory.getInstance().findCorrectDatabaseImplementation(jdbcConnection);
-        final var liquibase = new Liquibase("db-changelog.sql", new ClassLoaderResourceAccessor(), database);
-        liquibase.update();
+        startJobs();
     }
 
     private static void startHttpServer() throws Exception {
@@ -67,14 +53,14 @@ public class App {
         return servletContextHandler;
     }
 
-    private static void startSchedulers() {
-        final var noteGraveCleaner = new NoteGraveCleaner(
-            NoteGraveCleanerConfig.ENABLED,
-            NoteGraveCleanerConfig.RATE,
-            NoteGraveCleanerConfig.RATE_UNIT,
-            NoteGraveCleanerConfig.THRESHOLD,
-            NoteGraveCleanerConfig.RATE_UNIT
+    private static void startJobs() {
+        final var noteGraveJob = new NoteGraveJob(
+            NoteGraveJobConfig.ENABLED,
+            NoteGraveJobConfig.RATE,
+            NoteGraveJobConfig.RATE_UNIT,
+            NoteGraveJobConfig.THRESHOLD,
+            NoteGraveJobConfig.RATE_UNIT
         );
-        new Thread(noteGraveCleaner).start();
+        new Thread(noteGraveJob).start();
     }
 }

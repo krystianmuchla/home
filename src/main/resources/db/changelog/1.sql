@@ -1,6 +1,3 @@
--- liquibase formatted sql
-
--- changeset liquibase:1
 CREATE TABLE note (
     id CHAR(36) PRIMARY KEY,
     user_id CHAR(36) NOT NULL,
@@ -10,19 +7,16 @@ CREATE TABLE note (
     modification_time TIMESTAMP(3) NOT NULL
 );
 
--- changeset liquibase:2
 CREATE TABLE note_grave (
     id CHAR(36) PRIMARY KEY,
     user_id CHAR(36) NOT NULL,
     creation_time TIMESTAMP(3) NOT NULL
 );
 
--- changeset liquibase:3
 CREATE TABLE user (
     id CHAR(36) PRIMARY KEY
 );
 
--- changeset liquibase:4
 CREATE TABLE access_data (
     id CHAR(36) PRIMARY KEY,
     user_id CHAR(36),

@@ -83,7 +83,7 @@ public class NoteDao extends Dao {
         final var result = executeUpdate(
                 "UPDATE note SET " + setters + " WHERE id = ? AND user_id = ?",
                 parameters.values().toArray());
-        return isUpdated(result);
+        return boolResult(result);
     }
 
     public void delete() {
@@ -99,7 +99,7 @@ public class NoteDao extends Dao {
                 "DELETE FROM note WHERE id = ? AND user_id = ?",
                 id.toString(),
                 userId.toString());
-        return isUpdated(result);
+        return boolResult(result);
     }
 
     private Function<ResultSet, Note> mapper() {

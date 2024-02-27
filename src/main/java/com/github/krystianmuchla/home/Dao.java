@@ -48,8 +48,8 @@ public abstract class Dao {
         }
     }
 
-    protected boolean isUpdated(final int updatedRows) {
-        return updatedRows > 0;
+    protected boolean boolResult(final int result) {
+        return result > 0;
     }
 
     protected <T> T singleResult(final List<T> result) {

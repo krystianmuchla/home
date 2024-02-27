@@ -11,7 +11,7 @@ import com.github.krystianmuchla.home.db.Transaction;
 
 import lombok.SneakyThrows;
 
-public class NoteGraveCleaner implements Runnable {
+public class NoteGraveJob implements Runnable {
     private final NoteGraveDao noteGraveDao = NoteGraveDao.INSTANCE;
     private boolean enabled;
     private final int rate;
@@ -19,13 +19,12 @@ public class NoteGraveCleaner implements Runnable {
     private final int threshold;
     private final TemporalUnit thresholdUnit;
 
-    public NoteGraveCleaner(
-        final Boolean enabled,
-        final Integer rate,
-        final ChronoUnit rateUnit,
-        final Integer threshold,
-        final ChronoUnit thresholdUnit
-    ) {
+    public NoteGraveJob(
+            final Boolean enabled,
+            final Integer rate,
+            final ChronoUnit rateUnit,
+            final Integer threshold,
+            final ChronoUnit thresholdUnit) {
         this.enabled = Objects.requireNonNullElse(enabled, true);
         this.rate = Objects.requireNonNullElse(rate, 1);
         this.rateUnit = Objects.requireNonNullElse(rateUnit, ChronoUnit.DAYS);

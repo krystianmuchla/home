@@ -4,7 +4,7 @@ import java.time.temporal.ChronoUnit;
 
 import com.github.krystianmuchla.home.Config;
 
-public class NoteGraveCleanerConfig extends Config {
+public class NoteGraveJobConfig extends Config {
     public static final Boolean ENABLED;
     public static final Integer RATE;
     public static final ChronoUnit RATE_UNIT;
