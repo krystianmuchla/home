@@ -21,4 +21,9 @@ public class AppErrorHandler extends ErrorHandler {
             response.setStatus(500);
         }
     }
+
+    @Override
+    public boolean errorPageForMethod(final String method) {
+        return true;
+    }
 }

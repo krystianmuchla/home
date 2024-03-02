@@ -1,6 +1,18 @@
 package com.github.krystianmuchla.home.mnemo;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.github.krystianmuchla.home.AppContext;
+import com.github.krystianmuchla.home.db.ConnectionManager;
+import com.github.krystianmuchla.home.db.Transaction;
+import com.github.krystianmuchla.home.id.session.SessionManager;
+import com.github.krystianmuchla.home.id.user.User;
+import com.github.krystianmuchla.home.mnemo.grave.NoteGraveDao;
+import jakarta.servlet.http.Cookie;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 
 import java.net.URI;
 import java.net.http.HttpClient;
@@ -12,21 +24,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Test;
-
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.github.krystianmuchla.home.AppContext;
-import com.github.krystianmuchla.home.db.ConnectionManager;
-import com.github.krystianmuchla.home.db.Transaction;
-import com.github.krystianmuchla.home.id.session.SessionManager;
-import com.github.krystianmuchla.home.id.user.User;
-import com.github.krystianmuchla.home.mnemo.grave.NoteGraveDao;
-
-import jakarta.servlet.http.Cookie;
+import static org.assertj.core.api.Assertions.assertThat;
 
 class NoteControllerTest {
     private static User user;
@@ -65,25 +63,26 @@ class NoteControllerTest {
         final var noteContent = "Note content";
         final var client = HttpClient.newHttpClient();
         final var request = HttpRequest.newBuilder()
-                .uri(new URI(AppContext.HOST + "/api/notes"))
-                .header("Content-Type", "application/json")
-                .header("Cookie", cookie)
-                .POST(HttpRequest.BodyPublishers.ofString("""
-                        {
-                          "title": "%s",
-                          "content": "%s"
-                        }
-                        """.formatted(noteTitle, noteContent)))
-                .build();
+            .uri(new URI(AppContext.HOST + "/api/notes"))
+            .header("Content-Type", "application/json")
+            .header("Cookie", cookie)
+            .POST(HttpRequest.BodyPublishers.ofString("""
+                {
+                  "title": "%s",
+                  "content": "%s"
+                }
+                """.formatted(noteTitle, noteContent)))
+            .build();
 
         final var response = client.send(request, HttpResponse.BodyHandlers.ofString());
 
         assertThat(response.statusCode()).isEqualTo(201);
         assertThat(response.headers().firstValue("Content-Type")).isEqualTo(Optional.of("application/json"));
         final var responseBody = new ObjectMapper().readValue(
-                response.body(),
-                new TypeReference<Map<String, Object>>() {
-                });
+            response.body(),
+            new TypeReference<Map<String, Object>>() {
+            }
+        );
         assertThat(responseBody).hasSize(1);
         final var noteId = UUID.fromString((String) responseBody.get("id"));
         final var notes = noteDao.read();
@@ -102,14 +101,15 @@ class NoteControllerTest {
     void shouldNotPostNoteWithoutAuthorization() throws Exception {
         final var client = HttpClient.newHttpClient();
         final var request = HttpRequest.newBuilder()
-                .uri(new URI(AppContext.HOST + "/api/notes"))
-                .header("Content-Type", "application/json")
-                .POST(HttpRequest.BodyPublishers.ofString("{}"))
-                .build();
+            .uri(new URI(AppContext.HOST + "/api/notes"))
+            .header("Content-Type", "application/json")
+            .POST(HttpRequest.BodyPublishers.ofString("{}"))
+            .build();
 
         final var response = client.send(request, HttpResponse.BodyHandlers.ofString());
 
-        assertThat(response.statusCode()).isGreaterThan(299);
+        assertThat(response.statusCode()).isEqualTo(401);
+        assertThat(response.body()).isEmpty();
     }
 
     @Test
@@ -119,28 +119,34 @@ class NoteControllerTest {
         final var noteContent = "Note content";
         final var noteCreationTime = Instant.parse("2010-10-10T10:10:10.100Z");
         final var noteModificationTime = Instant.parse("2011-11-11T11:11:11.111Z");
-        Transaction.run(() -> noteDao.create(new Note(
-                noteId,
-                user.id(),
-                noteTitle,
-                noteContent,
-                noteCreationTime,
-                noteModificationTime)));
+        Transaction.run(
+            () -> noteDao.create(
+                new Note(
+                    noteId,
+                    user.id(),
+                    noteTitle,
+                    noteContent,
+                    noteCreationTime,
+                    noteModificationTime
+                )
+            )
+        );
         final var client = HttpClient.newHttpClient();
         final var request = HttpRequest.newBuilder()
-                .uri(new URI(AppContext.HOST + "/api/notes/" + noteId))
-                .header("Cookie", cookie)
-                .GET()
-                .build();
+            .uri(new URI(AppContext.HOST + "/api/notes/" + noteId))
+            .header("Cookie", cookie)
+            .GET()
+            .build();
 
         final var response = client.send(request, HttpResponse.BodyHandlers.ofString());
 
         assertThat(response.statusCode()).isEqualTo(200);
         assertThat(response.headers().firstValue("Content-Type")).isEqualTo(Optional.of("application/json"));
         final var note = new ObjectMapper().readValue(
-                response.body(),
-                new TypeReference<Map<String, Object>>() {
-                });
+            response.body(),
+            new TypeReference<Map<String, Object>>() {
+            }
+        );
         assertThat(note.get("id")).isEqualTo(noteId.toString());
         assertThat(note.get("title")).isEqualTo(noteTitle);
         assertThat(note.get("content")).isEqualTo(noteContent);
@@ -156,19 +162,24 @@ class NoteControllerTest {
         final var noteContent = "Note content";
         final var noteCreationTime = Instant.parse("2010-10-10T10:10:10.100Z");
         final var noteModificationTime = Instant.parse("2011-11-11T11:11:11.111Z");
-        Transaction.run(() -> noteDao.create(new Note(
-                noteId,
-                userId,
-                noteTitle,
-                noteContent,
-                noteCreationTime,
-                noteModificationTime)));
+        Transaction.run(
+            () -> noteDao.create(
+                new Note(
+                    noteId,
+                    userId,
+                    noteTitle,
+                    noteContent,
+                    noteCreationTime,
+                    noteModificationTime
+                )
+            )
+        );
         final var client = HttpClient.newHttpClient();
         final var request = HttpRequest.newBuilder()
-                .uri(new URI(AppContext.HOST + "/api/notes/" + noteId))
-                .header("Cookie", cookie)
-                .GET()
-                .build();
+            .uri(new URI(AppContext.HOST + "/api/notes/" + noteId))
+            .header("Cookie", cookie)
+            .GET()
+            .build();
 
         final var response = client.send(request, HttpResponse.BodyHandlers.ofString());
 
@@ -179,13 +190,14 @@ class NoteControllerTest {
     void shouldNotGetNoteWithoutAuthorization() throws Exception {
         final var client = HttpClient.newHttpClient();
         final var request = HttpRequest.newBuilder()
-                .uri(new URI(AppContext.HOST + "/api/notes/" + UUID.fromString("17e3721e-d7b0-43f2-9f84-b5b7299525bb")))
-                .GET()
-                .build();
+            .uri(new URI(AppContext.HOST + "/api/notes/" + UUID.fromString("17e3721e-d7b0-43f2-9f84-b5b7299525bb")))
+            .GET()
+            .build();
 
         final var response = client.send(request, HttpResponse.BodyHandlers.ofString());
 
-        assertThat(response.statusCode()).isGreaterThan(299);
+        assertThat(response.statusCode()).isEqualTo(401);
+        assertThat(response.body()).isEmpty();
     }
 
     @Test
@@ -195,28 +207,34 @@ class NoteControllerTest {
         final var noteContent = "Note content";
         final var noteCreationTime = Instant.parse("2010-10-10T10:10:10.100Z");
         final var noteModificationTime = Instant.parse("2011-11-11T11:11:11.111Z");
-        Transaction.run(() -> noteDao.create(new Note(
-                noteId,
-                user.id(),
-                noteTitle,
-                noteContent,
-                noteCreationTime,
-                noteModificationTime)));
+        Transaction.run(
+            () -> noteDao.create(
+                new Note(
+                    noteId,
+                    user.id(),
+                    noteTitle,
+                    noteContent,
+                    noteCreationTime,
+                    noteModificationTime
+                )
+            )
+        );
         final var client = HttpClient.newHttpClient();
         final var request = HttpRequest.newBuilder()
-                .uri(new URI(AppContext.HOST + "/api/notes"))
-                .header("Cookie", cookie)
-                .GET()
-                .build();
+            .uri(new URI(AppContext.HOST + "/api/notes"))
+            .header("Cookie", cookie)
+            .GET()
+            .build();
 
         final var response = client.send(request, HttpResponse.BodyHandlers.ofString());
 
         assertThat(response.statusCode()).isEqualTo(200);
         assertThat(response.headers().firstValue("Content-Type")).isEqualTo(Optional.of("application/json"));
         final var responseBody = new ObjectMapper().readValue(
-                response.body(),
-                new TypeReference<Map<String, Object>>() {
-                });
+            response.body(),
+            new TypeReference<Map<String, Object>>() {
+            }
+        );
         assertThat(responseBody).hasSize(2).containsKey("pagination");
         final var data = (List<Map<String, Object>>) responseBody.get("data");
         assertThat(data).hasSize(1);
@@ -236,28 +254,34 @@ class NoteControllerTest {
         final var noteContent = "Note content";
         final var noteCreationTime = Instant.parse("2010-10-10T10:10:10.100Z");
         final var noteModificationTime = Instant.parse("2011-11-11T11:11:11.111Z");
-        Transaction.run(() -> noteDao.create(new Note(
-                noteId,
-                userId,
-                noteTitle,
-                noteContent,
-                noteCreationTime,
-                noteModificationTime)));
+        Transaction.run(
+            () -> noteDao.create(
+                new Note(
+                    noteId,
+                    userId,
+                    noteTitle,
+                    noteContent,
+                    noteCreationTime,
+                    noteModificationTime
+                )
+            )
+        );
         final var client = HttpClient.newHttpClient();
         final var request = HttpRequest.newBuilder()
-                .uri(new URI(AppContext.HOST + "/api/notes"))
-                .header("Cookie", cookie)
-                .GET()
-                .build();
+            .uri(new URI(AppContext.HOST + "/api/notes"))
+            .header("Cookie", cookie)
+            .GET()
+            .build();
 
         final var response = client.send(request, HttpResponse.BodyHandlers.ofString());
 
         assertThat(response.statusCode()).isEqualTo(200);
         assertThat(response.headers().firstValue("Content-Type")).isEqualTo(Optional.of("application/json"));
         final var responseBody = new ObjectMapper().readValue(
-                response.body(),
-                new TypeReference<Map<String, Object>>() {
-                });
+            response.body(),
+            new TypeReference<Map<String, Object>>() {
+            }
+        );
         assertThat(responseBody).hasSize(2).containsKey("pagination");
         final var data = (List<Map<String, Object>>) responseBody.get("data");
         assertThat(data).hasSize(0);
@@ -267,13 +291,14 @@ class NoteControllerTest {
     void shouldNotGetNotesWithoutAuthorization() throws Exception {
         final var client = HttpClient.newHttpClient();
         final var request = HttpRequest.newBuilder()
-                .uri(new URI(AppContext.HOST + "/api/notes"))
-                .GET()
-                .build();
+            .uri(new URI(AppContext.HOST + "/api/notes"))
+            .GET()
+            .build();
 
         final var response = client.send(request, HttpResponse.BodyHandlers.ofString());
 
-        assertThat(response.statusCode()).isGreaterThan(299);
+        assertThat(response.statusCode()).isEqualTo(401);
+        assertThat(response.body()).isEmpty();
     }
 
     @Test
@@ -281,27 +306,32 @@ class NoteControllerTest {
         final var noteId = UUID.fromString("d4630597-d447-4b81-ab7f-839f839a6931");
         final var noteCreationTime = Instant.parse("2010-10-10T10:10:10.100Z");
         final var noteModificationTime = Instant.parse("2011-11-11T11:11:11.111Z");
-        Transaction.run(() -> noteDao.create(new Note(
-                noteId,
-                user.id(),
-                "Note title",
-                "Note content",
-                noteCreationTime,
-                noteModificationTime)));
+        Transaction.run(
+            () -> noteDao.create(
+                new Note(
+                    noteId,
+                    user.id(),
+                    "Note title",
+                    "Note content",
+                    noteCreationTime,
+                    noteModificationTime
+                )
+            )
+        );
         final var noteTitle = "New note title";
         final var noteContent = "New note content";
         final var client = HttpClient.newHttpClient();
         final var request = HttpRequest.newBuilder()
-                .uri(new URI(AppContext.HOST + "/api/notes/" + noteId))
-                .header("Content-Type", "application/json")
-                .header("Cookie", cookie)
-                .PUT(HttpRequest.BodyPublishers.ofString("""
-                        {
-                          "title": "%s",
-                          "content": "%s"
-                        }
-                        """.formatted(noteTitle, noteContent)))
-                .build();
+            .uri(new URI(AppContext.HOST + "/api/notes/" + noteId))
+            .header("Content-Type", "application/json")
+            .header("Cookie", cookie)
+            .PUT(HttpRequest.BodyPublishers.ofString("""
+                {
+                  "title": "%s",
+                  "content": "%s"
+                }
+                """.formatted(noteTitle, noteContent)))
+            .build();
 
         final var response = client.send(request, HttpResponse.BodyHandlers.ofString());
 
@@ -323,27 +353,32 @@ class NoteControllerTest {
         final var userId = UUID.fromString("20f42fc1-e523-4173-b51f-acc6806fffbd");
         final var noteCreationTime = Instant.parse("2010-10-10T10:10:10.100Z");
         final var noteModificationTime = Instant.parse("2011-11-11T11:11:11.111Z");
-        Transaction.run(() -> noteDao.create(new Note(
-                noteId,
-                userId,
-                "Note title",
-                "Note content",
-                noteCreationTime,
-                noteModificationTime)));
+        Transaction.run(
+            () -> noteDao.create(
+                new Note(
+                    noteId,
+                    userId,
+                    "Note title",
+                    "Note content",
+                    noteCreationTime,
+                    noteModificationTime
+                )
+            )
+        );
         final var noteTitle = "New note title";
         final var noteContent = "New note content";
         final var client = HttpClient.newHttpClient();
         final var request = HttpRequest.newBuilder()
-                .uri(new URI(AppContext.HOST + "/api/notes/" + noteId))
-                .header("Content-Type", "application/json")
-                .header("Cookie", cookie)
-                .PUT(HttpRequest.BodyPublishers.ofString("""
-                        {
-                          "title": "%s",
-                          "content": "%s"
-                        }
-                        """.formatted(noteTitle, noteContent)))
-                .build();
+            .uri(new URI(AppContext.HOST + "/api/notes/" + noteId))
+            .header("Content-Type", "application/json")
+            .header("Cookie", cookie)
+            .PUT(HttpRequest.BodyPublishers.ofString("""
+                {
+                  "title": "%s",
+                  "content": "%s"
+                }
+                """.formatted(noteTitle, noteContent)))
+            .build();
 
         final var response = client.send(request, HttpResponse.BodyHandlers.ofString());
 
@@ -354,33 +389,39 @@ class NoteControllerTest {
     void shouldNotPutNoteWithoutAuthorization() throws Exception {
         final var client = HttpClient.newHttpClient();
         final var request = HttpRequest.newBuilder()
-                .uri(new URI(AppContext.HOST + "/api/notes/" + UUID.fromString("c914474a-6c4c-41c4-99cb-8e1b494878a0")))
-                .header("Content-Type", "application/json")
-                .PUT(HttpRequest.BodyPublishers.ofString("{}"))
-                .build();
+            .uri(new URI(AppContext.HOST + "/api/notes/" + UUID.fromString("c914474a-6c4c-41c4-99cb-8e1b494878a0")))
+            .header("Content-Type", "application/json")
+            .PUT(HttpRequest.BodyPublishers.ofString("{}"))
+            .build();
 
         final var response = client.send(request, HttpResponse.BodyHandlers.ofString());
 
-        assertThat(response.statusCode()).isGreaterThan(299);
+        assertThat(response.statusCode()).isEqualTo(401);
+        assertThat(response.body()).isEmpty();
     }
 
     @Test
     void shouldDeleteNote() throws Exception {
         final var noteId = UUID.fromString("946a95dd-8cb5-4d59-ae7e-101ac3ea715b");
         final var noteModificationTime = Instant.parse("2011-11-11T11:11:11Z");
-        Transaction.run(() -> noteDao.create(new Note(
-                noteId,
-                user.id(),
-                "Note title",
-                "Note content",
-                Instant.parse("2011-11-11T11:11:11Z"),
-                noteModificationTime)));
+        Transaction.run(
+            () -> noteDao.create(
+                new Note(
+                    noteId,
+                    user.id(),
+                    "Note title",
+                    "Note content",
+                    Instant.parse("2011-11-11T11:11:11Z"),
+                    noteModificationTime
+                )
+            )
+        );
         final var client = HttpClient.newHttpClient();
         final var request = HttpRequest.newBuilder()
-                .uri(new URI(AppContext.HOST + "/api/notes/" + noteId))
-                .header("Cookie", cookie)
-                .DELETE()
-                .build();
+            .uri(new URI(AppContext.HOST + "/api/notes/" + noteId))
+            .header("Cookie", cookie)
+            .DELETE()
+            .build();
 
         final var response = client.send(request, HttpResponse.BodyHandlers.ofString());
 
@@ -401,19 +442,24 @@ class NoteControllerTest {
         final var noteId = UUID.fromString("946a95dd-8cb5-4d59-ae7e-101ac3ea715b");
         final var userId = UUID.fromString("36cfee27-1b49-4540-965a-533044f7dbfc");
         final var noteModificationTime = Instant.parse("2011-11-11T11:11:11Z");
-        Transaction.run(() -> noteDao.create(new Note(
-                noteId,
-                userId,
-                "Note title",
-                "Note content",
-                Instant.parse("2011-11-11T11:11:11Z"),
-                noteModificationTime)));
+        Transaction.run(
+            () -> noteDao.create(
+                new Note(
+                    noteId,
+                    userId,
+                    "Note title",
+                    "Note content",
+                    Instant.parse("2011-11-11T11:11:11Z"),
+                    noteModificationTime
+                )
+            )
+        );
         final var client = HttpClient.newHttpClient();
         final var request = HttpRequest.newBuilder()
-                .uri(new URI(AppContext.HOST + "/api/notes/" + noteId))
-                .header("Cookie", cookie)
-                .DELETE()
-                .build();
+            .uri(new URI(AppContext.HOST + "/api/notes/" + noteId))
+            .header("Cookie", cookie)
+            .DELETE()
+            .build();
 
         final var response = client.send(request, HttpResponse.BodyHandlers.ofString());
 
@@ -424,12 +470,13 @@ class NoteControllerTest {
     void shouldNotDeleteNoteWithoutAuthorization() throws Exception {
         final var client = HttpClient.newHttpClient();
         final var request = HttpRequest.newBuilder()
-                .uri(new URI(AppContext.HOST + "/api/notes/" + UUID.fromString("80a13f20-27a7-4706-81b1-17c40bd0555f")))
-                .DELETE()
-                .build();
+            .uri(new URI(AppContext.HOST + "/api/notes/" + UUID.fromString("80a13f20-27a7-4706-81b1-17c40bd0555f")))
+            .DELETE()
+            .build();
 
         final var response = client.send(request, HttpResponse.BodyHandlers.ofString());
 
-        assertThat(response.statusCode()).isGreaterThan(299);
+        assertThat(response.statusCode()).isEqualTo(401);
+        assertThat(response.body()).isEmpty();
     }
 }

@@ -32,7 +32,8 @@ public class NoteController extends Controller {
         final var user = sessionData(request).user();
         final var createNoteRequest = RequestReader.readJson(request, CreateNoteRequest.class);
         final var noteId = Transaction.run(
-                () -> noteService.create(user.id(), createNoteRequest.title(), createNoteRequest.content()));
+            () -> noteService.create(user.id(), createNoteRequest.title(), createNoteRequest.content())
+        );
         ResponseWriter.writeJson(response, new IdResponse<>(noteId));
         response.setStatus(201);
     }
@@ -62,7 +63,8 @@ public class NoteController extends Controller {
         final var user = sessionData(request).user();
         final var updateNoteRequest = RequestReader.readJson(request, UpdateNoteRequest.class);
         Transaction.run(
-                () -> noteService.update(noteId, user.id(), updateNoteRequest.title(), updateNoteRequest.content()));
+            () -> noteService.update(noteId, user.id(), updateNoteRequest.title(), updateNoteRequest.content())
+        );
         response.setStatus(204);
     }
 
