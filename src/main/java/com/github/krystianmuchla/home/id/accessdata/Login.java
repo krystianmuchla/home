@@ -1,26 +1,23 @@
 package com.github.krystianmuchla.home.id.accessdata;
 
+import com.github.krystianmuchla.home.error.exception.validation.ValidationError;
+
 public class Login {
     public static class Validator {
         private static final int MIN_LENGTH = 1;
         private static final int MAX_LENGTH = 50;
 
-        public static Error validate(final String login) {
+        public static ValidationError validate(final String login) {
             if (login == null) {
-                return Error.TOO_SHORT;
+                return ValidationError.nullValue();
             }
             if (login.length() < MIN_LENGTH) {
-                return Error.TOO_SHORT;
+                return ValidationError.belowMinLength(MIN_LENGTH);
             }
             if (login.length() > MAX_LENGTH) {
-                return Error.TOO_LONG;
+                return ValidationError.aboveMaxLength(MAX_LENGTH);
             }
             return null;
         }
-    }
-
-    public static enum Error {
-        TOO_SHORT,
-        TOO_LONG,
     }
 }

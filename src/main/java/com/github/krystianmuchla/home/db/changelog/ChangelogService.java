@@ -16,7 +16,7 @@ public class ChangelogService {
 
     public void update() {
         if (!changelogDao.hasChangelog()) {
-            Transaction.run(() -> changelogDao.createChangelog());
+            Transaction.run(changelogDao::createChangelog);
         }
         final var lastChangeId = changelogDao.getLastChangeId();
         int changeId;
@@ -33,9 +33,7 @@ public class ChangelogService {
             }
             final int finalChangeId = changeId;
             Transaction.run(() -> {
-                statements.forEach(statement -> {
-                    changelogDao.executeUpdate(statement.trim());
-                });
+                statements.forEach(statement -> changelogDao.executeUpdate(statement.trim()));
                 changelogDao.addToChangelog(finalChangeId);
             });
             log.info("Executed database change with id: {}", changeId);

@@ -1,13 +1,7 @@
 package com.github.krystianmuchla.home;
 
-import org.eclipse.jetty.server.Connector;
-import org.eclipse.jetty.server.HttpConfiguration;
-import org.eclipse.jetty.server.HttpConnectionFactory;
-import org.eclipse.jetty.server.Server;
-import org.eclipse.jetty.server.ServerConnector;
-import org.eclipse.jetty.servlet.ServletContextHandler;
-
 import com.github.krystianmuchla.home.db.changelog.ChangelogService;
+import com.github.krystianmuchla.home.error.AppErrorHandler;
 import com.github.krystianmuchla.home.id.SignInController;
 import com.github.krystianmuchla.home.id.SignOutController;
 import com.github.krystianmuchla.home.id.SignUpController;
@@ -15,6 +9,8 @@ import com.github.krystianmuchla.home.mnemo.NoteController;
 import com.github.krystianmuchla.home.mnemo.grave.NoteGraveJob;
 import com.github.krystianmuchla.home.mnemo.grave.NoteGraveJobConfig;
 import com.github.krystianmuchla.home.mnemo.sync.NoteSyncController;
+import org.eclipse.jetty.server.*;
+import org.eclipse.jetty.servlet.ServletContextHandler;
 
 public class App {
     public static void main(final String... args) throws Exception {
@@ -27,6 +23,7 @@ public class App {
         final var server = new Server();
         server.addConnector(createConnector(server));
         server.setHandler(createServletContextHandler());
+        server.setErrorHandler(new AppErrorHandler());
         server.start();
     }
 
@@ -37,8 +34,9 @@ public class App {
     }
 
     private static HttpConnectionFactory createHttpConnectionFactory() {
-        final HttpConfiguration httpConfiguration = new HttpConfiguration();
+        final var httpConfiguration = new HttpConfiguration();
         httpConfiguration.setSendServerVersion(false);
+        httpConfiguration.setSendDateHeader(false);
         return new HttpConnectionFactory(httpConfiguration);
     }
 

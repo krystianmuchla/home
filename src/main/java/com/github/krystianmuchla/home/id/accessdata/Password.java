@@ -1,5 +1,7 @@
 package com.github.krystianmuchla.home.id.accessdata;
 
+import com.github.krystianmuchla.home.error.exception.validation.ValidationError;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -13,36 +15,32 @@ public class Password {
         private static final String SPECIAL = "`~!@#$%^&*()-_=+[{]};:'\"\\|,<.>/? ";
         private static final String ALL = LOWER_CASE + UPPER_CASE + DIGIT + SPECIAL;
 
-        public static List<Error> validate(final String password) {
-            final var errors = new ArrayList<Error>();
+        public static List<ValidationError> validate(final String password) {
+            final var errors = new ArrayList<ValidationError>();
             if (password == null) {
-                errors.add(Error.TOO_SHORT);
-                errors.add(Error.NO_LOWER_CASE);
-                errors.add(Error.NO_UPPER_CASE);
-                errors.add(Error.NO_DIGIT);
-                errors.add(Error.NO_SPECIAL);
+                errors.add(ValidationError.nullValue());
                 return errors;
             }
             if (password.length() < MIN_LENGTH) {
-                errors.add(Error.TOO_SHORT);
+                errors.add(ValidationError.belowMinLength(MIN_LENGTH));
             }
             if (password.length() > MAX_LENGTH) {
-                errors.add(Error.TOO_LONG);
+                errors.add(ValidationError.aboveMaxLength(MAX_LENGTH));
             }
             if (!containsAny(password, LOWER_CASE.toCharArray())) {
-                errors.add(Error.NO_LOWER_CASE);
+                errors.add(new ValidationError(Error.NO_LOWER_CASE));
             }
             if (!containsAny(password, UPPER_CASE.toCharArray())) {
-                errors.add(Error.NO_UPPER_CASE);
+                errors.add(new ValidationError(Error.NO_UPPER_CASE));
             }
             if (!containsAny(password, DIGIT.toCharArray())) {
-                errors.add(Error.NO_DIGIT);
+                errors.add(new ValidationError(Error.NO_DIGIT));
             }
             if (!containsAny(password, SPECIAL.toCharArray())) {
-                errors.add(Error.NO_SPECIAL);
+                errors.add(new ValidationError(Error.NO_SPECIAL));
             }
             if (!containsOnly(password, ALL.toCharArray())) {
-                errors.add(Error.INVALID_CHARACTER);
+                errors.add(new ValidationError(Error.INVALID_CHARACTER));
             }
             return errors;
         }
@@ -80,13 +78,11 @@ public class Password {
         }
     }
 
-    public static enum Error {
-        TOO_SHORT,
-        TOO_LONG,
+    public enum Error {
         NO_LOWER_CASE,
         NO_UPPER_CASE,
         NO_DIGIT,
         NO_SPECIAL,
-        INVALID_CHARACTER;
+        INVALID_CHARACTER
     }
 }

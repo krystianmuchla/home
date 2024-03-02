@@ -1,16 +1,15 @@
 package com.github.krystianmuchla.home.mnemo;
 
+import com.github.krystianmuchla.home.InstantFactory;
+import com.github.krystianmuchla.home.mnemo.grave.NoteGrave;
+import com.github.krystianmuchla.home.mnemo.sync.NoteRequest;
+
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.Instant;
 import java.util.UUID;
 
-import com.github.krystianmuchla.home.InstantFactory;
-import com.github.krystianmuchla.home.mnemo.grave.NoteGrave;
-import com.github.krystianmuchla.home.mnemo.sync.NoteRequest;
-
 public record Note(UUID id, UUID userId, String title, String content, Instant creationTime, Instant modificationTime) {
-
     public static final int TITLE_MAX_LENGTH = 255;
     public static final int CONTENT_MAX_LENGTH = 65535;
 
@@ -38,30 +37,33 @@ public record Note(UUID id, UUID userId, String title, String content, Instant c
 
     public Note(final UUID userId, final NoteRequest request) {
         this(
-                request.id(),
-                userId,
-                request.title(),
-                request.content(),
-                request.creationTime().toInstant(),
-                request.modificationTime().toInstant());
+            request.id(),
+            userId,
+            request.title(),
+            request.content(),
+            request.creationTime().toInstant(),
+            request.modificationTime().toInstant()
+        );
     }
 
     public Note(final ResultSet resultSet) throws SQLException {
         this(
-                UUID.fromString(resultSet.getString("id")),
-                UUID.fromString(resultSet.getString("user_id")),
-                resultSet.getString("title"),
-                resultSet.getString("content"),
-                InstantFactory.create(resultSet.getTimestamp("creation_time")),
-                InstantFactory.create(resultSet.getTimestamp("modification_time")));
+            UUID.fromString(resultSet.getString("id")),
+            UUID.fromString(resultSet.getString("user_id")),
+            resultSet.getString("title"),
+            resultSet.getString("content"),
+            InstantFactory.create(resultSet.getTimestamp("creation_time")),
+            InstantFactory.create(resultSet.getTimestamp("modification_time"))
+        );
     }
 
     public Note(
-            final UUID id,
-            final UUID userId,
-            final String title,
-            final String content,
-            final Instant creationTime) {
+        final UUID id,
+        final UUID userId,
+        final String title,
+        final String content,
+        final Instant creationTime
+    ) {
         this(id, userId, title, content, creationTime, creationTime);
     }
 

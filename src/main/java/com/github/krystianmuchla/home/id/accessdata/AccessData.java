@@ -6,10 +6,12 @@ import java.util.UUID;
 
 public record AccessData(UUID id, UUID user_id, String login, byte[] salt, byte[] secret) {
     public AccessData(ResultSet resultSet) throws SQLException {
-        this(UUID.fromString(resultSet.getString("id")),
-                UUID.fromString(resultSet.getString("user_id")),
-                resultSet.getString("login"),
-                resultSet.getBytes("salt"),
-                resultSet.getBytes("secret"));
+        this(
+            UUID.fromString(resultSet.getString("id")),
+            UUID.fromString(resultSet.getString("user_id")),
+            resultSet.getString("login"),
+            resultSet.getBytes("salt"),
+            resultSet.getBytes("secret")
+        );
     }
 }
