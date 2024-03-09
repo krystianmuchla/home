@@ -183,7 +183,8 @@ class NoteControllerTest {
 
         final var response = client.send(request, HttpResponse.BodyHandlers.ofString());
 
-        assertThat(response.statusCode()).isGreaterThan(299);
+        assertThat(response.statusCode()).isEqualTo(404);
+        assertThat(response.body()).isEmpty();
     }
 
     @Test
@@ -382,7 +383,8 @@ class NoteControllerTest {
 
         final var response = client.send(request, HttpResponse.BodyHandlers.ofString());
 
-        assertThat(response.statusCode()).isGreaterThan(299);
+        assertThat(response.statusCode()).isEqualTo(404);
+        assertThat(response.body()).isEmpty();
     }
 
     @Test
@@ -463,7 +465,8 @@ class NoteControllerTest {
 
         final var response = client.send(request, HttpResponse.BodyHandlers.ofString());
 
-        assertThat(response.statusCode()).isGreaterThan(299);
+        assertThat(response.statusCode()).isEqualTo(404);
+        assertThat(response.body()).isEmpty();
     }
 
     @Test

@@ -1,8 +1,9 @@
 package com.github.krystianmuchla.home.db;
 
-import java.util.function.Supplier;
-
+import com.github.krystianmuchla.home.error.exception.TransactionException;
 import lombok.SneakyThrows;
+
+import java.util.function.Supplier;
 
 public class Transaction {
     public static void run(final Runnable runnable) {
@@ -21,7 +22,7 @@ public class Transaction {
             return result;
         } catch (final Exception exception) {
             connection.rollback();
-            throw new RuntimeException(exception);
+            throw new TransactionException(exception);
         }
     }
 }

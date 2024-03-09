@@ -12,6 +12,7 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import com.github.krystianmuchla.home.db.ConnectionManager;
+import com.github.krystianmuchla.home.error.exception.InternalException;
 import com.github.krystianmuchla.home.pagination.PaginatedResult;
 import com.github.krystianmuchla.home.pagination.Pagination;
 import com.github.krystianmuchla.home.pagination.PaginationResult;
@@ -32,7 +33,9 @@ public abstract class Dao {
             }
             final var resultSet = preparedStatement.executeQuery();
             final var result = new ArrayList<T>();
-            while (resultSet.next()) result.add(mapper.apply(resultSet));
+            while (resultSet.next()) {
+                result.add(mapper.apply(resultSet));
+            }
             return result;
         }
     }
@@ -53,15 +56,21 @@ public abstract class Dao {
     }
 
     protected <T> T singleResult(final List<T> result) {
-        if (result.isEmpty()) return null;
-        if (result.size() == 1) return result.getFirst();
-        throw new RuntimeException("Could not resolve single result");
+        if (result.isEmpty()) {
+            return null;
+        }
+        if (result.size() == 1) {
+            return result.getFirst();
+        }
+        throw new InternalException("Could not resolve single result");
     }
 
     protected <T> PaginatedResult<T> paginatedResult(final Pagination pagination, final List<T> result) {
         final var fetchedElements = result.size();
         final var next = fetchedElements > pagination.pageSize();
-        if (next) result.removeLast();
+        if (next) {
+            result.removeLast();
+        }
         final var paginationResult = new PaginationResult(next, pagination.pageNumber() > 1);
         return new PaginatedResult<>(result, paginationResult);
     }

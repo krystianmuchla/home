@@ -1,25 +1,21 @@
 package com.github.krystianmuchla.home.id.session;
 
+import com.github.krystianmuchla.home.id.SecureRandomFactory;
+import com.github.krystianmuchla.home.id.user.User;
+import jakarta.servlet.http.Cookie;
+
 import java.util.Base64;
-import java.util.Base64.Encoder;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
-import com.github.krystianmuchla.home.id.SecureRandomFactory;
-import com.github.krystianmuchla.home.id.user.User;
-
-import jakarta.servlet.http.Cookie;
-
 public class SessionManager {
     private static final int TOKEN_BYTES;
     private static final Map<SessionId, SessionData> SESSIONS;
-    private static final Encoder ENCODER;
 
     static {
         TOKEN_BYTES = 32;
         SESSIONS = Collections.synchronizedMap(new HashMap<>());
-        ENCODER = Base64.getEncoder();
     }
 
     public static Cookie[] createSession(final String login, final User user) {
@@ -33,7 +29,7 @@ public class SessionManager {
         final SessionId sessionId;
         try {
             sessionId = SessionId.from(cookies);
-        } catch (final IllegalArgumentException exception) {
+        } catch (final Exception exception) {
             return null;
         }
         return SESSIONS.get(sessionId);
@@ -46,6 +42,6 @@ public class SessionManager {
 
     private static String generateToken() {
         final var token = SecureRandomFactory.create(TOKEN_BYTES);
-        return ENCODER.encodeToString(token);
+        return Base64.getEncoder().encodeToString(token);
     }
 }

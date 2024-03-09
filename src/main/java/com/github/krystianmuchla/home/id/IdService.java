@@ -6,6 +6,8 @@ import java.util.UUID;
 import javax.crypto.SecretKeyFactory;
 import javax.crypto.spec.PBEKeySpec;
 
+import com.github.krystianmuchla.home.error.exception.AuthorizationException;
+import com.github.krystianmuchla.home.error.exception.ConflictException;
 import com.github.krystianmuchla.home.id.accessdata.AccessData;
 import com.github.krystianmuchla.home.id.accessdata.AccessDataDao;
 import com.github.krystianmuchla.home.id.user.User;
@@ -33,7 +35,7 @@ public class IdService {
     public User createUser(final String login, final String password) {
         var accessData = accessDataDao.readByLogin(login);
         if (accessData != null) {
-            throw new IllegalArgumentException();
+            throw new ConflictException("USER_ALREADY_EXISTS");
         }
         final var user = new User(UUID.randomUUID());
         userDao.create(user);
@@ -47,11 +49,11 @@ public class IdService {
     public User getUser(final String login, final String password) {
         final var accessData = accessDataDao.readByLogin(login);
         if (accessData == null) {
-            throw new IllegalArgumentException();
+            throw new AuthorizationException();
         }
         final var secret = createSecret(accessData.salt(), password);
         if (!Arrays.equals(secret, accessData.secret())) {
-            throw new IllegalArgumentException();
+            throw new AuthorizationException();
         }
         return userDao.readById(accessData.user_id());
     }

@@ -1,8 +1,9 @@
 package com.github.krystianmuchla.home.id.session;
 
-import java.util.Objects;
-
+import com.github.krystianmuchla.home.error.exception.AuthorizationException;
 import jakarta.servlet.http.Cookie;
+
+import java.util.Objects;
 
 public record SessionId(String login, String token) {
     public Cookie[] asCookies() {
@@ -13,20 +14,21 @@ public record SessionId(String login, String token) {
     }
 
     public static SessionId from(final Cookie[] cookies) {
-        var cookie = findCookie(cookies, "login");
-        if (cookie == null) {
-            throw new IllegalArgumentException();
+        final var login = findCookie(cookies, "login");
+        if (login == null) {
+            throw new AuthorizationException();
         }
-        final var login = cookie.getValue();
-        cookie = findCookie(cookies, "token");
-        if (cookie == null) {
-            throw new IllegalArgumentException();
+        final var token = findCookie(cookies, "token");
+        if (token == null) {
+            throw new AuthorizationException();
         }
-        final var token = cookie.getValue();
-        return new SessionId(login, token);
+        return new SessionId(login.getValue(), token.getValue());
     }
 
     private static Cookie findCookie(final Cookie[] cookies, final String name) {
+        if (cookies == null) {
+            return null;
+        }
         for (final var cookie : cookies) {
             if (Objects.equals(name, cookie.getName())) {
                 return cookie;

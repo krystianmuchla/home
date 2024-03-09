@@ -47,7 +47,7 @@ public class NoteController extends Controller {
             final var paginatedResult = noteDao.read(user.id(), new Pagination(paginationRequest));
             ResponseWriter.writeJson(response, new PaginatedResponse<>(paginatedResult, NoteResponse::new));
         } else {
-            final var note = noteDao.read(noteId, user.id());
+            final var note = noteService.read(noteId, user.id());
             ResponseWriter.writeJson(response, new NoteResponse(note));
         }
     }

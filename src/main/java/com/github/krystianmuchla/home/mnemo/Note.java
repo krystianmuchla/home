@@ -1,6 +1,7 @@
 package com.github.krystianmuchla.home.mnemo;
 
 import com.github.krystianmuchla.home.InstantFactory;
+import com.github.krystianmuchla.home.error.exception.InternalException;
 import com.github.krystianmuchla.home.mnemo.grave.NoteGrave;
 import com.github.krystianmuchla.home.mnemo.sync.NoteRequest;
 
@@ -15,19 +16,19 @@ public record Note(UUID id, UUID userId, String title, String content, Instant c
 
     public Note {
         if (id == null) {
-            throw new IllegalArgumentException("Id cannot be null");
+            throw new InternalException("Id cannot be null");
         }
         if (userId == null) {
-            throw new IllegalArgumentException("User id cannot be null");
+            throw new InternalException("User id cannot be null");
         }
         if (title != null && title.length() > TITLE_MAX_LENGTH) {
-            throw new IllegalArgumentException("Note title exceeded max length of " + TITLE_MAX_LENGTH);
+            throw new InternalException("Note title exceeded max length of " + TITLE_MAX_LENGTH);
         }
         if (content != null && content.length() > CONTENT_MAX_LENGTH) {
-            throw new IllegalArgumentException("Note content exceeded max length of " + CONTENT_MAX_LENGTH);
+            throw new InternalException("Note content exceeded max length of " + CONTENT_MAX_LENGTH);
         }
         if (modificationTime == null) {
-            throw new IllegalArgumentException("Modification time cannot be null");
+            throw new InternalException("Modification time cannot be null");
         }
     }
 
