@@ -21,7 +21,7 @@ public class UserDao extends Dao {
     }
 
     private Function<ResultSet, User> mapper() {
-        return new Function<ResultSet, User>() {
+        return new Function<>() {
             @Override
             @SneakyThrows
             public User apply(final ResultSet resultSet) {

@@ -40,10 +40,8 @@ application {
         '-Ddatabase.user=root',
         '-Ddatabase.password=root',
         '-Dnote-grave-cleaner.enabled=false',
-        '-Dnote-grave-cleaner.rate=10',
-        '-Dnote-grave-cleaner.rate-unit=SECONDS',
-        '-Dnote-grave-cleaner.threshold=1',
-        '-Dnote-grave-cleaner.threshold-unit=MINUTES'
+        '-Dnote-grave-cleaner.rate=PT30S',
+        '-Dnote-grave-cleaner.threshold=PT1M',
     ]
     mainClass = 'com.github.krystianmuchla.home.App'
 }

@@ -39,8 +39,8 @@ public class IdService {
         }
         final var user = new User(UUID.randomUUID());
         userDao.create(user);
-        final var salt = SecureRandomFactory.create(SALT_BYTES);
-        final var secret = createSecret(salt, password);
+        final var salt = SecureRandomFactory.createBytes(SALT_BYTES);
+        final var secret = secret(salt, password);
         accessData = new AccessData(UUID.randomUUID(), user.id(), login, salt, secret);
         accessDataDao.create(accessData);
         return user;
@@ -51,7 +51,7 @@ public class IdService {
         if (accessData == null) {
             throw new AuthorizationException();
         }
-        final var secret = createSecret(accessData.salt(), password);
+        final var secret = secret(accessData.salt(), password);
         if (!Arrays.equals(secret, accessData.secret())) {
             throw new AuthorizationException();
         }
@@ -59,8 +59,8 @@ public class IdService {
     }
 
     @SneakyThrows
-    private byte[] createSecret(final byte[] salt, final String password) {
-        final var keySpec = new PBEKeySpec(password.toCharArray(), salt, 600000, SECRET_BYTES * 8);
+    private byte[] secret(final byte[] salt, final String password) {
+        final var keySpec = new PBEKeySpec(password.toCharArray(), salt, 65536, SECRET_BYTES * 8);
         return secretFactory.generateSecret(keySpec).getEncoded();
     }
 }

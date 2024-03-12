@@ -2,12 +2,13 @@ package com.github.krystianmuchla.home;
 
 import com.github.krystianmuchla.home.db.changelog.ChangelogService;
 import com.github.krystianmuchla.home.error.AppErrorHandler;
+import com.github.krystianmuchla.home.id.InitSignUpController;
 import com.github.krystianmuchla.home.id.SignInController;
 import com.github.krystianmuchla.home.id.SignOutController;
 import com.github.krystianmuchla.home.id.SignUpController;
 import com.github.krystianmuchla.home.mnemo.NoteController;
-import com.github.krystianmuchla.home.mnemo.grave.NoteGraveJob;
-import com.github.krystianmuchla.home.mnemo.grave.NoteGraveJobConfig;
+import com.github.krystianmuchla.home.mnemo.grave.NoteGraveCleaner;
+import com.github.krystianmuchla.home.mnemo.grave.NoteGraveCleanerConfig;
 import com.github.krystianmuchla.home.mnemo.sync.NoteSyncController;
 import org.eclipse.jetty.server.*;
 import org.eclipse.jetty.servlet.ServletContextHandler;
@@ -36,13 +37,13 @@ public class App {
     private static HttpConnectionFactory createHttpConnectionFactory() {
         final var httpConfiguration = new HttpConfiguration();
         httpConfiguration.setSendServerVersion(false);
-        httpConfiguration.setSendDateHeader(false);
         return new HttpConnectionFactory(httpConfiguration);
     }
 
     private static ServletContextHandler createServletContextHandler() {
         final var servletContextHandler = new ServletContextHandler();
         servletContextHandler.addServlet(HealthController.class, HealthController.PATH);
+        servletContextHandler.addServlet(InitSignUpController.class, InitSignUpController.PATH);
         servletContextHandler.addServlet(NoteController.class, NoteController.PATH);
         servletContextHandler.addServlet(NoteSyncController.class, NoteSyncController.PATH);
         servletContextHandler.addServlet(SignInController.class, SignInController.PATH);
@@ -52,13 +53,11 @@ public class App {
     }
 
     private static void startJobs() {
-        final var noteGraveJob = new NoteGraveJob(
-            NoteGraveJobConfig.ENABLED,
-            NoteGraveJobConfig.RATE,
-            NoteGraveJobConfig.RATE_UNIT,
-            NoteGraveJobConfig.THRESHOLD,
-            NoteGraveJobConfig.RATE_UNIT
+        final var noteGraveCleaner = new NoteGraveCleaner(
+            NoteGraveCleanerConfig.ENABLED,
+            NoteGraveCleanerConfig.RATE,
+            NoteGraveCleanerConfig.THRESHOLD
         );
-        new Thread(noteGraveJob).start();
+        new Thread(noteGraveCleaner).start();
     }
 }

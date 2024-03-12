@@ -4,8 +4,8 @@ import com.github.krystianmuchla.home.api.Controller;
 import com.github.krystianmuchla.home.api.RequestReader;
 import com.github.krystianmuchla.home.api.ResponseWriter;
 import com.github.krystianmuchla.home.db.Transaction;
+import com.github.krystianmuchla.home.error.exception.AuthorizationException;
 import com.github.krystianmuchla.home.id.session.SessionManager;
-
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.SneakyThrows;
@@ -19,6 +19,10 @@ public class SignUpController extends Controller {
     @SneakyThrows
     protected void doPost(final HttpServletRequest request, HttpServletResponse response) {
         final var signUpRequest = RequestReader.readJson(request, SignUpRequest.class);
+        final var tokenValid = SignUpToken.INSTANCE.test(signUpRequest.token());
+        if (!tokenValid) {
+            throw new AuthorizationException();
+        }
         final var userId = Transaction.run(() -> idService.createUser(signUpRequest.login(), signUpRequest.password()));
         final var cookies = SessionManager.createSession(signUpRequest.login(), userId);
         ResponseWriter.addCookies(response, cookies);

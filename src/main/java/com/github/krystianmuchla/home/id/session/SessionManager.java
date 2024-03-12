@@ -41,7 +41,7 @@ public class SessionManager {
     }
 
     private static String generateToken() {
-        final var token = SecureRandomFactory.create(TOKEN_BYTES);
+        final var token = SecureRandomFactory.createBytes(TOKEN_BYTES);
         return Base64.getEncoder().encodeToString(token);
     }
 }
