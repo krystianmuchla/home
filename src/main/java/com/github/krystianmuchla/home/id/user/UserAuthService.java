@@ -50,7 +50,7 @@ public class UserAuthService {
         return new Thread(() -> {
             do {
                 try {
-                    Thread.sleep(Duration.ofMinutes(1)); // todo
+                    Thread.sleep(Duration.ofMinutes(5));
                 } catch (final InterruptedException exception) {
                     throw new InternalException(exception);
                 }
