@@ -23,7 +23,7 @@ public class ValidationException extends RuntimeException implements AppError {
 
     @Override
     @SneakyThrows
-    public void accept(final HttpServletResponse response) {
+    public void handle(final HttpServletResponse response) {
         response.setStatus(400);
         ResponseWriter.writeJson(response, Map.of("invalidParameters", errors));
     }

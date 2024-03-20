@@ -17,7 +17,7 @@ public class ConflictException extends RuntimeException implements AppError {
 
     @Override
     @SneakyThrows
-    public void accept(final HttpServletResponse response) {
+    public void handle(HttpServletResponse response) {
         response.setStatus(409);
         ResponseWriter.writeJson(response, Map.of("error", error));
     }

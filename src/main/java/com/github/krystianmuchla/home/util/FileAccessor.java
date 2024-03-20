@@ -1,4 +1,4 @@
-package com.github.krystianmuchla.home;
+package com.github.krystianmuchla.home.util;
 
 import java.io.File;
 import java.util.ArrayList;

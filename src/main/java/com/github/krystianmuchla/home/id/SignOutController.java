@@ -1,9 +1,7 @@
 package com.github.krystianmuchla.home.id;
 
 import com.github.krystianmuchla.home.api.Controller;
-import com.github.krystianmuchla.home.api.RequestReader;
-import com.github.krystianmuchla.home.id.session.SessionManager;
-
+import com.github.krystianmuchla.home.id.session.SessionService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
@@ -12,8 +10,8 @@ public class SignOutController extends Controller {
 
     @Override
     protected void doDelete(final HttpServletRequest request, final HttpServletResponse response) {
-        final var cookies = RequestReader.readCookies(request);
-        SessionManager.removeSession(cookies);
+        final var sessionId = sessionId(request);
+        SessionService.removeSession(sessionId);
         response.setStatus(204);
     }
 }

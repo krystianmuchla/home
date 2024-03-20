@@ -8,8 +8,12 @@ public class InternalException extends RuntimeException implements AppError {
         super(message);
     }
 
+    public InternalException(final Throwable cause) {
+        super(cause);
+    }
+
     @Override
-    public void accept(final HttpServletResponse response) {
+    public void handle(HttpServletResponse response) {
         response.setStatus(500);
     }
 }

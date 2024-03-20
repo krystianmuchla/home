@@ -5,14 +5,15 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.krystianmuchla.home.AppContext;
 import com.github.krystianmuchla.home.api.ObjectMapperHolder;
 import com.github.krystianmuchla.home.db.Transaction;
-import com.github.krystianmuchla.home.id.session.SessionManager;
+import com.github.krystianmuchla.home.id.session.SessionId;
+import com.github.krystianmuchla.home.id.session.SessionService;
 import com.github.krystianmuchla.home.id.user.User;
+import com.github.krystianmuchla.home.id.user.UserService;
 import com.github.krystianmuchla.home.mnemo.Note;
-import com.github.krystianmuchla.home.mnemo.NoteDao;
 import com.github.krystianmuchla.home.mnemo.NoteResponse;
+import com.github.krystianmuchla.home.mnemo.NoteSql;
 import com.github.krystianmuchla.home.mnemo.grave.NoteGrave;
-import com.github.krystianmuchla.home.mnemo.grave.NoteGraveDao;
-import jakarta.servlet.http.Cookie;
+import com.github.krystianmuchla.home.mnemo.grave.NoteGraveSql;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
@@ -32,33 +33,30 @@ import static org.assertj.core.api.Assertions.assertThat;
 class NoteSyncControllerTest {
     private static ObjectMapper objectMapper;
     private static User user;
-    private static Cookie[] cookies;
+    private static SessionId sessionId;
     private static String cookie;
-    private static NoteDao noteDao;
-    private static NoteGraveDao noteGraveDao;
 
     @BeforeAll
     static void beforeAllTests() {
         AppContext.init();
-        noteDao = NoteDao.INSTANCE;
-        noteGraveDao = NoteGraveDao.INSTANCE;
         objectMapper = ObjectMapperHolder.INSTANCE;
-        user = new User(UUID.fromString("5b55e2c9-1fb4-4128-a5a4-9c1597fdfe19"));
-        cookies = SessionManager.createSession("test", user);
-        cookie = "login=%s; token=%s".formatted(cookies[0].getValue(), cookies[1].getValue());
+        final var login = "test";
+        user = Transaction.run(() -> UserService.createUser(login, "zaq1@WSX"));
+        sessionId = SessionService.createSession(login, user);
+        cookie = "login=%s; token=%s".formatted(sessionId.login(), sessionId.token());
     }
 
     @AfterEach
     void afterEachTest() {
         Transaction.run(() -> {
-            noteDao.delete();
-            noteGraveDao.delete();
+            NoteSql.delete();
+            NoteGraveSql.delete();
         });
     }
 
     @AfterAll
     static void afterAllTests() {
-        SessionManager.removeSession(cookies);
+        SessionService.removeSession(sessionId);
     }
 
     @Test
@@ -102,7 +100,7 @@ class NoteSyncControllerTest {
             }
         );
         assertThat(notesResponse).hasSize(0);
-        final var notesDb = noteDao.read();
+        final var notesDb = NoteSql.read();
         assertThat(notesDb).hasSize(1);
         final var noteDb = notesDb.get(0);
         assertThat(noteDb.id()).isEqualTo(UUID.fromString("4d8af443-bfa9-4d47-a886-b1ddc82a958d"));
@@ -111,14 +109,14 @@ class NoteSyncControllerTest {
         assertThat(noteDb.content()).isEqualTo("External note content");
         assertThat(noteDb.creationTime()).isEqualTo(Instant.parse("2010-10-10T10:10:10Z"));
         assertThat(noteDb.modificationTime()).isEqualTo(Instant.parse("2010-10-10T10:10:10Z"));
-        final var noteGravesDb = noteGraveDao.read();
+        final var noteGravesDb = NoteGraveSql.read();
         assertThat(noteGravesDb).hasSize(0);
     }
 
     @Test
     void shouldOverwriteInternalNotes() throws Exception {
         Transaction.run(() -> {
-            noteDao.create(
+            NoteSql.create(
                 new Note(
                     UUID.fromString("6765b952-1db7-40ae-938c-51b49cac69ed"),
                     user.id(),
@@ -134,7 +132,7 @@ class NoteSyncControllerTest {
                     Instant.parse("2010-10-10T10:10:10Z")
                 )
             );
-            noteGraveDao.create(
+            NoteGraveSql.create(
                 new NoteGrave(
                     UUID.fromString("292e3117-59f1-4374-afe8-d8b751e0b6e3"),
                     user.id(),
@@ -200,7 +198,7 @@ class NoteSyncControllerTest {
             }
         );
         assertThat(notesResponse).hasSize(0);
-        final var notesDb = noteDao.read();
+        final var notesDb = NoteSql.read();
         assertThat(notesDb).hasSize(2);
         assertThat(notesDb.get(0).id()).isEqualTo(UUID.fromString("65b276f5-417d-458b-ad2c-0c6ffa7f5488"));
         assertThat(notesDb.get(0).userId()).isEqualTo(user.id());
@@ -214,7 +212,7 @@ class NoteSyncControllerTest {
         assertThat(notesDb.get(1).content()).isEqualTo("External note content");
         assertThat(notesDb.get(1).creationTime()).isEqualTo(Instant.parse("2010-10-10T10:10:10Z"));
         assertThat(notesDb.get(1).modificationTime()).isEqualTo(Instant.parse("2011-11-11T11:11:11Z"));
-        final var noteGravesDb = noteGraveDao.read();
+        final var noteGravesDb = NoteGraveSql.read();
         assertThat(noteGravesDb).hasSize(2);
         assertThat(noteGravesDb.get(0).id()).isEqualTo(UUID.fromString("292e3117-59f1-4374-afe8-d8b751e0b6e3"));
         assertThat(noteGravesDb.get(0).userId()).isEqualTo(user.id());
@@ -227,7 +225,7 @@ class NoteSyncControllerTest {
     @Test
     void shouldOutputInternalNotes() throws Exception {
         Transaction.run(() -> {
-            noteDao.create(
+            NoteSql.create(
                 new Note(
                     UUID.fromString("416b5888-4ee0-4460-8c4e-0531e62c029c"),
                     user.id(),
@@ -236,7 +234,7 @@ class NoteSyncControllerTest {
                     Instant.parse("2010-10-10T10:10:10Z")
                 )
             );
-            noteGraveDao.create(
+            NoteGraveSql.create(
                 new NoteGrave(
                     UUID.fromString("884f33f5-2b79-4f68-9118-73cabffc4f8a"),
                     user.id(),
@@ -274,7 +272,7 @@ class NoteSyncControllerTest {
         assertThat(noteResponse.content()).isEqualTo("Note content");
         assertThat(noteResponse.creationTime()).isEqualTo(Instant.parse("2010-10-10T10:10:10Z"));
         assertThat(noteResponse.modificationTime()).isEqualTo(Instant.parse("2010-10-10T10:10:10Z"));
-        final var notesDb = noteDao.read();
+        final var notesDb = NoteSql.read();
         assertThat(notesDb).hasSize(1);
         final var noteDb = notesDb.get(0);
         assertThat(noteDb.id()).isEqualTo(UUID.fromString("416b5888-4ee0-4460-8c4e-0531e62c029c"));
@@ -283,7 +281,7 @@ class NoteSyncControllerTest {
         assertThat(noteDb.content()).isEqualTo("Note content");
         assertThat(noteDb.creationTime()).isEqualTo(Instant.parse("2010-10-10T10:10:10Z"));
         assertThat(noteDb.modificationTime()).isEqualTo(Instant.parse("2010-10-10T10:10:10Z"));
-        final var noteGravesDb = noteGraveDao.read();
+        final var noteGravesDb = NoteGraveSql.read();
         assertThat(noteGravesDb).hasSize(1);
         final var noteGraveDb = noteGravesDb.get(0);
         assertThat(noteGraveDb.id()).isEqualTo(UUID.fromString("884f33f5-2b79-4f68-9118-73cabffc4f8a"));
@@ -295,7 +293,7 @@ class NoteSyncControllerTest {
     void shouldNotOutputInternalNotesOfOtherUser() throws Exception {
         final UUID userId = UUID.fromString("2ad341c6-e59e-42f3-94d8-8c089addc9a0");
         Transaction.run(() -> {
-            noteDao.create(
+            NoteSql.create(
                 new Note(
                     UUID.fromString("8b4ae3f2-02b9-47e2-b1d1-fbb761e2dccf"),
                     userId,
@@ -304,7 +302,7 @@ class NoteSyncControllerTest {
                     Instant.parse("2010-10-10T10:10:10Z")
                 )
             );
-            noteGraveDao.create(
+            NoteGraveSql.create(
                 new NoteGrave(
                     UUID.fromString("dc5c2ee8-ba84-4019-b8f2-0a8d93e170cd"),
                     userId,
@@ -336,7 +334,7 @@ class NoteSyncControllerTest {
             }
         );
         assertThat(notesResponse).hasSize(0);
-        final var notesDb = noteDao.read();
+        final var notesDb = NoteSql.read();
         assertThat(notesDb).hasSize(1);
         final var noteDb = notesDb.get(0);
         assertThat(noteDb.id()).isEqualTo(UUID.fromString("8b4ae3f2-02b9-47e2-b1d1-fbb761e2dccf"));
@@ -345,7 +343,7 @@ class NoteSyncControllerTest {
         assertThat(noteDb.content()).isEqualTo("Note content");
         assertThat(noteDb.creationTime()).isEqualTo(Instant.parse("2010-10-10T10:10:10Z"));
         assertThat(noteDb.modificationTime()).isEqualTo(Instant.parse("2010-10-10T10:10:10Z"));
-        final var noteGravesDb = noteGraveDao.read();
+        final var noteGravesDb = NoteGraveSql.read();
         assertThat(noteGravesDb).hasSize(1);
         final var noteGraveDb = noteGravesDb.get(0);
         assertThat(noteGraveDb.id()).isEqualTo(UUID.fromString("dc5c2ee8-ba84-4019-b8f2-0a8d93e170cd"));
@@ -356,7 +354,7 @@ class NoteSyncControllerTest {
     @Test
     void shouldOverwriteExternalNotes() throws Exception {
         Transaction.run(() -> {
-            noteDao.create(
+            NoteSql.create(
                 new Note(
                     UUID.fromString("8b4ae3f2-02b9-47e2-b1d1-fbb761e2dccf"),
                     user.id(),
@@ -374,7 +372,7 @@ class NoteSyncControllerTest {
                     Instant.parse("2011-11-11T11:11:11Z")
                 )
             );
-            noteGraveDao.create(
+            NoteGraveSql.create(
                 new NoteGrave(
                     UUID.fromString("6d9e6e4d-be5e-4768-bd33-bc37f7b80284"),
                     user.id(),
@@ -458,7 +456,7 @@ class NoteSyncControllerTest {
         assertThat(notesResponse.get(2).content()).isNull();
         assertThat(notesResponse.get(2).creationTime()).isNull();
         assertThat(notesResponse.get(2).modificationTime()).isEqualTo(Instant.parse("2011-11-11T11:11:11Z"));
-        final var notesDb = noteDao.read();
+        final var notesDb = NoteSql.read();
         assertThat(notesDb).hasSize(2);
         assertThat(notesDb.get(0).id()).isEqualTo(UUID.fromString("0c73c9f7-4af4-4fff-8b30-384636d12a00"));
         assertThat(notesDb.get(0).userId()).isEqualTo(user.id());
@@ -472,7 +470,7 @@ class NoteSyncControllerTest {
         assertThat(notesDb.get(1).content()).isEqualTo("Note content");
         assertThat(notesDb.get(1).creationTime()).isEqualTo(Instant.parse("2010-10-10T10:10:10Z"));
         assertThat(notesDb.get(1).modificationTime()).isEqualTo(Instant.parse("2011-11-11T11:11:11Z"));
-        final var noteGravesDb = noteGraveDao.read();
+        final var noteGravesDb = NoteGraveSql.read();
         assertThat(noteGravesDb).hasSize(2);
         assertThat(noteGravesDb.get(0).id()).isEqualTo(UUID.fromString("6d9e6e4d-be5e-4768-bd33-bc37f7b80284"));
         assertThat(noteGravesDb.get(0).userId()).isEqualTo(user.id());

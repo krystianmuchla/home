@@ -1,6 +1,6 @@
 package com.github.krystianmuchla.home.id.session;
 
-import com.github.krystianmuchla.home.error.exception.AuthorizationException;
+import com.github.krystianmuchla.home.error.exception.AuthenticationException;
 import jakarta.servlet.http.Cookie;
 
 import java.util.Objects;
@@ -16,11 +16,11 @@ public record SessionId(String login, String token) {
     public static SessionId from(final Cookie[] cookies) {
         final var login = findCookie(cookies, "login");
         if (login == null) {
-            throw new AuthorizationException();
+            throw new AuthenticationException();
         }
         final var token = findCookie(cookies, "token");
         if (token == null) {
-            throw new AuthorizationException();
+            throw new AuthenticationException();
         }
         return new SessionId(login.getValue(), token.getValue());
     }

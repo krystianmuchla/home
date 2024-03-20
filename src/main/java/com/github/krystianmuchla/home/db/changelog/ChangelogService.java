@@ -1,24 +1,20 @@
 package com.github.krystianmuchla.home.db.changelog;
 
+import com.github.krystianmuchla.home.db.Sql;
+import com.github.krystianmuchla.home.db.Transaction;
+import com.github.krystianmuchla.home.util.FileAccessor;
+import lombok.extern.slf4j.Slf4j;
+
 import java.io.File;
 import java.util.List;
 
-import com.github.krystianmuchla.home.FileAccessor;
-import com.github.krystianmuchla.home.db.Transaction;
-
-import lombok.extern.slf4j.Slf4j;
-
 @Slf4j
 public class ChangelogService {
-    public static final ChangelogService INSTANCE = new ChangelogService();
-
-    private final ChangelogDao changelogDao = ChangelogDao.INSTANCE;
-
-    public void update() {
-        if (!changelogDao.hasChangelog()) {
-            Transaction.run(changelogDao::createChangelog);
+    public static void update() {
+        if (!ChangelogSql.hasChangelog()) {
+            Transaction.run(ChangelogSql::createChangelog);
         }
-        final var lastChangeId = changelogDao.getLastChangeId();
+        final var lastChangeId = ChangelogSql.getLastChangeId();
         int changeId;
         if (lastChangeId == null) {
             changeId = 1;
@@ -33,8 +29,8 @@ public class ChangelogService {
             }
             final int finalChangeId = changeId;
             Transaction.run(() -> {
-                statements.forEach(statement -> changelogDao.executeUpdate(statement.trim()));
-                changelogDao.addToChangelog(finalChangeId);
+                statements.forEach(statement -> Sql.executeUpdate(statement.trim()));
+                ChangelogSql.addToChangelog(finalChangeId);
             });
             log.info("Executed database change with id: {}", changeId);
             changeId++;

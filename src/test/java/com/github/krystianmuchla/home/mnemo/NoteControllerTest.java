@@ -5,10 +5,13 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.krystianmuchla.home.AppContext;
 import com.github.krystianmuchla.home.db.ConnectionManager;
 import com.github.krystianmuchla.home.db.Transaction;
-import com.github.krystianmuchla.home.id.session.SessionManager;
+import com.github.krystianmuchla.home.id.accessdata.AccessDataSql;
+import com.github.krystianmuchla.home.id.session.SessionId;
+import com.github.krystianmuchla.home.id.session.SessionService;
 import com.github.krystianmuchla.home.id.user.User;
-import com.github.krystianmuchla.home.mnemo.grave.NoteGraveDao;
-import jakarta.servlet.http.Cookie;
+import com.github.krystianmuchla.home.id.user.UserService;
+import com.github.krystianmuchla.home.id.user.UserSql;
+import com.github.krystianmuchla.home.mnemo.grave.NoteGraveSql;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
@@ -28,33 +31,34 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 class NoteControllerTest {
     private static User user;
-    private static Cookie[] cookies;
+    private static SessionId sessionId;
     private static String cookie;
-    private static NoteDao noteDao;
-    private static NoteGraveDao noteGraveDao;
 
     @BeforeAll
     static void beforeAllTests() {
         AppContext.init();
-        noteDao = NoteDao.INSTANCE;
-        noteGraveDao = NoteGraveDao.INSTANCE;
-        user = new User(UUID.fromString("ca13a97e-daf6-4d54-801c-a279c6b3ef59"));
-        cookies = SessionManager.createSession("test", user);
-        cookie = "login=%s; token=%s".formatted(cookies[0].getValue(), cookies[1].getValue());
+        final var login = "test";
+        user = Transaction.run(() -> UserService.createUser(login, "zaq1@WSX"));
+        sessionId = SessionService.createSession(login, user);
+        cookie = "login=%s; token=%s".formatted(sessionId.login(), sessionId.token());
     }
 
     @AfterEach
     void afterEachTest() throws Exception {
         Transaction.run(() -> {
-            noteDao.delete();
-            noteGraveDao.delete();
+            NoteSql.delete();
+            NoteGraveSql.delete();
         });
         ConnectionManager.getConnection().commit();
     }
 
     @AfterAll
     static void afterAllTests() {
-        SessionManager.removeSession(cookies);
+        Transaction.run(() -> {
+            AccessDataSql.delete();
+            UserSql.delete();
+        });
+        SessionService.removeSession(sessionId);
     }
 
     @Test
@@ -85,7 +89,7 @@ class NoteControllerTest {
         );
         assertThat(responseBody).hasSize(1);
         final var noteId = UUID.fromString((String) responseBody.get("id"));
-        final var notes = noteDao.read();
+        final var notes = NoteSql.read();
         assertThat(notes).hasSize(1);
         final var note = notes.get(0);
         assertThat(note.id()).isEqualTo(noteId);
@@ -120,7 +124,7 @@ class NoteControllerTest {
         final var noteCreationTime = Instant.parse("2010-10-10T10:10:10.100Z");
         final var noteModificationTime = Instant.parse("2011-11-11T11:11:11.111Z");
         Transaction.run(
-            () -> noteDao.create(
+            () -> NoteSql.create(
                 new Note(
                     noteId,
                     user.id(),
@@ -163,7 +167,7 @@ class NoteControllerTest {
         final var noteCreationTime = Instant.parse("2010-10-10T10:10:10.100Z");
         final var noteModificationTime = Instant.parse("2011-11-11T11:11:11.111Z");
         Transaction.run(
-            () -> noteDao.create(
+            () -> NoteSql.create(
                 new Note(
                     noteId,
                     userId,
@@ -209,7 +213,7 @@ class NoteControllerTest {
         final var noteCreationTime = Instant.parse("2010-10-10T10:10:10.100Z");
         final var noteModificationTime = Instant.parse("2011-11-11T11:11:11.111Z");
         Transaction.run(
-            () -> noteDao.create(
+            () -> NoteSql.create(
                 new Note(
                     noteId,
                     user.id(),
@@ -256,7 +260,7 @@ class NoteControllerTest {
         final var noteCreationTime = Instant.parse("2010-10-10T10:10:10.100Z");
         final var noteModificationTime = Instant.parse("2011-11-11T11:11:11.111Z");
         Transaction.run(
-            () -> noteDao.create(
+            () -> NoteSql.create(
                 new Note(
                     noteId,
                     userId,
@@ -308,7 +312,7 @@ class NoteControllerTest {
         final var noteCreationTime = Instant.parse("2010-10-10T10:10:10.100Z");
         final var noteModificationTime = Instant.parse("2011-11-11T11:11:11.111Z");
         Transaction.run(
-            () -> noteDao.create(
+            () -> NoteSql.create(
                 new Note(
                     noteId,
                     user.id(),
@@ -338,7 +342,7 @@ class NoteControllerTest {
 
         assertThat(response.statusCode()).isEqualTo(204);
         assertThat(response.body()).isEmpty();
-        final var notes = noteDao.read();
+        final var notes = NoteSql.read();
         assertThat(notes).hasSize(1);
         final var note = notes.getFirst();
         assertThat(note.id()).isEqualTo(noteId);
@@ -355,7 +359,7 @@ class NoteControllerTest {
         final var noteCreationTime = Instant.parse("2010-10-10T10:10:10.100Z");
         final var noteModificationTime = Instant.parse("2011-11-11T11:11:11.111Z");
         Transaction.run(
-            () -> noteDao.create(
+            () -> NoteSql.create(
                 new Note(
                     noteId,
                     userId,
@@ -407,7 +411,7 @@ class NoteControllerTest {
         final var noteId = UUID.fromString("946a95dd-8cb5-4d59-ae7e-101ac3ea715b");
         final var noteModificationTime = Instant.parse("2011-11-11T11:11:11Z");
         Transaction.run(
-            () -> noteDao.create(
+            () -> NoteSql.create(
                 new Note(
                     noteId,
                     user.id(),
@@ -429,9 +433,9 @@ class NoteControllerTest {
 
         assertThat(response.statusCode()).isEqualTo(204);
         assertThat(response.body()).isEmpty();
-        final var notes = noteDao.read();
+        final var notes = NoteSql.read();
         assertThat(notes).hasSize(0);
-        final var noteGraves = noteGraveDao.read();
+        final var noteGraves = NoteGraveSql.read();
         assertThat(noteGraves).hasSize(1);
         final var noteGrave = noteGraves.get(0);
         assertThat(noteGrave.id()).isEqualTo(noteId);
@@ -445,7 +449,7 @@ class NoteControllerTest {
         final var userId = UUID.fromString("36cfee27-1b49-4540-965a-533044f7dbfc");
         final var noteModificationTime = Instant.parse("2011-11-11T11:11:11Z");
         Transaction.run(
-            () -> noteDao.create(
+            () -> NoteSql.create(
                 new Note(
                     noteId,
                     userId,

@@ -15,7 +15,7 @@ import org.eclipse.jetty.servlet.ServletContextHandler;
 
 public class App {
     public static void main(final String... args) throws Exception {
-        ChangelogService.INSTANCE.update();
+        ChangelogService.update();
         startHttpServer();
         startJobs();
     }

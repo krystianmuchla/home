@@ -14,7 +14,7 @@ public class SignUpToken {
     private String token;
     private Thread tokenExpirationThread;
 
-    public boolean createAndLog() {
+    public boolean generateAndLog() {
         final var success = semaphore.tryAcquire();
         if (success) {
             token = token();
@@ -31,8 +31,8 @@ public class SignUpToken {
         }
         final var success = Objects.equals(this.token, token);
         if (success) {
-            tokenExpirationThread.interrupt();
             log.info("Sign up token " + token + " has been consumed");
+            tokenExpirationThread.interrupt();
         }
         return success;
     }

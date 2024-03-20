@@ -9,7 +9,7 @@ public class RequestException extends RuntimeException implements AppError {
     }
 
     @Override
-    public void accept(final HttpServletResponse response) {
+    public void handle(HttpServletResponse response) {
         response.setStatus(400);
     }
 }

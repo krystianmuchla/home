@@ -1,4 +1,10 @@
-package com.github.krystianmuchla.home;
+package com.github.krystianmuchla.home.db;
+
+import com.github.krystianmuchla.home.error.exception.InternalException;
+import com.github.krystianmuchla.home.pagination.PaginatedResult;
+import com.github.krystianmuchla.home.pagination.Pagination;
+import com.github.krystianmuchla.home.pagination.PaginationResult;
+import lombok.SneakyThrows;
 
 import java.sql.ResultSet;
 import java.sql.Timestamp;
@@ -11,17 +17,9 @@ import java.util.List;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import com.github.krystianmuchla.home.db.ConnectionManager;
-import com.github.krystianmuchla.home.error.exception.InternalException;
-import com.github.krystianmuchla.home.pagination.PaginatedResult;
-import com.github.krystianmuchla.home.pagination.Pagination;
-import com.github.krystianmuchla.home.pagination.PaginationResult;
-
-import lombok.SneakyThrows;
-
-public abstract class Dao {
+public class Sql {
     @SneakyThrows
-    public <T> List<T> executeQuery(
+    public static <T> List<T> executeQuery(
         final String sql,
         final Function<ResultSet, T> mapper,
         final Object... parameters
@@ -41,7 +39,7 @@ public abstract class Dao {
     }
 
     @SneakyThrows
-    public int executeUpdate(final String sql, final Object... parameters) {
+    public static int executeUpdate(final String sql, final Object... parameters) {
         final var connection = ConnectionManager.getConnection();
         try (final var preparedStatement = connection.prepareStatement(sql)) {
             for (int index = 0; index < parameters.length; index++) {
@@ -51,11 +49,11 @@ public abstract class Dao {
         }
     }
 
-    protected boolean boolResult(final int result) {
+    protected static boolean boolResult(final int result) {
         return result > 0;
     }
 
-    protected <T> T singleResult(final List<T> result) {
+    protected static <T> T singleResult(final List<T> result) {
         if (result.isEmpty()) {
             return null;
         }
@@ -65,7 +63,7 @@ public abstract class Dao {
         throw new InternalException("Could not resolve single result");
     }
 
-    protected <T> PaginatedResult<T> paginatedResult(final Pagination pagination, final List<T> result) {
+    protected static <T> PaginatedResult<T> paginatedResult(final Pagination pagination, final List<T> result) {
         final var fetchedElements = result.size();
         final var next = fetchedElements > pagination.pageSize();
         if (next) {
@@ -75,19 +73,19 @@ public abstract class Dao {
         return new PaginatedResult<>(result, paginationResult);
     }
 
-    protected int limit(final int pageSize) {
+    protected static int limit(final int pageSize) {
         return pageSize + 1;
     }
 
-    protected int offset(final int pageNumber, final int pageSize) {
+    protected static int offset(final int pageNumber, final int pageSize) {
         return (pageNumber - 1) * pageSize;
     }
 
-    protected Timestamp timestamp(final Instant instant) {
+    protected static Timestamp timestamp(final Instant instant) {
         return Timestamp.valueOf(LocalDateTime.ofInstant(instant, ZoneOffset.UTC));
     }
 
-    protected String setters(final LinkedHashMap<String, String> parameters) {
+    protected static String setters(final LinkedHashMap<String, String> parameters) {
         return parameters.keySet().stream().map(key -> key + " = ?").collect(Collectors.joining(", "));
     }
 }

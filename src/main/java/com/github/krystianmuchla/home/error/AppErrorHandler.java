@@ -25,8 +25,11 @@ public class AppErrorHandler extends ErrorHandler {
     }
 
     private void handle(final HttpServletResponse response, final Throwable throwable) {
+        if (throwable == null) {
+            return;
+        }
         switch (throwable) {
-            case AppError appError -> appError.accept(response);
+            case AppError appError -> appError.handle(response);
             case TransactionException transactionException -> {
                 final Throwable cause = transactionException.getCause();
                 if (cause != null) {

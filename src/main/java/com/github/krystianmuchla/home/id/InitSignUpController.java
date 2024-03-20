@@ -11,7 +11,7 @@ public class InitSignUpController extends Controller {
 
     @Override
     protected void doPost(final HttpServletRequest request, final HttpServletResponse response) {
-        final var success = SignUpToken.INSTANCE.createAndLog();
+        final var success = SignUpToken.INSTANCE.generateAndLog();
         if (success) {
             response.setStatus(202);
         } else {

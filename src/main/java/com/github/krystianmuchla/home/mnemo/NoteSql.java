@@ -1,6 +1,6 @@
 package com.github.krystianmuchla.home.mnemo;
 
-import com.github.krystianmuchla.home.Dao;
+import com.github.krystianmuchla.home.db.Sql;
 import com.github.krystianmuchla.home.error.exception.InternalException;
 import com.github.krystianmuchla.home.pagination.PaginatedResult;
 import com.github.krystianmuchla.home.pagination.Pagination;
@@ -13,10 +13,8 @@ import java.util.List;
 import java.util.UUID;
 import java.util.function.Function;
 
-public class NoteDao extends Dao {
-    public static final NoteDao INSTANCE = new NoteDao();
-
-    public void create(final Note... notes) {
+public class NoteSql extends Sql {
+    public static void create(final Note... notes) {
         for (final var note : notes) {
             executeUpdate(
                 "INSERT INTO note VALUES (?, ?, ?, ?, ?, ?)",
@@ -29,19 +27,19 @@ public class NoteDao extends Dao {
         }
     }
 
-    public List<Note> read() {
+    public static List<Note> read() {
         return executeQuery("SELECT * FROM note", mapper());
     }
 
-    public List<Note> read(final UUID userId) {
+    public static List<Note> read(final UUID userId) {
         return executeQuery("SELECT * FROM note WHERE user_id = ?", mapper(), userId.toString());
     }
 
-    public List<Note> readWithLock(final UUID userId) {
+    public static List<Note> readWithLock(final UUID userId) {
         return executeQuery("SELECT * FROM note WHERE user_id = ? FOR UPDATE", mapper(), userId.toString());
     }
 
-    public Note read(final UUID id, final UUID userId) {
+    public static Note read(final UUID id, final UUID userId) {
         final var result = executeQuery("SELECT * FROM note WHERE id = ? AND user_id = ?",
             mapper(),
             id.toString(),
@@ -49,7 +47,7 @@ public class NoteDao extends Dao {
         return singleResult(result);
     }
 
-    public PaginatedResult<Note> read(final UUID userId, final Pagination pagination) {
+    public static PaginatedResult<Note> read(final UUID userId, final Pagination pagination) {
         final var result = executeQuery(
             "SELECT * FROM note WHERE user_id = ? LIMIT ? OFFSET ?",
             mapper(),
@@ -60,7 +58,7 @@ public class NoteDao extends Dao {
         return paginatedResult(pagination, result);
     }
 
-    public boolean update(
+    public static boolean update(
         final UUID id,
         final UUID userId,
         final String title,
@@ -89,15 +87,15 @@ public class NoteDao extends Dao {
         return boolResult(result);
     }
 
-    public void delete() {
+    public static void delete() {
         executeUpdate("DELETE FROM note");
     }
 
-    public boolean delete(final Note note) {
+    public static boolean delete(final Note note) {
         return delete(note.id(), note.userId());
     }
 
-    public boolean delete(final UUID id, final UUID userId) {
+    public static boolean delete(final UUID id, final UUID userId) {
         final var result = executeUpdate(
             "DELETE FROM note WHERE id = ? AND user_id = ?",
             id.toString(),
@@ -105,7 +103,7 @@ public class NoteDao extends Dao {
         return boolResult(result);
     }
 
-    private Function<ResultSet, Note> mapper() {
+    private static Function<ResultSet, Note> mapper() {
         return new Function<>() {
             @Override
             @SneakyThrows

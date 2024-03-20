@@ -10,7 +10,6 @@ import java.time.temporal.ChronoUnit;
 import java.util.Objects;
 
 public class NoteGraveCleaner implements Runnable {
-    private final NoteGraveDao noteGraveDao = NoteGraveDao.INSTANCE;
     private final boolean enabled;
     private final Duration rate;
     private final Duration threshold;
@@ -27,7 +26,7 @@ public class NoteGraveCleaner implements Runnable {
         ConnectionManager.registerConnection();
         while (enabled) {
             final var creationTimeThreshold = InstantFactory.create().minus(threshold.toMillis(), ChronoUnit.MILLIS);
-            Transaction.run(() -> noteGraveDao.delete(creationTimeThreshold));
+            Transaction.run(() -> NoteGraveSql.delete(creationTimeThreshold));
             try {
                 Thread.sleep(rate);
             } catch (final InterruptedException ignored) {

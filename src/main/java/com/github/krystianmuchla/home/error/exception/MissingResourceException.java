@@ -9,7 +9,7 @@ public class MissingResourceException extends RuntimeException implements AppErr
     }
 
     @Override
-    public void accept(final HttpServletResponse response) {
+    public void handle(HttpServletResponse response) {
         response.setStatus(404);
     }
 }
