@@ -11,6 +11,13 @@ import java.time.Instant;
 import java.util.UUID;
 
 public record Note(UUID id, UUID userId, String title, String content, Instant creationTime, Instant modificationTime) {
+    public static final String NOTE = "note";
+    public static final String ID = "id";
+    public static final String USER_ID = "user_id";
+    public static final String TITLE = "title";
+    public static final String CONTENT = "content";
+    public static final String CREATION_TIME = "creation_time";
+    public static final String MODIFICATION_TIME = "modification_time";
     public static final int TITLE_MAX_LENGTH = 255;
     public static final int CONTENT_MAX_LENGTH = 65535;
 
@@ -49,12 +56,12 @@ public record Note(UUID id, UUID userId, String title, String content, Instant c
 
     public Note(final ResultSet resultSet) throws SQLException {
         this(
-            UUID.fromString(resultSet.getString("id")),
-            UUID.fromString(resultSet.getString("user_id")),
-            resultSet.getString("title"),
-            resultSet.getString("content"),
-            InstantFactory.create(resultSet.getTimestamp("creation_time")),
-            InstantFactory.create(resultSet.getTimestamp("modification_time"))
+            UUID.fromString(resultSet.getString(ID)),
+            UUID.fromString(resultSet.getString(USER_ID)),
+            resultSet.getString(TITLE),
+            resultSet.getString(CONTENT),
+            InstantFactory.create(resultSet.getTimestamp(CREATION_TIME)),
+            InstantFactory.create(resultSet.getTimestamp(MODIFICATION_TIME))
         );
     }
 

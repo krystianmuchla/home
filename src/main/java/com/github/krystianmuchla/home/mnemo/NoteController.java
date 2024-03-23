@@ -41,7 +41,7 @@ public class NoteController extends Controller {
         final var noteId = RequestReader.readPathParameter(request, UUID::fromString);
         if (noteId == null) {
             final var paginationRequest = new PaginationRequest(request);
-            final var paginatedResult = NoteSql.read(user.id(), new Pagination(paginationRequest));
+            final var paginatedResult = NoteSql.readByUserId(user.id(), new Pagination(paginationRequest));
             ResponseWriter.writeJson(response, new PaginatedResponse<>(paginatedResult, NoteResponse::new));
         } else {
             final var note = NoteService.read(noteId, user.id());

@@ -4,13 +4,14 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.krystianmuchla.home.AppContext;
 import com.github.krystianmuchla.home.db.ConnectionManager;
+import com.github.krystianmuchla.home.db.Sql;
 import com.github.krystianmuchla.home.db.Transaction;
-import com.github.krystianmuchla.home.id.accessdata.AccessDataSql;
+import com.github.krystianmuchla.home.id.accessdata.AccessData;
 import com.github.krystianmuchla.home.id.session.SessionId;
 import com.github.krystianmuchla.home.id.session.SessionService;
 import com.github.krystianmuchla.home.id.user.User;
 import com.github.krystianmuchla.home.id.user.UserService;
-import com.github.krystianmuchla.home.id.user.UserSql;
+import com.github.krystianmuchla.home.mnemo.grave.NoteGrave;
 import com.github.krystianmuchla.home.mnemo.grave.NoteGraveSql;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
@@ -46,8 +47,8 @@ class NoteControllerTest {
     @AfterEach
     void afterEachTest() throws Exception {
         Transaction.run(() -> {
-            NoteSql.delete();
-            NoteGraveSql.delete();
+            Sql.executeUpdate("DELETE FROM %s".formatted(Note.NOTE));
+            Sql.executeUpdate("DELETE FROM %s".formatted(NoteGrave.NOTE_GRAVE));
         });
         ConnectionManager.getConnection().commit();
     }
@@ -55,8 +56,8 @@ class NoteControllerTest {
     @AfterAll
     static void afterAllTests() {
         Transaction.run(() -> {
-            AccessDataSql.delete();
-            UserSql.delete();
+            Sql.executeUpdate("DELETE FROM %s".formatted(AccessData.ACCESS_DATA));
+            Sql.executeUpdate("DELETE FROM %s".formatted(User.USER));
         });
         SessionService.removeSession(sessionId);
     }
@@ -89,7 +90,7 @@ class NoteControllerTest {
         );
         assertThat(responseBody).hasSize(1);
         final var noteId = UUID.fromString((String) responseBody.get("id"));
-        final var notes = NoteSql.read();
+        final var notes = Sql.executeQuery("SELECT * FROM %s".formatted(Note.NOTE), NoteSql.mapper());
         assertThat(notes).hasSize(1);
         final var note = notes.get(0);
         assertThat(note.id()).isEqualTo(noteId);
@@ -342,7 +343,7 @@ class NoteControllerTest {
 
         assertThat(response.statusCode()).isEqualTo(204);
         assertThat(response.body()).isEmpty();
-        final var notes = NoteSql.read();
+        final var notes = Sql.executeQuery("SELECT * FROM %s".formatted(Note.NOTE), NoteSql.mapper());
         assertThat(notes).hasSize(1);
         final var note = notes.getFirst();
         assertThat(note.id()).isEqualTo(noteId);
@@ -433,9 +434,9 @@ class NoteControllerTest {
 
         assertThat(response.statusCode()).isEqualTo(204);
         assertThat(response.body()).isEmpty();
-        final var notes = NoteSql.read();
+        final var notes = Sql.executeQuery("SELECT * FROM %s".formatted(Note.NOTE), NoteSql.mapper());
         assertThat(notes).hasSize(0);
-        final var noteGraves = NoteGraveSql.read();
+        final var noteGraves = Sql.executeQuery("SELECT * FROM %s".formatted(NoteGrave.NOTE_GRAVE), NoteGraveSql.mapper());
         assertThat(noteGraves).hasSize(1);
         final var noteGrave = noteGraves.get(0);
         assertThat(noteGrave.id()).isEqualTo(noteId);

@@ -1,15 +1,16 @@
 package com.github.krystianmuchla.home.id.accessdata;
 
 import com.github.krystianmuchla.home.db.Sql;
-import lombok.SneakyThrows;
+import com.github.krystianmuchla.home.error.exception.InternalException;
 
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.function.Function;
 
 public class AccessDataSql extends Sql {
     public static void create(final AccessData accessData) {
         executeUpdate(
-            "INSERT INTO access_data VALUES (?, ?, ?, ?, ?)",
+            "INSERT INTO %s VALUES (?, ?, ?, ?, ?)".formatted(AccessData.ACCESS_DATA),
             accessData.id().toString(),
             accessData.userId().toString(),
             accessData.login(),
@@ -19,20 +20,20 @@ public class AccessDataSql extends Sql {
     }
 
     public static AccessData readByLogin(final String login) {
-        final var result = executeQuery("SELECT * FROM access_data WHERE login = ?", mapper(), login);
+        final var result = executeQuery(
+            "SELECT * FROM %s WHERE %s = ?".formatted(AccessData.ACCESS_DATA, AccessData.LOGIN),
+            mapper(),
+            login
+        );
         return singleResult(result);
     }
 
-    public static void delete() {
-        executeUpdate("DELETE FROM access_data");
-    }
-
-    private static Function<ResultSet, AccessData> mapper() {
-        return new Function<>() {
-            @Override
-            @SneakyThrows
-            public AccessData apply(final ResultSet resultSet) {
+    public static Function<ResultSet, AccessData> mapper() {
+        return resultSet -> {
+            try {
                 return new AccessData(resultSet);
+            } catch (final SQLException exception) {
+                throw new InternalException(exception);
             }
         };
     }

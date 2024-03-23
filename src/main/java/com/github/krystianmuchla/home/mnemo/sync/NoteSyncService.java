@@ -18,9 +18,9 @@ import java.util.stream.Stream;
 public class NoteSyncService {
     public static List<Note> sync(final UUID userId, final List<Note> externalNotes) {
         if (externalNotes == null || externalNotes.isEmpty()) {
-            return NoteSql.read(userId);
+            return NoteSql.readByUserId(userId);
         }
-        final var notes = toMap(NoteSql.readWithLock(userId), NoteGraveSql.readWithLock(userId));
+        final var notes = toMap(NoteSql.readByUserIdWithLock(userId), NoteGraveSql.readByUserIdWithLock(userId));
         final var excludedNotes = sync(notes, externalNotes);
         excludedNotes.forEach(notes::remove);
         return List.copyOf(notes.values());

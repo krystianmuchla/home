@@ -1,9 +1,10 @@
 package com.github.krystianmuchla.home.mnemo.grave;
 
 import com.github.krystianmuchla.home.db.Sql;
-import lombok.SneakyThrows;
+import com.github.krystianmuchla.home.error.exception.InternalException;
 
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
@@ -12,24 +13,31 @@ import java.util.function.Function;
 public class NoteGraveSql extends Sql {
     public static void create(final NoteGrave... noteGraves) {
         for (final var noteGrave : noteGraves) {
-            executeUpdate("INSERT INTO note_grave VALUES (?, ?, ?)",
+            executeUpdate(
+                "INSERT INTO %s VALUES (?, ?, ?)".formatted(NoteGrave.NOTE_GRAVE),
                 noteGrave.id().toString(),
                 noteGrave.userId().toString(),
-                timestamp(noteGrave.creationTime()).toString());
+                timestamp(noteGrave.creationTime()).toString()
+            );
         }
     }
 
-    public static List<NoteGrave> read() {
-        return executeQuery("SELECT * FROM note_grave", mapper());
-    }
-
-    public static List<NoteGrave> readWithLock(final UUID userId) {
-        return executeQuery("SELECT * FROM note_grave WHERE user_id = ? FOR UPDATE", mapper(), userId.toString());
+    public static List<NoteGrave> readByUserIdWithLock(final UUID userId) {
+        return executeQuery(
+            "SELECT * FROM %s WHERE %s = ? FOR UPDATE".formatted(NoteGrave.NOTE_GRAVE, NoteGrave.USER_ID),
+            mapper(),
+            userId.toString()
+        );
     }
 
     public static boolean update(final NoteGrave noteGrave) {
         final var result = executeUpdate(
-            "UPDATE note_grave SET creation_time = ? WHERE id = ? AND user_id = ?",
+            "UPDATE %s SET %s = ? WHERE %s = ? AND %s = ?".formatted(
+                NoteGrave.NOTE_GRAVE,
+                NoteGrave.CREATION_TIME,
+                NoteGrave.ID,
+                NoteGrave.USER_ID
+            ),
             timestamp(noteGrave.creationTime()).toString(),
             noteGrave.id().toString(),
             noteGrave.userId().toString()
@@ -37,29 +45,26 @@ public class NoteGraveSql extends Sql {
         return boolResult(result);
     }
 
-    public static void delete() {
-        executeUpdate("DELETE FROM note_grave");
-    }
-
     public static void delete(final NoteGrave noteGrave) {
         executeUpdate(
-            "DELETE FROM note_grave WHERE id = ? AND user_id = ?",
+            "DELETE FROM %s WHERE %s = ? AND %s = ?".formatted(NoteGrave.NOTE_GRAVE, NoteGrave.ID, NoteGrave.USER_ID),
             noteGrave.id().toString(),
-            noteGrave.userId().toString());
+            noteGrave.userId().toString()
+        );
     }
 
     public static void delete(final Instant creationTimeThreshold) {
         executeUpdate(
-            "DELETE FROM note_grave WHERE creation_time < ?",
+            "DELETE FROM %s WHERE %s < ?".formatted(NoteGrave.NOTE_GRAVE, NoteGrave.CREATION_TIME),
             timestamp(creationTimeThreshold).toString());
     }
 
-    private static Function<ResultSet, NoteGrave> mapper() {
-        return new Function<>() {
-            @Override
-            @SneakyThrows
-            public NoteGrave apply(final ResultSet resultSet) {
+    public static Function<ResultSet, NoteGrave> mapper() {
+        return resultSet -> {
+            try {
                 return new NoteGrave(resultSet);
+            } catch (final SQLException exception) {
+                throw new InternalException(exception);
             }
         };
     }

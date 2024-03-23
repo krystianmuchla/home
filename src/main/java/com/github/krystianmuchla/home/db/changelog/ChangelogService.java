@@ -1,5 +1,6 @@
 package com.github.krystianmuchla.home.db.changelog;
 
+import com.github.krystianmuchla.home.InstantFactory;
 import com.github.krystianmuchla.home.db.Sql;
 import com.github.krystianmuchla.home.db.Transaction;
 import com.github.krystianmuchla.home.util.FileAccessor;
@@ -11,15 +12,15 @@ import java.util.List;
 @Slf4j
 public class ChangelogService {
     public static void update() {
-        if (!ChangelogSql.hasChangelog()) {
-            Transaction.run(ChangelogSql::createChangelog);
+        if (!ChangelogSql.exists()) {
+            Transaction.run(ChangelogSql::create);
         }
-        final var lastChangeId = ChangelogSql.getLastChangeId();
+        final var lastChange = ChangelogSql.getLastChange();
         int changeId;
-        if (lastChangeId == null) {
+        if (lastChange == null) {
             changeId = 1;
         } else {
-            changeId = lastChangeId + 1;
+            changeId = lastChange.id() + 1;
         }
         File file;
         while ((file = FileAccessor.getFromResources("db/changelog/" + changeId + ".sql")) != null) {
@@ -30,7 +31,7 @@ public class ChangelogService {
             final int finalChangeId = changeId;
             Transaction.run(() -> {
                 statements.forEach(statement -> Sql.executeUpdate(statement.trim()));
-                ChangelogSql.addToChangelog(finalChangeId);
+                ChangelogSql.createChange(new Change(finalChangeId, InstantFactory.create()));
             });
             log.info("Executed database change with id: {}", changeId);
             changeId++;

@@ -4,7 +4,9 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.krystianmuchla.home.AppContext;
 import com.github.krystianmuchla.home.api.ObjectMapperHolder;
+import com.github.krystianmuchla.home.db.Sql;
 import com.github.krystianmuchla.home.db.Transaction;
+import com.github.krystianmuchla.home.id.accessdata.AccessData;
 import com.github.krystianmuchla.home.id.session.SessionId;
 import com.github.krystianmuchla.home.id.session.SessionService;
 import com.github.krystianmuchla.home.id.user.User;
@@ -49,13 +51,17 @@ class NoteSyncControllerTest {
     @AfterEach
     void afterEachTest() {
         Transaction.run(() -> {
-            NoteSql.delete();
-            NoteGraveSql.delete();
+            Sql.executeUpdate("DELETE FROM %s".formatted(Note.NOTE));
+            Sql.executeUpdate("DELETE FROM %s".formatted(NoteGrave.NOTE_GRAVE));
         });
     }
 
     @AfterAll
     static void afterAllTests() {
+        Transaction.run(() -> {
+            Sql.executeUpdate("DELETE FROM %s".formatted(AccessData.ACCESS_DATA));
+            Sql.executeUpdate("DELETE FROM %s".formatted(User.USER));
+        });
         SessionService.removeSession(sessionId);
     }
 
@@ -100,7 +106,7 @@ class NoteSyncControllerTest {
             }
         );
         assertThat(notesResponse).hasSize(0);
-        final var notesDb = NoteSql.read();
+        final var notesDb = Sql.executeQuery("SELECT * FROM %s".formatted(Note.NOTE), NoteSql.mapper());
         assertThat(notesDb).hasSize(1);
         final var noteDb = notesDb.get(0);
         assertThat(noteDb.id()).isEqualTo(UUID.fromString("4d8af443-bfa9-4d47-a886-b1ddc82a958d"));
@@ -109,7 +115,7 @@ class NoteSyncControllerTest {
         assertThat(noteDb.content()).isEqualTo("External note content");
         assertThat(noteDb.creationTime()).isEqualTo(Instant.parse("2010-10-10T10:10:10Z"));
         assertThat(noteDb.modificationTime()).isEqualTo(Instant.parse("2010-10-10T10:10:10Z"));
-        final var noteGravesDb = NoteGraveSql.read();
+        final var noteGravesDb = Sql.executeQuery("SELECT * FROM %s".formatted(NoteGrave.NOTE_GRAVE), NoteGraveSql.mapper());
         assertThat(noteGravesDb).hasSize(0);
     }
 
@@ -198,7 +204,7 @@ class NoteSyncControllerTest {
             }
         );
         assertThat(notesResponse).hasSize(0);
-        final var notesDb = NoteSql.read();
+        final var notesDb = Sql.executeQuery("SELECT * FROM %s".formatted(Note.NOTE), NoteSql.mapper());
         assertThat(notesDb).hasSize(2);
         assertThat(notesDb.get(0).id()).isEqualTo(UUID.fromString("65b276f5-417d-458b-ad2c-0c6ffa7f5488"));
         assertThat(notesDb.get(0).userId()).isEqualTo(user.id());
@@ -212,7 +218,7 @@ class NoteSyncControllerTest {
         assertThat(notesDb.get(1).content()).isEqualTo("External note content");
         assertThat(notesDb.get(1).creationTime()).isEqualTo(Instant.parse("2010-10-10T10:10:10Z"));
         assertThat(notesDb.get(1).modificationTime()).isEqualTo(Instant.parse("2011-11-11T11:11:11Z"));
-        final var noteGravesDb = NoteGraveSql.read();
+        final var noteGravesDb = Sql.executeQuery("SELECT * FROM %s".formatted(NoteGrave.NOTE_GRAVE), NoteGraveSql.mapper());
         assertThat(noteGravesDb).hasSize(2);
         assertThat(noteGravesDb.get(0).id()).isEqualTo(UUID.fromString("292e3117-59f1-4374-afe8-d8b751e0b6e3"));
         assertThat(noteGravesDb.get(0).userId()).isEqualTo(user.id());
@@ -272,7 +278,7 @@ class NoteSyncControllerTest {
         assertThat(noteResponse.content()).isEqualTo("Note content");
         assertThat(noteResponse.creationTime()).isEqualTo(Instant.parse("2010-10-10T10:10:10Z"));
         assertThat(noteResponse.modificationTime()).isEqualTo(Instant.parse("2010-10-10T10:10:10Z"));
-        final var notesDb = NoteSql.read();
+        final var notesDb = Sql.executeQuery("SELECT * FROM %s".formatted(Note.NOTE), NoteSql.mapper());
         assertThat(notesDb).hasSize(1);
         final var noteDb = notesDb.get(0);
         assertThat(noteDb.id()).isEqualTo(UUID.fromString("416b5888-4ee0-4460-8c4e-0531e62c029c"));
@@ -281,7 +287,7 @@ class NoteSyncControllerTest {
         assertThat(noteDb.content()).isEqualTo("Note content");
         assertThat(noteDb.creationTime()).isEqualTo(Instant.parse("2010-10-10T10:10:10Z"));
         assertThat(noteDb.modificationTime()).isEqualTo(Instant.parse("2010-10-10T10:10:10Z"));
-        final var noteGravesDb = NoteGraveSql.read();
+        final var noteGravesDb = Sql.executeQuery("SELECT * FROM %s".formatted(NoteGrave.NOTE_GRAVE), NoteGraveSql.mapper());
         assertThat(noteGravesDb).hasSize(1);
         final var noteGraveDb = noteGravesDb.get(0);
         assertThat(noteGraveDb.id()).isEqualTo(UUID.fromString("884f33f5-2b79-4f68-9118-73cabffc4f8a"));
@@ -334,7 +340,7 @@ class NoteSyncControllerTest {
             }
         );
         assertThat(notesResponse).hasSize(0);
-        final var notesDb = NoteSql.read();
+        final var notesDb = Sql.executeQuery("SELECT * FROM %s".formatted(Note.NOTE), NoteSql.mapper());
         assertThat(notesDb).hasSize(1);
         final var noteDb = notesDb.get(0);
         assertThat(noteDb.id()).isEqualTo(UUID.fromString("8b4ae3f2-02b9-47e2-b1d1-fbb761e2dccf"));
@@ -343,7 +349,7 @@ class NoteSyncControllerTest {
         assertThat(noteDb.content()).isEqualTo("Note content");
         assertThat(noteDb.creationTime()).isEqualTo(Instant.parse("2010-10-10T10:10:10Z"));
         assertThat(noteDb.modificationTime()).isEqualTo(Instant.parse("2010-10-10T10:10:10Z"));
-        final var noteGravesDb = NoteGraveSql.read();
+        final var noteGravesDb = Sql.executeQuery("SELECT * FROM %s".formatted(NoteGrave.NOTE_GRAVE), NoteGraveSql.mapper());
         assertThat(noteGravesDb).hasSize(1);
         final var noteGraveDb = noteGravesDb.get(0);
         assertThat(noteGraveDb.id()).isEqualTo(UUID.fromString("dc5c2ee8-ba84-4019-b8f2-0a8d93e170cd"));
@@ -456,7 +462,7 @@ class NoteSyncControllerTest {
         assertThat(notesResponse.get(2).content()).isNull();
         assertThat(notesResponse.get(2).creationTime()).isNull();
         assertThat(notesResponse.get(2).modificationTime()).isEqualTo(Instant.parse("2011-11-11T11:11:11Z"));
-        final var notesDb = NoteSql.read();
+        final var notesDb = Sql.executeQuery("SELECT * FROM %s".formatted(Note.NOTE), NoteSql.mapper());
         assertThat(notesDb).hasSize(2);
         assertThat(notesDb.get(0).id()).isEqualTo(UUID.fromString("0c73c9f7-4af4-4fff-8b30-384636d12a00"));
         assertThat(notesDb.get(0).userId()).isEqualTo(user.id());
@@ -470,7 +476,7 @@ class NoteSyncControllerTest {
         assertThat(notesDb.get(1).content()).isEqualTo("Note content");
         assertThat(notesDb.get(1).creationTime()).isEqualTo(Instant.parse("2010-10-10T10:10:10Z"));
         assertThat(notesDb.get(1).modificationTime()).isEqualTo(Instant.parse("2011-11-11T11:11:11Z"));
-        final var noteGravesDb = NoteGraveSql.read();
+        final var noteGravesDb = Sql.executeQuery("SELECT * FROM %s".formatted(NoteGrave.NOTE_GRAVE), NoteGraveSql.mapper());
         assertThat(noteGravesDb).hasSize(2);
         assertThat(noteGravesDb.get(0).id()).isEqualTo(UUID.fromString("6d9e6e4d-be5e-4768-bd33-bc37f7b80284"));
         assertThat(noteGravesDb.get(0).userId()).isEqualTo(user.id());

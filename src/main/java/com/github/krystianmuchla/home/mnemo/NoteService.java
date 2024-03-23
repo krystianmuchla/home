@@ -22,7 +22,7 @@ public class NoteService {
     }
 
     public static Note read(final UUID id, final UUID userId) {
-        final var result = NoteSql.read(id, userId);
+        final var result = NoteSql.readByIdAndUserId(id, userId);
         if (result == null) {
             throw new MissingResourceException();
         }
@@ -50,7 +50,7 @@ public class NoteService {
     }
 
     public static void delete(final UUID id, final UUID userId) {
-        final var result = NoteSql.delete(id, userId);
+        final var result = NoteSql.deleteByIdAndUserId(id, userId);
         if (!result) {
             throw new MissingResourceException();
         }

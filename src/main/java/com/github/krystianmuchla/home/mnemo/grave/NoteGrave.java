@@ -10,6 +10,11 @@ import java.time.Instant;
 import java.util.UUID;
 
 public record NoteGrave(UUID id, UUID userId, Instant creationTime) {
+    public static final String NOTE_GRAVE = "note_grave";
+    public static final String ID = "id";
+    public static final String USER_ID = "user_id";
+    public static final String CREATION_TIME = "creation_time";
+
     public NoteGrave {
         if (id == null) {
             throw new InternalException("Id cannot be null");
@@ -28,9 +33,9 @@ public record NoteGrave(UUID id, UUID userId, Instant creationTime) {
 
     public NoteGrave(final ResultSet resultSet) throws SQLException {
         this(
-            UUID.fromString(resultSet.getString("id")),
-            UUID.fromString(resultSet.getString("user_id")),
-            InstantFactory.create(resultSet.getTimestamp("creation_time"))
+            UUID.fromString(resultSet.getString(ID)),
+            UUID.fromString(resultSet.getString(USER_ID)),
+            InstantFactory.create(resultSet.getTimestamp(CREATION_TIME))
         );
     }
 
