@@ -16,7 +16,7 @@ import org.junit.jupiter.api.Test;
 class HealthControllerTest {
 
     @BeforeAll
-    static void beforeAllTests() throws Exception {
+    static void beforeAllTests() {
         AppContext.init();
     }
 

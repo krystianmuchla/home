@@ -42,7 +42,7 @@ class NoteSyncControllerTest {
     static void beforeAllTests() {
         AppContext.init();
         objectMapper = ObjectMapperHolder.INSTANCE;
-        final var login = "test";
+        final var login = "note_sync_controller_user";
         user = Transaction.run(() -> UserService.createUser(login, "zaq1@WSX"));
         sessionId = SessionService.createSession(login, user);
         cookie = "login=%s; token=%s".formatted(sessionId.login(), sessionId.token());
