@@ -1,9 +1,5 @@
 package com.github.krystianmuchla.home;
 
-import lombok.AccessLevel;
-import lombok.NoArgsConstructor;
-
-@NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class AppConfig extends Config {
     public static final int PORT;
 

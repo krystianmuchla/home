@@ -1,13 +1,14 @@
 package com.github.krystianmuchla.home.id;
 
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.time.Duration;
 import java.util.Objects;
 import java.util.concurrent.Semaphore;
 
-@Slf4j
 public class SignUpToken {
+    private static final Logger LOG = LoggerFactory.getLogger(SignUpToken.class);
     public static final SignUpToken INSTANCE = new SignUpToken();
 
     private final Semaphore semaphore = new Semaphore(1);
@@ -20,7 +21,7 @@ public class SignUpToken {
             token = token();
             tokenExpirationThread = tokenExpirationThread();
             tokenExpirationThread.start();
-            log.info("Sign up token: " + token);
+            LOG.info("Sign up token: " + token);
         }
         return success;
     }
@@ -31,7 +32,7 @@ public class SignUpToken {
         }
         final var success = Objects.equals(this.token, token);
         if (success) {
-            log.info("Sign up token " + token + " has been consumed");
+            LOG.info("Sign up token " + token + " has been consumed");
             tokenExpirationThread.interrupt();
         }
         return success;
@@ -53,7 +54,7 @@ public class SignUpToken {
             } catch (final InterruptedException ignored) {
             }
             semaphore.release();
-            log.info("Sign up token " + token + " has expired");
+            LOG.info("Sign up token " + token + " has expired");
         });
     }
 }

@@ -4,9 +4,9 @@ import com.github.krystianmuchla.home.error.exception.InternalException;
 import com.github.krystianmuchla.home.pagination.PaginatedResult;
 import com.github.krystianmuchla.home.pagination.Pagination;
 import com.github.krystianmuchla.home.pagination.PaginationResult;
-import lombok.SneakyThrows;
 
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.time.LocalDateTime;
@@ -18,14 +18,12 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 public class Sql {
-    @SneakyThrows
     public static <T> List<T> executeQuery(
         final String sql,
         final Function<ResultSet, T> mapper,
         final Object... parameters
     ) {
-        final var connection = ConnectionManager.getConnection();
-        try (final var preparedStatement = connection.prepareStatement(sql)) {
+        try (final var preparedStatement = ConnectionManager.getConnection().prepareStatement(sql)) {
             for (int index = 0; index < parameters.length; index++) {
                 preparedStatement.setObject(index + 1, parameters[index]);
             }
@@ -35,17 +33,19 @@ public class Sql {
                 result.add(mapper.apply(resultSet));
             }
             return result;
+        } catch (final SQLException exception) {
+            throw new InternalException(exception);
         }
     }
 
-    @SneakyThrows
     public static int executeUpdate(final String sql, final Object... parameters) {
-        final var connection = ConnectionManager.getConnection();
-        try (final var preparedStatement = connection.prepareStatement(sql)) {
+        try (final var preparedStatement = ConnectionManager.getConnection().prepareStatement(sql)) {
             for (int index = 0; index < parameters.length; index++) {
                 preparedStatement.setObject(index + 1, parameters[index]);
             }
             return preparedStatement.executeUpdate();
+        } catch (final SQLException exception) {
+            throw new InternalException(exception);
         }
     }
 

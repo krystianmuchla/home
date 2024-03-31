@@ -6,11 +6,12 @@ import com.github.krystianmuchla.home.error.exception.InternalException;
 import com.github.krystianmuchla.home.id.SecureRandomFactory;
 import com.github.krystianmuchla.home.id.accessdata.AccessData;
 import com.github.krystianmuchla.home.id.accessdata.AccessDataSql;
-import lombok.SneakyThrows;
 
+import javax.crypto.SecretKey;
 import javax.crypto.SecretKeyFactory;
 import javax.crypto.spec.PBEKeySpec;
 import java.security.NoSuchAlgorithmException;
+import java.security.spec.InvalidKeySpecException;
 import java.util.Arrays;
 import java.util.UUID;
 
@@ -54,9 +55,14 @@ public class UserService {
         return UserSql.readById(accessData.userId());
     }
 
-    @SneakyThrows
     private static byte[] secret(final byte[] salt, final String password) {
         final var keySpec = new PBEKeySpec(password.toCharArray(), salt, 65536, SECRET_BYTES * 8);
-        return SECRET_KEY_FACTORY.generateSecret(keySpec).getEncoded();
+        final SecretKey secret;
+        try {
+            secret = SECRET_KEY_FACTORY.generateSecret(keySpec);
+        } catch (final InvalidKeySpecException exception) {
+            throw new InternalException(exception);
+        }
+        return secret.getEncoded();
     }
 }

@@ -7,13 +7,11 @@ import com.github.krystianmuchla.home.id.session.SessionService;
 import com.github.krystianmuchla.home.id.user.UserService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import lombok.SneakyThrows;
 
 public class SignInController extends Controller {
     public static final String PATH = "/api/id/sign_in";
 
     @Override
-    @SneakyThrows
     protected void doPost(final HttpServletRequest request, final HttpServletResponse response) {
         final var signInRequest = RequestReader.readJson(request, SignInRequest.class);
         final var user = UserService.getUser(signInRequest.login(), signInRequest.password());

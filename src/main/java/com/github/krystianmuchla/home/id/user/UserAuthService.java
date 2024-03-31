@@ -1,16 +1,16 @@
 package com.github.krystianmuchla.home.id.user;
 
 import com.github.krystianmuchla.home.error.exception.AuthenticationException;
-import com.github.krystianmuchla.home.error.exception.InternalException;
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.time.Duration;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
-@Slf4j
 public class UserAuthService {
+    private static final Logger LOG = LoggerFactory.getLogger(UserAuthService.class);
     private static final int MAX_FAILURES = 3;
     private static final Map<UUID, Integer> FAILURES = new ConcurrentHashMap<>();
 
@@ -52,7 +52,7 @@ public class UserAuthService {
                 try {
                     Thread.sleep(Duration.ofMinutes(5));
                 } catch (final InterruptedException exception) {
-                    throw new InternalException(exception);
+                    LOG.warn("{}", exception.getMessage(), exception);
                 }
                 decrementAuthFailures(userId);
             } while (FAILURES.get(userId) != null);

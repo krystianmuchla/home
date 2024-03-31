@@ -8,7 +8,6 @@ import com.github.krystianmuchla.home.mnemo.Note;
 import com.github.krystianmuchla.home.mnemo.NoteResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import lombok.SneakyThrows;
 
 import java.util.List;
 import java.util.UUID;
@@ -17,7 +16,6 @@ public class NoteSyncController extends Controller {
     public static final String PATH = "/api/notes/sync";
 
     @Override
-    @SneakyThrows
     protected void doPut(final HttpServletRequest request, final HttpServletResponse response) {
         final var user = session(request).user();
         final var syncNotesRequest = RequestReader.readJson(request, SyncNotesRequest.class);

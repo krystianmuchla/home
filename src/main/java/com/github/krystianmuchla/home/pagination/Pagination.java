@@ -20,6 +20,6 @@ public record Pagination(int pageNumber, int pageSize) {
     }
 
     public Pagination(final PaginationRequest request) {
-        this(request.getPageNumber(), request.getPageSize());
+        this(request.pageNumber(), request.pageSize());
     }
 }

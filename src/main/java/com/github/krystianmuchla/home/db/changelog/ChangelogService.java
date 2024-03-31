@@ -3,14 +3,18 @@ package com.github.krystianmuchla.home.db.changelog;
 import com.github.krystianmuchla.home.InstantFactory;
 import com.github.krystianmuchla.home.db.Sql;
 import com.github.krystianmuchla.home.db.Transaction;
-import com.github.krystianmuchla.home.util.FileAccessor;
-import lombok.extern.slf4j.Slf4j;
+import com.github.krystianmuchla.home.error.exception.InternalException;
+import com.github.krystianmuchla.home.util.FileManager;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.util.List;
 
-@Slf4j
 public class ChangelogService {
+    private static final Logger LOG = LoggerFactory.getLogger(ChangelogService.class);
+
     public static void update() {
         if (!ChangelogSql.exists()) {
             Transaction.run(ChangelogSql::create);
@@ -23,8 +27,13 @@ public class ChangelogService {
             changeId = lastChange.id() + 1;
         }
         File file;
-        while ((file = FileAccessor.getFromResources("db/changelog/" + changeId + ".sql")) != null) {
-            final List<String> statements = FileAccessor.readFile(file, ";");
+        while ((file = FileManager.fromResources("db/changelog/" + changeId + ".sql")) != null) {
+            final List<String> statements;
+            try {
+                statements = FileManager.read(file, ";");
+            } catch (final FileNotFoundException exception) {
+                throw new InternalException(exception);
+            }
             if (statements.getLast().isBlank()) {
                 statements.removeLast();
             }
@@ -33,7 +42,7 @@ public class ChangelogService {
                 statements.forEach(statement -> Sql.executeUpdate(statement.trim()));
                 ChangelogSql.createChange(new Change(finalChangeId, InstantFactory.create()));
             });
-            log.info("Executed database change with id: {}", changeId);
+            LOG.info("Executed database change with id: {}", changeId);
             changeId++;
         }
     }

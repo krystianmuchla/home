@@ -9,13 +9,11 @@ import com.github.krystianmuchla.home.id.session.SessionService;
 import com.github.krystianmuchla.home.id.user.UserService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import lombok.SneakyThrows;
 
 public class SignUpController extends Controller {
     public static final String PATH = "/api/id/sign_up";
 
     @Override
-    @SneakyThrows
     protected void doPost(final HttpServletRequest request, HttpServletResponse response) {
         final var signUpRequest = RequestReader.readJson(request, SignUpRequest.class);
         final var tokenValid = SignUpToken.INSTANCE.test(signUpRequest.token());

@@ -2,20 +2,41 @@ package com.github.krystianmuchla.home.api;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.github.krystianmuchla.home.error.exception.ContentTypeException;
+import com.github.krystianmuchla.home.error.exception.InternalException;
 import com.github.krystianmuchla.home.error.exception.RequestException;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
-import lombok.AccessLevel;
-import lombok.NoArgsConstructor;
 
+import java.io.BufferedReader;
 import java.io.IOException;
 import java.util.function.Function;
 
 import static java.lang.System.lineSeparator;
 import static java.util.stream.Collectors.joining;
 
-@NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class RequestReader {
+    public static <T> T readQueryParameter(
+        final HttpServletRequest request,
+        final String name,
+        final Function<String, T> mapper
+    ) {
+        final var value = request.getParameter(name);
+        if (value == null) {
+            return null;
+        }
+        return mapper.apply(value);
+    }
+
+    public static <T> T readQueryParameter(final HttpServletRequest request,
+                                           final String name,
+                                           final Function<String, T> mapper,
+                                           final T defaultValue) {
+        final var value = readQueryParameter(request, name, mapper);
+        if (value == null) {
+            return defaultValue;
+        }
+        return value;
+    }
 
     public static String readPathParameter(final HttpServletRequest request) {
         final var pathParameter = request.getPathInfo();
@@ -36,15 +57,18 @@ public class RequestReader {
         return mapper.apply(pathParameter);
     }
 
-    public static <T extends RequestBody> T readJson(
-        final HttpServletRequest request,
-        final Class<T> clazz
-    ) throws IOException {
+    public static <T extends RequestBody> T readJson(final HttpServletRequest request, final Class<T> clazz) {
         final var contentType = request.getHeader("Content-Type");
         if (contentType != null && !contentType.contains("application/json")) {
             throw new ContentTypeException();
         }
-        final var requestBody = request.getReader().lines().collect(joining(lineSeparator()));
+        final BufferedReader reader;
+        try {
+            reader = request.getReader();
+        } catch (final IOException exception) {
+            throw new InternalException(exception);
+        }
+        final var requestBody = reader.lines().collect(joining(lineSeparator()));
         final var objectMapper = ObjectMapperHolder.INSTANCE;
         final T object;
         try {

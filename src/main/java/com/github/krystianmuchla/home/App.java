@@ -2,6 +2,7 @@ package com.github.krystianmuchla.home;
 
 import com.github.krystianmuchla.home.db.changelog.ChangelogService;
 import com.github.krystianmuchla.home.error.AppErrorHandler;
+import com.github.krystianmuchla.home.error.exception.InternalException;
 import com.github.krystianmuchla.home.id.InitSignUpController;
 import com.github.krystianmuchla.home.id.SignInController;
 import com.github.krystianmuchla.home.id.SignOutController;
@@ -14,18 +15,22 @@ import org.eclipse.jetty.server.*;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 
 public class App {
-    public static void main(final String... args) throws Exception {
+    public static void main(final String... args) {
         ChangelogService.update();
         startHttpServer();
         startJobs();
     }
 
-    private static void startHttpServer() throws Exception {
+    private static void startHttpServer() {
         final var server = new Server();
         server.addConnector(createConnector(server));
         server.setHandler(createServletContextHandler());
         server.setErrorHandler(new AppErrorHandler());
-        server.start();
+        try {
+            server.start();
+        } catch (final Exception exception) {
+            throw new InternalException(exception);
+        }
     }
 
     private static Connector createConnector(final Server server) {

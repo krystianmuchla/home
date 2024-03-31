@@ -1,23 +1,35 @@
 package com.github.krystianmuchla.home.api;
 
-import java.io.IOException;
-
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.github.krystianmuchla.home.error.exception.InternalException;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
-import lombok.AccessLevel;
-import lombok.NoArgsConstructor;
 
-@NoArgsConstructor(access = AccessLevel.PRIVATE)
+import java.io.IOException;
+import java.io.PrintWriter;
+
 public class ResponseWriter {
 
-    public static void writeJson(final HttpServletResponse response, final Object object) throws IOException {
+    public static void writeJson(final HttpServletResponse response, final Object object) {
         final var objectMapper = ObjectMapperHolder.INSTANCE;
-        writeJson(response, objectMapper.writeValueAsString(object));
+        final String string;
+        try {
+            string = objectMapper.writeValueAsString(object);
+        } catch (final JsonProcessingException exception) {
+            throw new InternalException(exception);
+        }
+        writeJson(response, string);
     }
 
-    public static void writeJson(final HttpServletResponse response, final String string) throws IOException {
+    public static void writeJson(final HttpServletResponse response, final String string) {
         response.setContentType("application/json");
-        response.getWriter().print(string);
+        final PrintWriter writer;
+        try {
+            writer = response.getWriter();
+        } catch (final IOException exception) {
+            throw new InternalException(exception);
+        }
+        writer.print(string);
     }
 
     public static void addCookies(final HttpServletResponse response, final Cookie[] cookies) {

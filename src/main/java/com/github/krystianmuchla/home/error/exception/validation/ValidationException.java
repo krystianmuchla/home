@@ -5,7 +5,6 @@ import com.github.krystianmuchla.home.error.AppError;
 import com.github.krystianmuchla.home.util.MultiValueHashMap;
 import com.github.krystianmuchla.home.util.MultiValueMap;
 import jakarta.servlet.http.HttpServletResponse;
-import lombok.SneakyThrows;
 
 import java.util.Map;
 
@@ -22,7 +21,6 @@ public class ValidationException extends RuntimeException implements AppError {
     }
 
     @Override
-    @SneakyThrows
     public void handle(final HttpServletResponse response) {
         response.setStatus(400);
         ResponseWriter.writeJson(response, Map.of("invalidParameters", errors));

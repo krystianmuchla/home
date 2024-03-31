@@ -1,8 +1,9 @@
 package com.github.krystianmuchla.home.db;
 
+import com.github.krystianmuchla.home.error.exception.InternalException;
 import com.github.krystianmuchla.home.error.exception.TransactionException;
-import lombok.SneakyThrows;
 
+import java.sql.SQLException;
 import java.util.function.Supplier;
 
 public class Transaction {
@@ -13,16 +14,19 @@ public class Transaction {
         });
     }
 
-    @SneakyThrows
     public static <T> T run(final Supplier<T> supplier) {
-        final var connection = ConnectionManager.getConnection();
         try {
-            final var result = supplier.get();
-            connection.commit();
-            return result;
-        } catch (final Exception exception) {
-            connection.rollback();
-            throw new TransactionException(exception);
+            final var connection = ConnectionManager.getConnection();
+            try {
+                final var result = supplier.get();
+                connection.commit();
+                return result;
+            } catch (final Exception exception) {
+                connection.rollback();
+                throw new TransactionException(exception);
+            }
+        } catch (final SQLException exception) {
+            throw new InternalException(exception);
         }
     }
 }
