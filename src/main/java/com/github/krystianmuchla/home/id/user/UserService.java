@@ -47,7 +47,7 @@ public class UserService {
         if (accessData == null) {
             throw new AuthenticationException();
         }
-        UserAuthService.validateAuth(accessData.userId());
+        UserGuardService.inspect(accessData.userId());
         final var secret = secret(accessData.salt(), password);
         if (!Arrays.equals(secret, accessData.secret())) {
             throw new AuthenticationException(accessData.userId());

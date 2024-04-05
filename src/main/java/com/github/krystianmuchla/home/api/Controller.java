@@ -5,7 +5,7 @@ import com.github.krystianmuchla.home.id.accessdata.AccessDataSql;
 import com.github.krystianmuchla.home.id.session.Session;
 import com.github.krystianmuchla.home.id.session.SessionId;
 import com.github.krystianmuchla.home.id.session.SessionService;
-import com.github.krystianmuchla.home.id.user.UserAuthService;
+import com.github.krystianmuchla.home.id.user.UserGuardService;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 
@@ -21,7 +21,7 @@ public abstract class Controller extends HttpServlet {
         if (accessData == null) {
             throw new AuthenticationException();
         }
-        UserAuthService.validateAuth(accessData.userId());
+        UserGuardService.inspect(accessData.userId());
         final var session = SessionService.getSession(sessionId);
         if (session == null) {
             throw new AuthenticationException(accessData.userId());

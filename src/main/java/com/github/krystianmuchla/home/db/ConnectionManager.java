@@ -3,16 +3,15 @@ package com.github.krystianmuchla.home.db;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class ConnectionManager {
     private static Connection commonConnection;
     private static final Map<Long, Connection> REGISTERED_CONNECTIONS;
 
     static {
-        REGISTERED_CONNECTIONS = Collections.synchronizedMap(new HashMap<>());
+        REGISTERED_CONNECTIONS = new ConcurrentHashMap<>();
     }
 
     public static Connection getConnection() throws SQLException {

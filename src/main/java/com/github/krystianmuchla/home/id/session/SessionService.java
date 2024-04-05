@@ -4,9 +4,8 @@ import com.github.krystianmuchla.home.id.SecureRandomFactory;
 import com.github.krystianmuchla.home.id.user.User;
 
 import java.util.Base64;
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class SessionService {
     private static final int TOKEN_BYTES;
@@ -14,7 +13,7 @@ public class SessionService {
 
     static {
         TOKEN_BYTES = 32;
-        SESSIONS = Collections.synchronizedMap(new HashMap<>());
+        SESSIONS = new ConcurrentHashMap<>();
     }
 
     public static SessionId createSession(final String login, final User user) {

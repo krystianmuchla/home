@@ -1,6 +1,6 @@
 package com.github.krystianmuchla.home.id.user;
 
-import com.github.krystianmuchla.home.error.exception.AuthenticationException;
+import com.github.krystianmuchla.home.error.exception.RequestRateException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -9,18 +9,18 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
-public class UserAuthService {
-    private static final Logger LOG = LoggerFactory.getLogger(UserAuthService.class);
+public class UserGuardService {
+    private static final Logger LOG = LoggerFactory.getLogger(UserGuardService.class);
     private static final int MAX_FAILURES = 3;
     private static final Map<UUID, Integer> FAILURES = new ConcurrentHashMap<>();
 
-    public static void validateAuth(final UUID userId) {
+    public static void inspect(final UUID userId) {
         final var failures = FAILURES.get(userId);
         if (failures == null) {
             return;
         }
         if (failures >= MAX_FAILURES) {
-            throw new AuthenticationException();
+            throw new RequestRateException();
         }
     }
 
