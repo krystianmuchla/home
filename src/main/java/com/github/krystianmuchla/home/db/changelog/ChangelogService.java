@@ -4,13 +4,14 @@ import com.github.krystianmuchla.home.InstantFactory;
 import com.github.krystianmuchla.home.db.Sql;
 import com.github.krystianmuchla.home.db.Transaction;
 import com.github.krystianmuchla.home.error.exception.InternalException;
-import com.github.krystianmuchla.home.util.FileManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.File;
-import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Scanner;
 
 public class ChangelogService {
     private static final Logger LOG = LoggerFactory.getLogger(ChangelogService.class);
@@ -26,12 +27,14 @@ public class ChangelogService {
         } else {
             changeId = lastChange.id() + 1;
         }
-        File file;
-        while ((file = FileManager.fromResources("db/changelog/" + changeId + ".sql")) != null) {
+        while (true) {
             final List<String> statements;
-            try {
-                statements = FileManager.read(file, ";");
-            } catch (final FileNotFoundException exception) {
+            try (final var stream = resourceFileAsStream("db/changelog/" + changeId + ".sql")) {
+                if (stream == null) {
+                    break;
+                }
+                statements = readStatements(stream);
+            } catch (final IOException exception) {
                 throw new InternalException(exception);
             }
             if (statements.getLast().isBlank()) {
@@ -45,5 +48,20 @@ public class ChangelogService {
             LOG.info("Executed database change with id: {}", changeId);
             changeId++;
         }
+    }
+
+    private static InputStream resourceFileAsStream(final String fileName) {
+        return ChangelogService.class.getClassLoader().getResourceAsStream(fileName);
+    }
+
+    private static List<String> readStatements(final InputStream stream) {
+        final var result = new ArrayList<String>();
+        try (final var scanner = new Scanner(stream)) {
+            scanner.useDelimiter(";");
+            while (scanner.hasNext()) {
+                result.add(scanner.next());
+            }
+        }
+        return result;
     }
 }

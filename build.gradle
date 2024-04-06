@@ -34,7 +34,7 @@ dependencies {
 application {
     applicationDefaultJvmArgs = [
         '-Dport=8080',
-        '-Ddatabase.url=jdbc:mysql://localhost:3307/home',
+        '-Ddatabase.url=jdbc:mysql://localhost:3306/home',
         '-Ddatabase.user=root',
         '-Ddatabase.password=root',
         '-Dnote-grave-cleaner.enabled=false',
