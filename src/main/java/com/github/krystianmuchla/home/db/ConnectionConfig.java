@@ -7,6 +7,7 @@ public class ConnectionConfig extends Config {
     public static final String URL;
     public static final String USER;
     public static final String PASSWORD;
+    public static final int POOL_SIZE = 2;
 
     static {
         final var url = resolve("database.url", "HOME_DATABASE_URL");

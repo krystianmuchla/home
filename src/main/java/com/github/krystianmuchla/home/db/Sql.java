@@ -23,27 +23,38 @@ public class Sql {
         final Function<ResultSet, T> mapper,
         final Object... parameters
     ) {
-        try (final var preparedStatement = ConnectionManager.getConnection().prepareStatement(sql)) {
-            for (int index = 0; index < parameters.length; index++) {
-                preparedStatement.setObject(index + 1, parameters[index]);
+        try {
+            final var connection = ConnectionManager.borrowConnection();
+            try (final var preparedStatement = connection.prepareStatement(sql)) {
+                for (int index = 0; index < parameters.length; index++) {
+                    preparedStatement.setObject(index + 1, parameters[index]);
+                }
+                try (final var resultSet = preparedStatement.executeQuery()) {
+                    final var result = new ArrayList<T>();
+                    while (resultSet.next()) {
+                        result.add(mapper.apply(resultSet));
+                    }
+                    return result;
+                } finally {
+                    ConnectionManager.returnConnection(connection);
+                }
             }
-            final var resultSet = preparedStatement.executeQuery();
-            final var result = new ArrayList<T>();
-            while (resultSet.next()) {
-                result.add(mapper.apply(resultSet));
-            }
-            return result;
         } catch (final SQLException exception) {
             throw new InternalException(exception);
         }
     }
 
     public static int executeUpdate(final String sql, final Object... parameters) {
-        try (final var preparedStatement = ConnectionManager.getConnection().prepareStatement(sql)) {
-            for (int index = 0; index < parameters.length; index++) {
-                preparedStatement.setObject(index + 1, parameters[index]);
+        try {
+            final var connection = ConnectionManager.borrowConnection();
+            try (final var preparedStatement = connection.prepareStatement(sql)) {
+                for (int index = 0; index < parameters.length; index++) {
+                    preparedStatement.setObject(index + 1, parameters[index]);
+                }
+                return preparedStatement.executeUpdate();
+            } finally {
+                ConnectionManager.returnConnection(connection);
             }
-            return preparedStatement.executeUpdate();
         } catch (final SQLException exception) {
             throw new InternalException(exception);
         }

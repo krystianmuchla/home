@@ -3,7 +3,6 @@ package com.github.krystianmuchla.home.mnemo;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.krystianmuchla.home.AppContext;
-import com.github.krystianmuchla.home.db.ConnectionManager;
 import com.github.krystianmuchla.home.db.Sql;
 import com.github.krystianmuchla.home.db.Transaction;
 import com.github.krystianmuchla.home.id.accessdata.AccessData;
@@ -45,12 +44,11 @@ class NoteControllerTest {
     }
 
     @AfterEach
-    void afterEachTest() throws Exception {
+    void afterEachTest() {
         Transaction.run(() -> {
             Sql.executeUpdate("DELETE FROM %s".formatted(Note.NOTE));
             Sql.executeUpdate("DELETE FROM %s".formatted(NoteGrave.NOTE_GRAVE));
         });
-        ConnectionManager.getConnection().commit();
     }
 
     @AfterAll

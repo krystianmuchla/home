@@ -16,15 +16,17 @@ public class Transaction {
 
     public static <T> T run(final Supplier<T> supplier) {
         try {
-            final var connection = ConnectionManager.getConnection();
+            final var connection = ConnectionManager.registerConnection();
+            final T result;
             try {
-                final var result = supplier.get();
-                connection.commit();
-                return result;
+                result = supplier.get();
             } catch (final Exception exception) {
                 connection.rollback();
                 throw new TransactionException(exception);
             }
+            connection.commit();
+            ConnectionManager.deregisterConnection();
+            return result;
         } catch (final SQLException exception) {
             throw new InternalException(exception);
         }

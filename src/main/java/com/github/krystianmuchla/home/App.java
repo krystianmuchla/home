@@ -9,7 +9,6 @@ import com.github.krystianmuchla.home.id.SignOutController;
 import com.github.krystianmuchla.home.id.SignUpController;
 import com.github.krystianmuchla.home.mnemo.NoteController;
 import com.github.krystianmuchla.home.mnemo.grave.NoteGraveCleaner;
-import com.github.krystianmuchla.home.mnemo.grave.NoteGraveCleanerConfig;
 import com.github.krystianmuchla.home.mnemo.sync.NoteSyncController;
 import org.eclipse.jetty.server.*;
 import org.eclipse.jetty.servlet.ServletContextHandler;
@@ -58,11 +57,7 @@ public class App {
     }
 
     private static void startJobs() {
-        final var noteGraveCleaner = new NoteGraveCleaner(
-            NoteGraveCleanerConfig.ENABLED,
-            NoteGraveCleanerConfig.RATE,
-            NoteGraveCleanerConfig.THRESHOLD
-        );
+        final var noteGraveCleaner = new NoteGraveCleaner();
         new Thread(noteGraveCleaner).start();
     }
 }

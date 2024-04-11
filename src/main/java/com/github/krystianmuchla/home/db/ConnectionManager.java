@@ -1,40 +1,67 @@
 package com.github.krystianmuchla.home.db;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.Map;
+import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class ConnectionManager {
-    private static Connection commonConnection;
-    private static final Map<Long, Connection> REGISTERED_CONNECTIONS;
+    private static final Logger LOG = LoggerFactory.getLogger(ConnectionManager.class);
+    private static final Map<Long, Connection> REGISTERED_CONNECTIONS = new ConcurrentHashMap<>();
+    private static final ArrayBlockingQueue<Connection> CONNECTIONS = new ArrayBlockingQueue<>(ConnectionConfig.POOL_SIZE);
 
-    static {
-        REGISTERED_CONNECTIONS = new ConcurrentHashMap<>();
+    public static Connection borrowConnection() throws SQLException {
+        return REGISTERED_CONNECTIONS.getOrDefault(threadId(), pollConnection());
     }
 
-    public static Connection getConnection() throws SQLException {
-        final var threadId = Thread.currentThread().threadId();
-        final var registeredConnection = REGISTERED_CONNECTIONS.get(threadId);
-        if (registeredConnection != null) {
-            return registeredConnection;
-        }
-        if (commonConnection == null) {
-            commonConnection = createConnection();
-        }
-        return commonConnection;
-    }
-
-    public static void registerConnection() throws SQLException {
-        final var threadId = Thread.currentThread().threadId();
-        final var looseConnection = REGISTERED_CONNECTIONS.put(threadId, createConnection());
-        if (looseConnection != null) {
-            looseConnection.close();
+    public static void returnConnection(final Connection connection) throws SQLException {
+        if (REGISTERED_CONNECTIONS.containsKey(threadId())) {
+            // no-op
+        } else {
+            offerConnection(connection);
         }
     }
 
-    public static Connection createConnection() throws SQLException {
+    public static Connection registerConnection() throws SQLException {
+        final var connection = pollConnection();
+        final var previousConnection = REGISTERED_CONNECTIONS.put(threadId(), connection);
+        if (previousConnection != null) {
+            previousConnection.close();
+            LOG.warn("Several connection registration occurred");
+        }
+        return connection;
+    }
+
+    public static void deregisterConnection() throws SQLException {
+        final var connection = REGISTERED_CONNECTIONS.remove(threadId());
+        if (connection == null) {
+            LOG.warn("Missing connection to deregister");
+            return;
+        }
+        offerConnection(connection);
+    }
+
+    private static Connection pollConnection() throws SQLException {
+        var connection = CONNECTIONS.poll();
+        if (connection == null || connection.isClosed()) {
+            connection = createConnection();
+        }
+        return connection;
+    }
+
+    private static void offerConnection(final Connection connection) throws SQLException {
+        final var result = CONNECTIONS.offer(connection);
+        if (!result) {
+            connection.close();
+        }
+    }
+
+    private static Connection createConnection() throws SQLException {
         final var connection = DriverManager.getConnection(
             ConnectionConfig.URL,
             ConnectionConfig.USER,
@@ -42,5 +69,9 @@ public class ConnectionManager {
         connection.setAutoCommit(false);
         connection.setTransactionIsolation(Connection.TRANSACTION_READ_COMMITTED);
         return connection;
+    }
+
+    private static long threadId() {
+        return Thread.currentThread().threadId();
     }
 }
