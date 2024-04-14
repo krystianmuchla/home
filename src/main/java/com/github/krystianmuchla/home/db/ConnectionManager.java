@@ -15,31 +15,32 @@ public class ConnectionManager {
     private static final Map<Long, Connection> REGISTERED_CONNECTIONS = new ConcurrentHashMap<>();
     private static final ArrayBlockingQueue<Connection> CONNECTIONS = new ArrayBlockingQueue<>(ConnectionConfig.POOL_SIZE);
 
-    public static Connection borrowConnection() throws SQLException {
-        return REGISTERED_CONNECTIONS.getOrDefault(threadId(), pollConnection());
+    public static BorrowedConnection borrowConnection() throws SQLException {
+        final var connection = REGISTERED_CONNECTIONS.getOrDefault(threadId(), pollConnection());
+        return new BorrowedConnection(connection);
     }
 
     public static void returnConnection(final Connection connection) throws SQLException {
-        if (REGISTERED_CONNECTIONS.containsKey(threadId())) {
+        if (REGISTERED_CONNECTIONS.containsValue(connection)) {
             // no-op
         } else {
             offerConnection(connection);
         }
     }
 
-    public static Connection registerConnection() throws SQLException {
+    public static RegisteredConnection registerConnection() throws SQLException {
         final var connection = pollConnection();
         final var previousConnection = REGISTERED_CONNECTIONS.put(threadId(), connection);
         if (previousConnection != null) {
             previousConnection.close();
             LOG.warn("Several connection registration occurred");
         }
-        return connection;
+        return new RegisteredConnection(connection);
     }
 
-    public static void deregisterConnection() throws SQLException {
-        final var connection = REGISTERED_CONNECTIONS.remove(threadId());
-        if (connection == null) {
+    public static void deregisterConnection(final Connection connection) throws SQLException {
+        final var result = REGISTERED_CONNECTIONS.values().remove(connection);
+        if (!result) {
             LOG.warn("Missing connection to deregister");
             return;
         }

@@ -15,8 +15,8 @@ public class Transaction {
     }
 
     public static <T> T run(final Supplier<T> supplier) {
-        try {
-            final var connection = ConnectionManager.registerConnection();
+        try (final var registeredConnection = ConnectionManager.registerConnection()) {
+            final var connection = registeredConnection.connection();
             final T result;
             try {
                 result = supplier.get();
@@ -25,7 +25,6 @@ public class Transaction {
                 throw new TransactionException(exception);
             }
             connection.commit();
-            ConnectionManager.deregisterConnection();
             return result;
         } catch (final SQLException exception) {
             throw new InternalException(exception);
