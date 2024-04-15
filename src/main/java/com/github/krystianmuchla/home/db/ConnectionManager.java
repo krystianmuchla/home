@@ -16,8 +16,8 @@ public class ConnectionManager {
     private static final ArrayBlockingQueue<Connection> CONNECTIONS = new ArrayBlockingQueue<>(ConnectionConfig.POOL_SIZE);
 
     public static BorrowedConnection borrowConnection() throws SQLException {
-        final var connection = REGISTERED_CONNECTIONS.getOrDefault(threadId(), pollConnection());
-        return new BorrowedConnection(connection);
+        final var connection = REGISTERED_CONNECTIONS.get(threadId());
+        return new BorrowedConnection(connection != null ? connection : pollConnection());
     }
 
     public static void returnConnection(final Connection connection) throws SQLException {
@@ -48,9 +48,9 @@ public class ConnectionManager {
     }
 
     private static Connection pollConnection() throws SQLException {
-        var connection = CONNECTIONS.poll();
-        if (connection == null || connection.isClosed()) {
-            connection = createConnection();
+        final var connection = CONNECTIONS.poll();
+        if (connection == null || !connection.isValid(2)) {
+            return createConnection();
         }
         return connection;
     }
@@ -66,7 +66,8 @@ public class ConnectionManager {
         final var connection = DriverManager.getConnection(
             ConnectionConfig.URL,
             ConnectionConfig.USER,
-            ConnectionConfig.PASSWORD);
+            ConnectionConfig.PASSWORD
+        );
         connection.setAutoCommit(false);
         connection.setTransactionIsolation(Connection.TRANSACTION_READ_COMMITTED);
         return connection;

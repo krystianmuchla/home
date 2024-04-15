@@ -11,7 +11,7 @@ public class NoteGraveCleanerConfig extends Config {
     public static final Duration THRESHOLD = Duration.ofDays(30);
 
     static {
-        final var enabled = resolve("note-grave-cleaner.enabled", "NOTE_GRAVE_CLEANER_ENABLED");
+        final var enabled = resolve("note-grave-cleaner.enabled", "HOME_NOTE_GRAVE_CLEANER_ENABLED");
         if (enabled == null) {
             throw new InternalException("Note grave cleaner enabled flag not specified");
         }
