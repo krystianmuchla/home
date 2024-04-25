@@ -1,4 +1,4 @@
-package com.github.krystianmuchla.home.mnemo.grave;
+package com.github.krystianmuchla.home.note.grave;
 
 import com.github.krystianmuchla.home.db.Sql;
 import com.github.krystianmuchla.home.error.exception.InternalException;

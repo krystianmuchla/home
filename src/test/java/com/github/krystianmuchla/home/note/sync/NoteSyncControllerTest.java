@@ -1,4 +1,4 @@
-package com.github.krystianmuchla.home.mnemo.sync;
+package com.github.krystianmuchla.home.note.sync;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -11,11 +11,11 @@ import com.github.krystianmuchla.home.id.session.SessionId;
 import com.github.krystianmuchla.home.id.session.SessionService;
 import com.github.krystianmuchla.home.id.user.User;
 import com.github.krystianmuchla.home.id.user.UserService;
-import com.github.krystianmuchla.home.mnemo.Note;
-import com.github.krystianmuchla.home.mnemo.NoteResponse;
-import com.github.krystianmuchla.home.mnemo.NoteSql;
-import com.github.krystianmuchla.home.mnemo.grave.NoteGrave;
-import com.github.krystianmuchla.home.mnemo.grave.NoteGraveSql;
+import com.github.krystianmuchla.home.note.Note;
+import com.github.krystianmuchla.home.note.NoteResponse;
+import com.github.krystianmuchla.home.note.NoteSql;
+import com.github.krystianmuchla.home.note.grave.NoteGrave;
+import com.github.krystianmuchla.home.note.grave.NoteGraveSql;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
@@ -95,6 +95,7 @@ class NoteSyncControllerTest {
             .build();
 
         final var response = client.send(request, HttpResponse.BodyHandlers.ofString());
+        client.close();
 
         assertThat(response.statusCode()).isEqualTo(200);
         assertThat(response.headers().firstValue("Content-Type")).isEqualTo(Optional.of("application/json"));
@@ -108,7 +109,7 @@ class NoteSyncControllerTest {
         assertThat(notesResponse).hasSize(0);
         final var notesDb = Sql.executeQuery("SELECT * FROM %s".formatted(Note.NOTE), NoteSql.mapper());
         assertThat(notesDb).hasSize(1);
-        final var noteDb = notesDb.get(0);
+        final var noteDb = notesDb.getFirst();
         assertThat(noteDb.id()).isEqualTo(UUID.fromString("4d8af443-bfa9-4d47-a886-b1ddc82a958d"));
         assertThat(noteDb.userId()).isEqualTo(user.id());
         assertThat(noteDb.title()).isEqualTo("External note title");
@@ -193,6 +194,7 @@ class NoteSyncControllerTest {
             .build();
 
         final var response = client.send(request, HttpResponse.BodyHandlers.ofString());
+        client.close();
 
         assertThat(response.statusCode()).isEqualTo(200);
         assertThat(response.headers().firstValue("Content-Type")).isEqualTo(Optional.of("application/json"));
@@ -261,6 +263,7 @@ class NoteSyncControllerTest {
             .build();
 
         final var response = client.send(request, HttpResponse.BodyHandlers.ofString());
+        client.close();
 
         assertThat(response.statusCode()).isEqualTo(200);
         assertThat(response.headers().firstValue("Content-Type")).isEqualTo(Optional.of("application/json"));
@@ -272,7 +275,7 @@ class NoteSyncControllerTest {
             }
         );
         assertThat(notesResponse).hasSize(1);
-        final var noteResponse = notesResponse.get(0);
+        final var noteResponse = notesResponse.getFirst();
         assertThat(noteResponse.id()).isEqualTo(UUID.fromString("416b5888-4ee0-4460-8c4e-0531e62c029c"));
         assertThat(noteResponse.title()).isEqualTo("Note title");
         assertThat(noteResponse.content()).isEqualTo("Note content");
@@ -280,7 +283,7 @@ class NoteSyncControllerTest {
         assertThat(noteResponse.modificationTime()).isEqualTo(Instant.parse("2010-10-10T10:10:10Z"));
         final var notesDb = Sql.executeQuery("SELECT * FROM %s".formatted(Note.NOTE), NoteSql.mapper());
         assertThat(notesDb).hasSize(1);
-        final var noteDb = notesDb.get(0);
+        final var noteDb = notesDb.getFirst();
         assertThat(noteDb.id()).isEqualTo(UUID.fromString("416b5888-4ee0-4460-8c4e-0531e62c029c"));
         assertThat(noteDb.userId()).isEqualTo(user.id());
         assertThat(noteDb.title()).isEqualTo("Note title");
@@ -289,7 +292,7 @@ class NoteSyncControllerTest {
         assertThat(noteDb.modificationTime()).isEqualTo(Instant.parse("2010-10-10T10:10:10Z"));
         final var noteGravesDb = Sql.executeQuery("SELECT * FROM %s".formatted(NoteGrave.NOTE_GRAVE), NoteGraveSql.mapper());
         assertThat(noteGravesDb).hasSize(1);
-        final var noteGraveDb = noteGravesDb.get(0);
+        final var noteGraveDb = noteGravesDb.getFirst();
         assertThat(noteGraveDb.id()).isEqualTo(UUID.fromString("884f33f5-2b79-4f68-9118-73cabffc4f8a"));
         assertThat(noteGraveDb.userId()).isEqualTo(user.id());
         assertThat(noteGraveDb.creationTime()).isEqualTo(Instant.parse("2010-10-10T10:10:10Z"));
@@ -329,6 +332,7 @@ class NoteSyncControllerTest {
             .build();
 
         final var response = client.send(request, HttpResponse.BodyHandlers.ofString());
+        client.close();
 
         assertThat(response.statusCode()).isEqualTo(200);
         assertThat(response.headers().firstValue("Content-Type")).isEqualTo(Optional.of("application/json"));
@@ -433,6 +437,7 @@ class NoteSyncControllerTest {
             .build();
 
         final var response = client.send(request, HttpResponse.BodyHandlers.ofString());
+        client.close();
 
         assertThat(response.statusCode()).isEqualTo(200);
         assertThat(response.headers().firstValue("Content-Type")).isEqualTo(Optional.of("application/json"));
@@ -496,6 +501,7 @@ class NoteSyncControllerTest {
             .build();
 
         final var response = client.send(request, HttpResponse.BodyHandlers.ofString());
+        client.close();
 
         assertThat(response.statusCode()).isEqualTo(401);
     }

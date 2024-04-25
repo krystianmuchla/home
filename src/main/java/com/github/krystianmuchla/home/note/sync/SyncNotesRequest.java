@@ -1,4 +1,4 @@
-package com.github.krystianmuchla.home.mnemo.sync;
+package com.github.krystianmuchla.home.note.sync;
 
 import com.github.krystianmuchla.home.api.RequestBody;
 import com.github.krystianmuchla.home.error.exception.validation.ValidationError;

@@ -11,6 +11,10 @@ import java.util.Map;
 public class ValidationException extends RuntimeException implements AppError {
     private final MultiValueMap<String, ValidationError> errors;
 
+    public ValidationException() {
+        errors = new MultiValueHashMap<>();
+    }
+
     public ValidationException(final String parameter, ValidationError error) {
         this(MultiValueHashMap.of(parameter, error));
     }
@@ -23,6 +27,8 @@ public class ValidationException extends RuntimeException implements AppError {
     @Override
     public void handle(final HttpServletResponse response) {
         response.setStatus(400);
-        ResponseWriter.writeJson(response, Map.of("invalidParameters", errors));
+        if (!errors.isEmpty()) {
+            ResponseWriter.writeJson(response, Map.of("invalidParameters", errors));
+        }
     }
 }

@@ -1,9 +1,9 @@
-package com.github.krystianmuchla.home.mnemo;
+package com.github.krystianmuchla.home.note;
 
 import com.github.krystianmuchla.home.InstantFactory;
 import com.github.krystianmuchla.home.error.exception.MissingResourceException;
-import com.github.krystianmuchla.home.mnemo.grave.NoteGrave;
-import com.github.krystianmuchla.home.mnemo.grave.NoteGraveSql;
+import com.github.krystianmuchla.home.note.grave.NoteGrave;
+import com.github.krystianmuchla.home.note.grave.NoteGraveSql;
 
 import java.util.UUID;
 

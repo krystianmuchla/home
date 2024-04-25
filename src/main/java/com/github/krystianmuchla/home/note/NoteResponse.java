@@ -1,4 +1,4 @@
-package com.github.krystianmuchla.home.mnemo;
+package com.github.krystianmuchla.home.note;
 
 import java.time.Instant;
 import java.util.UUID;

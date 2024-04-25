@@ -1,11 +1,11 @@
-package com.github.krystianmuchla.home.mnemo.sync;
+package com.github.krystianmuchla.home.note.sync;
 
-import com.github.krystianmuchla.home.mnemo.Note;
-import com.github.krystianmuchla.home.mnemo.NoteSql;
-import com.github.krystianmuchla.home.mnemo.NoteService;
-import com.github.krystianmuchla.home.mnemo.grave.NoteGrave;
-import com.github.krystianmuchla.home.mnemo.grave.NoteGraveSql;
-import com.github.krystianmuchla.home.mnemo.grave.NoteGraveService;
+import com.github.krystianmuchla.home.note.Note;
+import com.github.krystianmuchla.home.note.NoteSql;
+import com.github.krystianmuchla.home.note.NoteService;
+import com.github.krystianmuchla.home.note.grave.NoteGrave;
+import com.github.krystianmuchla.home.note.grave.NoteGraveSql;
+import com.github.krystianmuchla.home.note.grave.NoteGraveService;
 
 import java.util.ArrayList;
 import java.util.List;

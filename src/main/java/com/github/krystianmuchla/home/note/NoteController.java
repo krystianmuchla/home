@@ -1,4 +1,4 @@
-package com.github.krystianmuchla.home.mnemo;
+package com.github.krystianmuchla.home.note;
 
 import com.github.krystianmuchla.home.api.Controller;
 import com.github.krystianmuchla.home.api.IdResponse;
@@ -29,8 +29,8 @@ public class NoteController extends Controller {
         final var noteId = Transaction.run(
             () -> NoteService.create(user.id(), createNoteRequest.title(), createNoteRequest.content())
         );
-        ResponseWriter.writeJson(response, new IdResponse<>(noteId));
         response.setStatus(201);
+        ResponseWriter.writeJson(response, new IdResponse<>(noteId));
     }
 
     @Override

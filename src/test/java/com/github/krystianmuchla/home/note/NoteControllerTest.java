@@ -1,4 +1,4 @@
-package com.github.krystianmuchla.home.mnemo;
+package com.github.krystianmuchla.home.note;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -10,8 +10,8 @@ import com.github.krystianmuchla.home.id.session.SessionId;
 import com.github.krystianmuchla.home.id.session.SessionService;
 import com.github.krystianmuchla.home.id.user.User;
 import com.github.krystianmuchla.home.id.user.UserService;
-import com.github.krystianmuchla.home.mnemo.grave.NoteGrave;
-import com.github.krystianmuchla.home.mnemo.grave.NoteGraveSql;
+import com.github.krystianmuchla.home.note.grave.NoteGrave;
+import com.github.krystianmuchla.home.note.grave.NoteGraveSql;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
@@ -78,6 +78,7 @@ class NoteControllerTest {
             .build();
 
         final var response = client.send(request, HttpResponse.BodyHandlers.ofString());
+        client.close();
 
         assertThat(response.statusCode()).isEqualTo(201);
         assertThat(response.headers().firstValue("Content-Type")).isEqualTo(Optional.of("application/json"));
@@ -90,7 +91,7 @@ class NoteControllerTest {
         final var noteId = UUID.fromString((String) responseBody.get("id"));
         final var notes = Sql.executeQuery("SELECT * FROM %s".formatted(Note.NOTE), NoteSql.mapper());
         assertThat(notes).hasSize(1);
-        final var note = notes.get(0);
+        final var note = notes.getFirst();
         assertThat(note.id()).isEqualTo(noteId);
         assertThat(note.userId()).isEqualTo(user.id());
         assertThat(note.title()).isEqualTo(noteTitle);
@@ -110,6 +111,7 @@ class NoteControllerTest {
             .build();
 
         final var response = client.send(request, HttpResponse.BodyHandlers.ofString());
+        client.close();
 
         assertThat(response.statusCode()).isEqualTo(401);
         assertThat(response.body()).isEmpty();
@@ -142,6 +144,7 @@ class NoteControllerTest {
             .build();
 
         final var response = client.send(request, HttpResponse.BodyHandlers.ofString());
+        client.close();
 
         assertThat(response.statusCode()).isEqualTo(200);
         assertThat(response.headers().firstValue("Content-Type")).isEqualTo(Optional.of("application/json"));
@@ -185,6 +188,7 @@ class NoteControllerTest {
             .build();
 
         final var response = client.send(request, HttpResponse.BodyHandlers.ofString());
+        client.close();
 
         assertThat(response.statusCode()).isEqualTo(404);
         assertThat(response.body()).isEmpty();
@@ -199,6 +203,7 @@ class NoteControllerTest {
             .build();
 
         final var response = client.send(request, HttpResponse.BodyHandlers.ofString());
+        client.close();
 
         assertThat(response.statusCode()).isEqualTo(401);
         assertThat(response.body()).isEmpty();
@@ -231,6 +236,7 @@ class NoteControllerTest {
             .build();
 
         final var response = client.send(request, HttpResponse.BodyHandlers.ofString());
+        client.close();
 
         assertThat(response.statusCode()).isEqualTo(200);
         assertThat(response.headers().firstValue("Content-Type")).isEqualTo(Optional.of("application/json"));
@@ -278,6 +284,7 @@ class NoteControllerTest {
             .build();
 
         final var response = client.send(request, HttpResponse.BodyHandlers.ofString());
+        client.close();
 
         assertThat(response.statusCode()).isEqualTo(200);
         assertThat(response.headers().firstValue("Content-Type")).isEqualTo(Optional.of("application/json"));
@@ -300,6 +307,7 @@ class NoteControllerTest {
             .build();
 
         final var response = client.send(request, HttpResponse.BodyHandlers.ofString());
+        client.close();
 
         assertThat(response.statusCode()).isEqualTo(401);
         assertThat(response.body()).isEmpty();
@@ -338,6 +346,7 @@ class NoteControllerTest {
             .build();
 
         final var response = client.send(request, HttpResponse.BodyHandlers.ofString());
+        client.close();
 
         assertThat(response.statusCode()).isEqualTo(204);
         assertThat(response.body()).isEmpty();
@@ -385,6 +394,7 @@ class NoteControllerTest {
             .build();
 
         final var response = client.send(request, HttpResponse.BodyHandlers.ofString());
+        client.close();
 
         assertThat(response.statusCode()).isEqualTo(404);
         assertThat(response.body()).isEmpty();
@@ -400,6 +410,7 @@ class NoteControllerTest {
             .build();
 
         final var response = client.send(request, HttpResponse.BodyHandlers.ofString());
+        client.close();
 
         assertThat(response.statusCode()).isEqualTo(401);
         assertThat(response.body()).isEmpty();
@@ -429,6 +440,7 @@ class NoteControllerTest {
             .build();
 
         final var response = client.send(request, HttpResponse.BodyHandlers.ofString());
+        client.close();
 
         assertThat(response.statusCode()).isEqualTo(204);
         assertThat(response.body()).isEmpty();
@@ -436,7 +448,7 @@ class NoteControllerTest {
         assertThat(notes).hasSize(0);
         final var noteGraves = Sql.executeQuery("SELECT * FROM %s".formatted(NoteGrave.NOTE_GRAVE), NoteGraveSql.mapper());
         assertThat(noteGraves).hasSize(1);
-        final var noteGrave = noteGraves.get(0);
+        final var noteGrave = noteGraves.getFirst();
         assertThat(noteGrave.id()).isEqualTo(noteId);
         assertThat(noteGrave.userId()).isEqualTo(user.id());
         assertThat(noteGrave.creationTime()).isAfter(noteModificationTime);
@@ -467,6 +479,7 @@ class NoteControllerTest {
             .build();
 
         final var response = client.send(request, HttpResponse.BodyHandlers.ofString());
+        client.close();
 
         assertThat(response.statusCode()).isEqualTo(404);
         assertThat(response.body()).isEmpty();
@@ -481,6 +494,7 @@ class NoteControllerTest {
             .build();
 
         final var response = client.send(request, HttpResponse.BodyHandlers.ofString());
+        client.close();
 
         assertThat(response.statusCode()).isEqualTo(401);
         assertThat(response.body()).isEmpty();

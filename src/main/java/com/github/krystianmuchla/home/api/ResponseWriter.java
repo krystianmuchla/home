@@ -2,11 +2,13 @@ package com.github.krystianmuchla.home.api;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.github.krystianmuchla.home.error.exception.InternalException;
+import jakarta.servlet.ServletOutputStream;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
 
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.PrintWriter;
 
 public class ResponseWriter {
 
@@ -23,13 +25,29 @@ public class ResponseWriter {
 
     public static void writeJson(final HttpServletResponse response, final String string) {
         response.setContentType("application/json");
-        final PrintWriter writer;
-        try {
-            writer = response.getWriter();
+        try (final var writer = response.getWriter()) {
+            writer.print(string);
         } catch (final IOException exception) {
             throw new InternalException(exception);
         }
-        writer.print(string);
+    }
+
+    public static void writeFile(final HttpServletResponse response, final File file) {
+        response.setContentType("application/octet-stream");
+        response.setContentLength((int) file.length());
+        response.setHeader("Content-Disposition", "attachment; filename=\"" + file.getName() + "\"");
+        final ServletOutputStream outputStream;
+        try (final var inputStream = new FileInputStream(file)) {
+            outputStream = response.getOutputStream();
+            final var buffer = new byte[512];
+            int length;
+            while ((length = inputStream.read(buffer)) > 0) {
+                outputStream.write(buffer, 0, length);
+            }
+            outputStream.flush();
+        } catch (final IOException exception) {
+            throw new InternalException(exception);
+        }
     }
 
     public static void addCookies(final HttpServletResponse response, final Cookie[] cookies) {

@@ -1,11 +1,11 @@
-package com.github.krystianmuchla.home.mnemo.sync;
+package com.github.krystianmuchla.home.note.sync;
 
 import com.github.krystianmuchla.home.api.Controller;
 import com.github.krystianmuchla.home.api.RequestReader;
 import com.github.krystianmuchla.home.api.ResponseWriter;
 import com.github.krystianmuchla.home.db.Transaction;
-import com.github.krystianmuchla.home.mnemo.Note;
-import com.github.krystianmuchla.home.mnemo.NoteResponse;
+import com.github.krystianmuchla.home.note.Note;
+import com.github.krystianmuchla.home.note.NoteResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 

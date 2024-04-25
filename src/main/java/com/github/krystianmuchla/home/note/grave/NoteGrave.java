@@ -1,8 +1,8 @@
-package com.github.krystianmuchla.home.mnemo.grave;
+package com.github.krystianmuchla.home.note.grave;
 
 import com.github.krystianmuchla.home.InstantFactory;
 import com.github.krystianmuchla.home.error.exception.InternalException;
-import com.github.krystianmuchla.home.mnemo.Note;
+import com.github.krystianmuchla.home.note.Note;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;

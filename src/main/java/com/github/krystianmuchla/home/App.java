@@ -1,15 +1,16 @@
 package com.github.krystianmuchla.home;
 
 import com.github.krystianmuchla.home.db.changelog.ChangelogService;
+import com.github.krystianmuchla.home.drive.DriveController;
 import com.github.krystianmuchla.home.error.AppErrorHandler;
 import com.github.krystianmuchla.home.error.exception.InternalException;
 import com.github.krystianmuchla.home.id.InitSignUpController;
 import com.github.krystianmuchla.home.id.SignInController;
 import com.github.krystianmuchla.home.id.SignOutController;
 import com.github.krystianmuchla.home.id.SignUpController;
-import com.github.krystianmuchla.home.mnemo.NoteController;
-import com.github.krystianmuchla.home.mnemo.grave.NoteGraveCleaner;
-import com.github.krystianmuchla.home.mnemo.sync.NoteSyncController;
+import com.github.krystianmuchla.home.note.NoteController;
+import com.github.krystianmuchla.home.note.grave.NoteGraveCleaner;
+import com.github.krystianmuchla.home.note.sync.NoteSyncController;
 import org.eclipse.jetty.server.*;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 
@@ -46,6 +47,7 @@ public class App {
 
     private static ServletContextHandler createServletContextHandler() {
         final var servletContextHandler = new ServletContextHandler();
+        servletContextHandler.addServlet(DriveController.class, DriveController.PATH);
         servletContextHandler.addServlet(HealthController.class, HealthController.PATH);
         servletContextHandler.addServlet(InitSignUpController.class, InitSignUpController.PATH);
         servletContextHandler.addServlet(NoteController.class, NoteController.PATH);

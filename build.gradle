@@ -32,11 +32,13 @@ dependencies {
 }
 
 application {
+    final driveLocation = projectDir.toPath().resolve('home-local').resolve('drive').toString()
     applicationDefaultJvmArgs = [
         '-Ddatabase.url=jdbc:mysql://localhost:3306/home',
         '-Ddatabase.user=root',
         '-Ddatabase.password=root',
         '-Dnote-grave-cleaner.enabled=false',
+        "-Ddrive.location=$driveLocation"
     ]
     mainClass = 'com.github.krystianmuchla.home.App'
 }
