@@ -4,10 +4,10 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.github.krystianmuchla.home.error.exception.ContentTypeException;
 import com.github.krystianmuchla.home.error.exception.InternalException;
 import com.github.krystianmuchla.home.error.exception.RequestException;
+import jakarta.servlet.ServletInputStream;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 
-import java.io.BufferedReader;
 import java.io.IOException;
 import java.util.function.Function;
 
@@ -59,25 +59,35 @@ public class RequestReader {
 
     public static <T extends RequestBody> T readJson(final HttpServletRequest request, final Class<T> clazz) {
         final var contentType = request.getHeader("Content-Type");
-        if (contentType != null && !contentType.contains("application/json")) {
+        if (contentType == null || !contentType.contains("application/json")) {
             throw new ContentTypeException();
         }
-        final BufferedReader reader;
-        try {
-            reader = request.getReader();
+        final String requestBody;
+        try (final var reader = request.getReader()) {
+            requestBody = reader.lines().collect(joining(lineSeparator()));
         } catch (final IOException exception) {
             throw new InternalException(exception);
         }
-        final var requestBody = reader.lines().collect(joining(lineSeparator()));
-        final var objectMapper = ObjectMapperHolder.INSTANCE;
         final T object;
         try {
-            object = objectMapper.readValue(requestBody, clazz);
+            object = ObjectMapperHolder.INSTANCE.readValue(requestBody, clazz);
         } catch (final JsonProcessingException exception) {
             throw new RequestException(exception);
         }
         object.validate();
         return object;
+    }
+
+    public static ServletInputStream inputStream(final HttpServletRequest request) {
+        final var contentType = request.getHeader("Content-Type");
+        if (contentType == null || !contentType.contains("application/octet-stream")) {
+            throw new ContentTypeException();
+        }
+        try {
+            return request.getInputStream();
+        } catch (final IOException exception) {
+            throw new InternalException(exception);
+        }
     }
 
     public static Cookie[] readCookies(final HttpServletRequest request) {

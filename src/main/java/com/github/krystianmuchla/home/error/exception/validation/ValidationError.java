@@ -15,6 +15,10 @@ public record ValidationError(String error, Map<String, Object> details) {
         return new ValidationError(Error.NULL_VALUE, null);
     }
 
+    public static ValidationError emptyValue() {
+        return new ValidationError(Error.EMPTY_VALUE, null);
+    }
+
     public static ValidationError belowValue(final int minValue) {
         return new ValidationError(Error.BELOW_VALUE, Map.of("minValue", minValue));
     }
@@ -32,6 +36,6 @@ public record ValidationError(String error, Map<String, Object> details) {
     }
 
     public enum Error {
-        NULL_VALUE, BELOW_VALUE, ABOVE_VALUE, BELOW_MIN_LENGTH, ABOVE_MAX_LENGTH
+        NULL_VALUE, EMPTY_VALUE, BELOW_VALUE, ABOVE_VALUE, BELOW_MIN_LENGTH, ABOVE_MAX_LENGTH
     }
 }

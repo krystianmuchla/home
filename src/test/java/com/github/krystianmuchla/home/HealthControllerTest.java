@@ -29,6 +29,7 @@ class HealthControllerTest {
             .build();
 
         final var response = client.send(request, HttpResponse.BodyHandlers.ofString());
+        client.close();
 
         assertThat(response.statusCode()).isEqualTo(200);
         assertThat(response.headers().firstValue("Content-Type")).isEqualTo(Optional.of("application/json"));

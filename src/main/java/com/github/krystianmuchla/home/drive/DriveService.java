@@ -6,6 +6,7 @@ import com.github.krystianmuchla.home.error.exception.MissingResourceException;
 import com.github.krystianmuchla.home.error.exception.validation.ValidationException;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.NoSuchFileException;
@@ -25,11 +26,7 @@ public class DriveService {
     }
 
     public static Set<String> listDirectory(final UUID userId, final String[] directories) {
-        final var userDrivePath = userDrivePath(userId);
-        final var path = Path.of(userDrivePath.toString(), directories).normalize();
-        if (!path.startsWith(userDrivePath)) {
-            throw new AuthorizationException();
-        }
+        final var path = path(userId, directories);
         try (final var paths = Files.list(path)) {
             return paths
                 .map(Path::getFileName)
@@ -44,12 +41,24 @@ public class DriveService {
         }
     }
 
-    public static File getFile(final UUID userId, final String[] directories, final String fileName) {
-        final var userDrivePath = userDrivePath(userId);
-        final var path = Path.of(userDrivePath.toString(), directories).resolve(fileName).normalize();
-        if (!path.startsWith(userDrivePath)) {
-            throw new AuthorizationException();
+    public static void uploadFile(final UUID userId, final String[] directories, final FileUpload fileUpload) {
+        final var path = path(userId, directories, fileUpload.fileName());
+        try (final var outputStream = new FileOutputStream(path.toString())) {
+            try (final var inputStream = fileUpload.inputStream()) {
+                final var buffer = new byte[512];
+                int length;
+                while ((length = inputStream.read(buffer)) > 0) {
+                    outputStream.write(buffer, 0, length);
+                }
+            }
+            outputStream.flush();
+        } catch (final IOException exception) {
+            throw new InternalException(exception);
         }
+    }
+
+    public static File getFile(final UUID userId, final String[] directories, final String fileName) {
+        final var path = path(userId, directories, fileName);
         final var file = path.toFile();
         if (!file.exists()) {
             throw new MissingResourceException();
@@ -58,6 +67,34 @@ public class DriveService {
             throw new ValidationException();
         }
         return file;
+    }
+
+    private static Path path(final UUID userId, final String[] directories) {
+        final var userDrivePath = userDrivePath(userId);
+        final var path = dirPath(userDrivePath, directories).normalize();
+        authorization(userDrivePath, path);
+        return path;
+    }
+
+    private static Path path(final UUID userId, final String[] directories, final String fileName) {
+        final var userDrivePath = userDrivePath(userId);
+        final var path = filePath(userDrivePath, directories, fileName).normalize();
+        authorization(userDrivePath, path);
+        return path;
+    }
+
+    private static Path filePath(final Path userDrivePath, final String[] directories, final String fileName) {
+        return dirPath(userDrivePath, directories).resolve(fileName);
+    }
+
+    private static Path dirPath(final Path userDrivePath, final String[] directories) {
+        return Path.of(userDrivePath.toString(), directories);
+    }
+
+    private static void authorization(final Path userDrivePath, final Path path) {
+        if (!path.startsWith(userDrivePath)) {
+            throw new AuthorizationException();
+        }
     }
 
     private static Path userDrivePath(final UUID userId) {
