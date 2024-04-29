@@ -1,6 +1,6 @@
 package com.github.krystianmuchla.home.note;
 
-import com.github.krystianmuchla.home.InstantFactory;
+import com.github.krystianmuchla.home.util.InstantFactory;
 import com.github.krystianmuchla.home.error.exception.MissingResourceException;
 import com.github.krystianmuchla.home.note.grave.NoteGrave;
 import com.github.krystianmuchla.home.note.grave.NoteGraveSql;

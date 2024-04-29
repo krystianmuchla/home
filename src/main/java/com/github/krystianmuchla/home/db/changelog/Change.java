@@ -1,6 +1,6 @@
 package com.github.krystianmuchla.home.db.changelog;
 
-import com.github.krystianmuchla.home.InstantFactory;
+import com.github.krystianmuchla.home.util.InstantFactory;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;

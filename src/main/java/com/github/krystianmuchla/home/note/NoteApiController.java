@@ -15,7 +15,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.UUID;
 
-public class NoteController extends Controller {
+public class NoteApiController extends Controller {
     public static final String PATH = "/api/notes/*";
 
     @Override

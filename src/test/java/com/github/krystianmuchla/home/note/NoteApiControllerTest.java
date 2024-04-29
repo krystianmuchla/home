@@ -29,7 +29,7 @@ import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-class NoteControllerTest {
+class NoteApiControllerTest {
     private static User user;
     private static SessionId sessionId;
     private static String cookie;

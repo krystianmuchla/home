@@ -1,14 +1,15 @@
-package com.github.krystianmuchla.home.id;
+package com.github.krystianmuchla.home.id.controller;
 
 import com.github.krystianmuchla.home.api.Controller;
 import com.github.krystianmuchla.home.api.RequestReader;
 import com.github.krystianmuchla.home.api.ResponseWriter;
+import com.github.krystianmuchla.home.id.SignInRequest;
 import com.github.krystianmuchla.home.id.session.SessionService;
 import com.github.krystianmuchla.home.id.user.UserService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
-public class SignInController extends Controller {
+public class SignInApiController extends Controller {
     public static final String PATH = "/api/id/sign_in";
 
     @Override

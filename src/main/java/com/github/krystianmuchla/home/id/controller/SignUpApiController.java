@@ -1,16 +1,18 @@
-package com.github.krystianmuchla.home.id;
+package com.github.krystianmuchla.home.id.controller;
 
 import com.github.krystianmuchla.home.api.Controller;
 import com.github.krystianmuchla.home.api.RequestReader;
 import com.github.krystianmuchla.home.api.ResponseWriter;
 import com.github.krystianmuchla.home.db.Transaction;
 import com.github.krystianmuchla.home.error.exception.AuthenticationException;
+import com.github.krystianmuchla.home.id.SignUpRequest;
+import com.github.krystianmuchla.home.id.SignUpToken;
 import com.github.krystianmuchla.home.id.session.SessionService;
 import com.github.krystianmuchla.home.id.user.UserService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
-public class SignUpController extends Controller {
+public class SignUpApiController extends Controller {
     public static final String PATH = "/api/id/sign_up";
 
     @Override

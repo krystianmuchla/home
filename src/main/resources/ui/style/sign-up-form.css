@@ -1,0 +1,20 @@
+.sign-up-form {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 20px;
+    padding: 25px;
+}
+
+.sign-up-form input {
+    width: 100%;
+}
+
+.sign-up-form button {
+    margin-top: 10px;
+}
+
+.sign-up-form a {
+    align-self: center;
+    font-size: 14px;
+}

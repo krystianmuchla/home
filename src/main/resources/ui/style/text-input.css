@@ -1,0 +1,11 @@
+.text-input {
+    border: 1px solid black;
+    border-radius: 5px;
+    font-family: "home-font";
+    padding: 5px;
+    box-sizing: border-box;
+}
+
+.text-input:focus {
+    outline: 2px solid dodgerblue;
+}

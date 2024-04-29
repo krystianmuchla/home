@@ -1,11 +1,11 @@
-package com.github.krystianmuchla.home.id;
+package com.github.krystianmuchla.home.id.controller;
 
 import com.github.krystianmuchla.home.api.Controller;
 import com.github.krystianmuchla.home.id.session.SessionService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
-public class SignOutController extends Controller {
+public class SignOutApiController extends Controller {
     public static final String PATH = "/api/id/sign_out";
 
     @Override

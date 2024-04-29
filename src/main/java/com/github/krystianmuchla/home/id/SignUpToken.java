@@ -21,7 +21,7 @@ public class SignUpToken {
             token = token();
             tokenExpirationThread = tokenExpirationThread();
             tokenExpirationThread.start();
-            LOG.info("Sign up token: " + token);
+            LOG.info("Sign up token: {}", token);
         }
         return success;
     }
@@ -32,9 +32,9 @@ public class SignUpToken {
         }
         final var success = Objects.equals(this.token, token);
         if (success) {
-            LOG.info("Sign up token " + token + " has been consumed");
-            tokenExpirationThread.interrupt();
+            LOG.info("Sign up token {} has been consumed", token);
         }
+        tokenExpirationThread.interrupt();
         return success;
     }
 
@@ -54,7 +54,7 @@ public class SignUpToken {
             } catch (final InterruptedException ignored) {
             }
             semaphore.release();
-            LOG.info("Sign up token " + token + " has expired");
+            LOG.info("Sign up token {} has expired", token);
         });
     }
 }

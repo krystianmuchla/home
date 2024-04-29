@@ -32,7 +32,7 @@ import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-class NoteSyncControllerTest {
+class NoteSyncApiControllerTest {
     private static ObjectMapper objectMapper;
     private static User user;
     private static SessionId sessionId;

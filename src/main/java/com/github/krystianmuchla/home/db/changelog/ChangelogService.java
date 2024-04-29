@@ -1,9 +1,10 @@
 package com.github.krystianmuchla.home.db.changelog;
 
-import com.github.krystianmuchla.home.InstantFactory;
 import com.github.krystianmuchla.home.db.Sql;
 import com.github.krystianmuchla.home.db.Transaction;
 import com.github.krystianmuchla.home.error.exception.InternalException;
+import com.github.krystianmuchla.home.util.InstantFactory;
+import com.github.krystianmuchla.home.util.Resource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -29,7 +30,7 @@ public class ChangelogService {
         }
         while (true) {
             final List<String> statements;
-            try (final var stream = resourceFileAsStream("db/changelog/" + changeId + ".sql")) {
+            try (final var stream = Resource.inputStream("db/changelog/" + changeId + ".sql")) {
                 if (stream == null) {
                     break;
                 }
@@ -48,10 +49,6 @@ public class ChangelogService {
             LOG.info("Executed database change with id: {}", changeId);
             changeId++;
         }
-    }
-
-    private static InputStream resourceFileAsStream(final String fileName) {
-        return ChangelogService.class.getClassLoader().getResourceAsStream(fileName);
     }
 
     private static List<String> readStatements(final InputStream stream) {

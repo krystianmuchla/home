@@ -1,0 +1,9 @@
+body {
+    margin: 0;
+    font-family: "home-font";
+}
+
+@font-face {
+    font-family: home-font;
+    src: url('/font');
+}

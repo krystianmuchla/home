@@ -4,6 +4,7 @@ import com.github.krystianmuchla.home.error.exception.AuthorizationException;
 import com.github.krystianmuchla.home.error.exception.InternalException;
 import com.github.krystianmuchla.home.error.exception.MissingResourceException;
 import com.github.krystianmuchla.home.error.exception.validation.ValidationException;
+import com.github.krystianmuchla.home.util.StreamService;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -45,13 +46,8 @@ public class DriveService {
         final var path = path(userId, directories, fileUpload.fileName());
         try (final var outputStream = new FileOutputStream(path.toString())) {
             try (final var inputStream = fileUpload.inputStream()) {
-                final var buffer = new byte[512];
-                int length;
-                while ((length = inputStream.read(buffer)) > 0) {
-                    outputStream.write(buffer, 0, length);
-                }
+                StreamService.copy(inputStream, outputStream);
             }
-            outputStream.flush();
         } catch (final IOException exception) {
             throw new InternalException(exception);
         }

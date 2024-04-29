@@ -1,16 +1,13 @@
 package com.github.krystianmuchla.home;
 
 import com.github.krystianmuchla.home.db.changelog.ChangelogService;
-import com.github.krystianmuchla.home.drive.DriveController;
+import com.github.krystianmuchla.home.drive.DriveApiController;
 import com.github.krystianmuchla.home.error.AppErrorHandler;
 import com.github.krystianmuchla.home.error.exception.InternalException;
-import com.github.krystianmuchla.home.id.InitSignUpController;
-import com.github.krystianmuchla.home.id.SignInController;
-import com.github.krystianmuchla.home.id.SignOutController;
-import com.github.krystianmuchla.home.id.SignUpController;
-import com.github.krystianmuchla.home.note.NoteController;
+import com.github.krystianmuchla.home.id.controller.*;
+import com.github.krystianmuchla.home.note.NoteApiController;
 import com.github.krystianmuchla.home.note.grave.NoteGraveCleaner;
-import com.github.krystianmuchla.home.note.sync.NoteSyncController;
+import com.github.krystianmuchla.home.note.sync.NoteSyncApiController;
 import org.eclipse.jetty.server.*;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 
@@ -47,13 +44,17 @@ public class App {
 
     private static ServletContextHandler createServletContextHandler() {
         final var servletContextHandler = new ServletContextHandler();
-        servletContextHandler.addServlet(DriveController.class, DriveController.PATH);
-        servletContextHandler.addServlet(HealthController.class, HealthController.PATH);
-        servletContextHandler.addServlet(InitSignUpController.class, InitSignUpController.PATH);
-        servletContextHandler.addServlet(NoteController.class, NoteController.PATH);
-        servletContextHandler.addServlet(NoteSyncController.class, NoteSyncController.PATH);
+        servletContextHandler.addServlet(DriveApiController.class, DriveApiController.PATH);
+        servletContextHandler.addServlet(FaviconController.class, FaviconController.PATH);
+        servletContextHandler.addServlet(FontController.class, FontController.PATH);
+        servletContextHandler.addServlet(HealthApiController.class, HealthApiController.PATH);
+        servletContextHandler.addServlet(InitSignUpApiController.class, InitSignUpApiController.PATH);
+        servletContextHandler.addServlet(NoteApiController.class, NoteApiController.PATH);
+        servletContextHandler.addServlet(NoteSyncApiController.class, NoteSyncApiController.PATH);
+        servletContextHandler.addServlet(SignInApiController.class, SignInApiController.PATH);
         servletContextHandler.addServlet(SignInController.class, SignInController.PATH);
-        servletContextHandler.addServlet(SignOutController.class, SignOutController.PATH);
+        servletContextHandler.addServlet(SignOutApiController.class, SignOutApiController.PATH);
+        servletContextHandler.addServlet(SignUpApiController.class, SignUpApiController.PATH);
         servletContextHandler.addServlet(SignUpController.class, SignUpController.PATH);
         return servletContextHandler;
     }

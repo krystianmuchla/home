@@ -1,6 +1,6 @@
 package com.github.krystianmuchla.home.note.grave;
 
-import com.github.krystianmuchla.home.InstantFactory;
+import com.github.krystianmuchla.home.util.InstantFactory;
 import com.github.krystianmuchla.home.db.Transaction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

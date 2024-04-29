@@ -8,7 +8,7 @@ import com.github.krystianmuchla.home.error.exception.validation.ValidationExcep
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
-public class DriveController extends Controller {
+public class DriveApiController extends Controller {
     public static final String PATH = "/api/drive/*";
 
     @Override

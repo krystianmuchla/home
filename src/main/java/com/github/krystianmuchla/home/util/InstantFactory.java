@@ -1,4 +1,4 @@
-package com.github.krystianmuchla.home;
+package com.github.krystianmuchla.home.util;
 
 import java.sql.Timestamp;
 import java.time.Instant;

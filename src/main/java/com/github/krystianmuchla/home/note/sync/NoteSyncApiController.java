@@ -12,7 +12,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import java.util.List;
 import java.util.UUID;
 
-public class NoteSyncController extends Controller {
+public class NoteSyncApiController extends Controller {
     public static final String PATH = "/api/notes/sync";
 
     @Override

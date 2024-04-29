@@ -1,0 +1,14 @@
+.main-button {
+    background-color: black;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    color: white;
+    font-family: "home-font";
+    font-size: 16px;
+    padding: 5px;
+}
+
+.main-button:disabled {
+    background-color: dimgray;
+}
