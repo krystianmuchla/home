@@ -1,9 +1,7 @@
 package com.github.krystianmuchla.home.note.sync;
 
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.krystianmuchla.home.AppContext;
-import com.github.krystianmuchla.home.api.ObjectMapperHolder;
+import com.github.krystianmuchla.home.api.GsonHolder;
 import com.github.krystianmuchla.home.db.Sql;
 import com.github.krystianmuchla.home.db.Transaction;
 import com.github.krystianmuchla.home.id.accessdata.AccessData;
@@ -16,6 +14,8 @@ import com.github.krystianmuchla.home.note.NoteResponse;
 import com.github.krystianmuchla.home.note.NoteSql;
 import com.github.krystianmuchla.home.note.grave.NoteGrave;
 import com.github.krystianmuchla.home.note.grave.NoteGraveSql;
+import com.google.gson.Gson;
+import com.google.gson.JsonObject;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
@@ -26,14 +26,13 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.time.Instant;
-import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 class NoteSyncApiControllerTest {
-    private static ObjectMapper objectMapper;
+    private static Gson gson;
     private static User user;
     private static SessionId sessionId;
     private static String cookie;
@@ -41,7 +40,7 @@ class NoteSyncApiControllerTest {
     @BeforeAll
     static void beforeAllTests() {
         AppContext.init();
-        objectMapper = ObjectMapperHolder.INSTANCE;
+        gson = GsonHolder.INSTANCE;
         final var login = "note_sync_controller_user";
         user = Transaction.run(() -> UserService.createUser(login, "zaq1@WSX"));
         sessionId = SessionService.createSession(login, user);
@@ -99,13 +98,9 @@ class NoteSyncApiControllerTest {
 
         assertThat(response.statusCode()).isEqualTo(200);
         assertThat(response.headers().firstValue("Content-Type")).isEqualTo(Optional.of("application/json"));
-        final var responseTree = objectMapper.readTree(response.body());
-        assertThat(responseTree.size()).isEqualTo(1);
-        final var notesResponse = objectMapper.readValue(
-            responseTree.get("notes").toString(),
-            new TypeReference<List<NoteResponse>>() {
-            }
-        );
+        final var responseObject = gson.fromJson(response.body(), JsonObject.class);
+        assertThat(responseObject.size()).isEqualTo(1);
+        final var notesResponse = gson.fromJson(responseObject.get("notes"), NoteResponse[].class);
         assertThat(notesResponse).hasSize(0);
         final var notesDb = Sql.executeQuery("SELECT * FROM %s".formatted(Note.NOTE), NoteSql.mapper());
         assertThat(notesDb).hasSize(1);
@@ -198,13 +193,9 @@ class NoteSyncApiControllerTest {
 
         assertThat(response.statusCode()).isEqualTo(200);
         assertThat(response.headers().firstValue("Content-Type")).isEqualTo(Optional.of("application/json"));
-        final var responseTree = objectMapper.readTree(response.body());
-        assertThat(responseTree.size()).isEqualTo(1);
-        final var notesResponse = objectMapper.readValue(
-            responseTree.get("notes").toString(),
-            new TypeReference<List<NoteResponse>>() {
-            }
-        );
+        final var responseObject = gson.fromJson(response.body(), JsonObject.class);
+        assertThat(responseObject.size()).isEqualTo(1);
+        final var notesResponse = gson.fromJson(responseObject.get("notes"), NoteResponse[].class);
         assertThat(notesResponse).hasSize(0);
         final var notesDb = Sql.executeQuery("SELECT * FROM %s".formatted(Note.NOTE), NoteSql.mapper());
         assertThat(notesDb).hasSize(2);
@@ -267,15 +258,11 @@ class NoteSyncApiControllerTest {
 
         assertThat(response.statusCode()).isEqualTo(200);
         assertThat(response.headers().firstValue("Content-Type")).isEqualTo(Optional.of("application/json"));
-        final var responseTree = objectMapper.readTree(response.body());
-        assertThat(responseTree.size()).isEqualTo(1);
-        final var notesResponse = objectMapper.readValue(
-            responseTree.get("notes").toString(),
-            new TypeReference<List<NoteResponse>>() {
-            }
-        );
+        final var responseObject = gson.fromJson(response.body(), JsonObject.class);
+        assertThat(responseObject.size()).isEqualTo(1);
+        final var notesResponse = gson.fromJson(responseObject.get("notes"), NoteResponse[].class);
         assertThat(notesResponse).hasSize(1);
-        final var noteResponse = notesResponse.getFirst();
+        final var noteResponse = notesResponse[0];
         assertThat(noteResponse.id()).isEqualTo(UUID.fromString("416b5888-4ee0-4460-8c4e-0531e62c029c"));
         assertThat(noteResponse.title()).isEqualTo("Note title");
         assertThat(noteResponse.content()).isEqualTo("Note content");
@@ -336,17 +323,13 @@ class NoteSyncApiControllerTest {
 
         assertThat(response.statusCode()).isEqualTo(200);
         assertThat(response.headers().firstValue("Content-Type")).isEqualTo(Optional.of("application/json"));
-        final var responseTree = objectMapper.readTree(response.body());
-        assertThat(responseTree.size()).isEqualTo(1);
-        final var notesResponse = objectMapper.readValue(
-            responseTree.get("notes").toString(),
-            new TypeReference<List<NoteResponse>>() {
-            }
-        );
+        final var responseObject = gson.fromJson(response.body(), JsonObject.class);
+        assertThat(responseObject.size()).isEqualTo(1);
+        final var notesResponse = gson.fromJson(responseObject.get("notes"), NoteResponse[].class);
         assertThat(notesResponse).hasSize(0);
         final var notesDb = Sql.executeQuery("SELECT * FROM %s".formatted(Note.NOTE), NoteSql.mapper());
         assertThat(notesDb).hasSize(1);
-        final var noteDb = notesDb.get(0);
+        final var noteDb = notesDb.getFirst();
         assertThat(noteDb.id()).isEqualTo(UUID.fromString("8b4ae3f2-02b9-47e2-b1d1-fbb761e2dccf"));
         assertThat(noteDb.userId()).isEqualTo(userId);
         assertThat(noteDb.title()).isEqualTo("Note title");
@@ -355,7 +338,7 @@ class NoteSyncApiControllerTest {
         assertThat(noteDb.modificationTime()).isEqualTo(Instant.parse("2010-10-10T10:10:10Z"));
         final var noteGravesDb = Sql.executeQuery("SELECT * FROM %s".formatted(NoteGrave.NOTE_GRAVE), NoteGraveSql.mapper());
         assertThat(noteGravesDb).hasSize(1);
-        final var noteGraveDb = noteGravesDb.get(0);
+        final var noteGraveDb = noteGravesDb.getFirst();
         assertThat(noteGraveDb.id()).isEqualTo(UUID.fromString("dc5c2ee8-ba84-4019-b8f2-0a8d93e170cd"));
         assertThat(noteGraveDb.userId()).isEqualTo(userId);
         assertThat(noteGraveDb.creationTime()).isEqualTo(Instant.parse("2010-10-10T10:10:10Z"));
@@ -441,32 +424,25 @@ class NoteSyncApiControllerTest {
 
         assertThat(response.statusCode()).isEqualTo(200);
         assertThat(response.headers().firstValue("Content-Type")).isEqualTo(Optional.of("application/json"));
-        final var responseTree = objectMapper.readTree(response.body());
-        assertThat(responseTree.size()).isEqualTo(1);
-        final var notesResponse = objectMapper.readValue(
-            responseTree.get("notes").toString(),
-            new TypeReference<List<NoteResponse>>() {
-            }
-        );
+        final var responseObject = gson.fromJson(response.body(), JsonObject.class);
+        assertThat(responseObject.size()).isEqualTo(1);
+        final var notesResponse = gson.fromJson(responseObject.get("notes"), NoteResponse[].class);
         assertThat(notesResponse).hasSize(3);
-        assertThat(notesResponse.get(0).id())
-            .isEqualTo(UUID.fromString("0c73c9f7-4af4-4fff-8b30-384636d12a00"));
-        assertThat(notesResponse.get(0).title()).isEqualTo("Note title");
-        assertThat(notesResponse.get(0).content()).isEqualTo("Note content");
-        assertThat(notesResponse.get(0).creationTime()).isEqualTo(Instant.parse("2010-10-10T10:10:10Z"));
-        assertThat(notesResponse.get(0).modificationTime()).isEqualTo(Instant.parse("2011-11-11T11:11:11Z"));
-        assertThat(notesResponse.get(1).id())
-            .isEqualTo(UUID.fromString("8b4ae3f2-02b9-47e2-b1d1-fbb761e2dccf"));
-        assertThat(notesResponse.get(1).title()).isEqualTo("Note title");
-        assertThat(notesResponse.get(1).content()).isEqualTo("Note content");
-        assertThat(notesResponse.get(1).creationTime()).isEqualTo(Instant.parse("2010-10-10T10:10:10Z"));
-        assertThat(notesResponse.get(1).modificationTime()).isEqualTo(Instant.parse("2011-11-11T11:11:11Z"));
-        assertThat(notesResponse.get(2).id())
-            .isEqualTo(UUID.fromString("dc5c2ee8-ba84-4019-b8f2-0a8d93e170cd"));
-        assertThat(notesResponse.get(2).title()).isNull();
-        assertThat(notesResponse.get(2).content()).isNull();
-        assertThat(notesResponse.get(2).creationTime()).isNull();
-        assertThat(notesResponse.get(2).modificationTime()).isEqualTo(Instant.parse("2011-11-11T11:11:11Z"));
+        assertThat(notesResponse[0].id()).isEqualTo(UUID.fromString("0c73c9f7-4af4-4fff-8b30-384636d12a00"));
+        assertThat(notesResponse[0].title()).isEqualTo("Note title");
+        assertThat(notesResponse[0].content()).isEqualTo("Note content");
+        assertThat(notesResponse[0].creationTime()).isEqualTo(Instant.parse("2010-10-10T10:10:10Z"));
+        assertThat(notesResponse[0].modificationTime()).isEqualTo(Instant.parse("2011-11-11T11:11:11Z"));
+        assertThat(notesResponse[1].id()).isEqualTo(UUID.fromString("8b4ae3f2-02b9-47e2-b1d1-fbb761e2dccf"));
+        assertThat(notesResponse[1].title()).isEqualTo("Note title");
+        assertThat(notesResponse[1].content()).isEqualTo("Note content");
+        assertThat(notesResponse[1].creationTime()).isEqualTo(Instant.parse("2010-10-10T10:10:10Z"));
+        assertThat(notesResponse[1].modificationTime()).isEqualTo(Instant.parse("2011-11-11T11:11:11Z"));
+        assertThat(notesResponse[2].id()).isEqualTo(UUID.fromString("dc5c2ee8-ba84-4019-b8f2-0a8d93e170cd"));
+        assertThat(notesResponse[2].title()).isNull();
+        assertThat(notesResponse[2].content()).isNull();
+        assertThat(notesResponse[2].creationTime()).isNull();
+        assertThat(notesResponse[2].modificationTime()).isEqualTo(Instant.parse("2011-11-11T11:11:11Z"));
         final var notesDb = Sql.executeQuery("SELECT * FROM %s".formatted(Note.NOTE), NoteSql.mapper());
         assertThat(notesDb).hasSize(2);
         assertThat(notesDb.get(0).id()).isEqualTo(UUID.fromString("0c73c9f7-4af4-4fff-8b30-384636d12a00"));

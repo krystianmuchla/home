@@ -1,8 +1,7 @@
 package com.github.krystianmuchla.home.note;
 
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.krystianmuchla.home.AppContext;
+import com.github.krystianmuchla.home.api.GsonHolder;
 import com.github.krystianmuchla.home.db.Sql;
 import com.github.krystianmuchla.home.db.Transaction;
 import com.github.krystianmuchla.home.id.accessdata.AccessData;
@@ -12,6 +11,8 @@ import com.github.krystianmuchla.home.id.user.User;
 import com.github.krystianmuchla.home.id.user.UserService;
 import com.github.krystianmuchla.home.note.grave.NoteGrave;
 import com.github.krystianmuchla.home.note.grave.NoteGraveSql;
+import com.google.gson.Gson;
+import com.google.gson.JsonObject;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
@@ -22,7 +23,6 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.time.Instant;
-import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
@@ -30,6 +30,7 @@ import java.util.UUID;
 import static org.assertj.core.api.Assertions.assertThat;
 
 class NoteApiControllerTest {
+    private static Gson gson;
     private static User user;
     private static SessionId sessionId;
     private static String cookie;
@@ -37,6 +38,7 @@ class NoteApiControllerTest {
     @BeforeAll
     static void beforeAllTests() {
         AppContext.init();
+        gson = GsonHolder.INSTANCE;
         final var login = "note_controller_user";
         user = Transaction.run(() -> UserService.createUser(login, "zaq1@WSX"));
         sessionId = SessionService.createSession(login, user);
@@ -82,13 +84,9 @@ class NoteApiControllerTest {
 
         assertThat(response.statusCode()).isEqualTo(201);
         assertThat(response.headers().firstValue("Content-Type")).isEqualTo(Optional.of("application/json"));
-        final var responseBody = new ObjectMapper().readValue(
-            response.body(),
-            new TypeReference<Map<String, Object>>() {
-            }
-        );
-        assertThat(responseBody).hasSize(1);
-        final var noteId = UUID.fromString((String) responseBody.get("id"));
+        final var responseObject = gson.fromJson(response.body(), JsonObject.class);
+        assertThat(responseObject.size()).isEqualTo(1);
+        final var noteId = gson.fromJson(responseObject.get("id"), UUID.class);
         final var notes = Sql.executeQuery("SELECT * FROM %s".formatted(Note.NOTE), NoteSql.mapper());
         assertThat(notes).hasSize(1);
         final var note = notes.getFirst();
@@ -148,16 +146,13 @@ class NoteApiControllerTest {
 
         assertThat(response.statusCode()).isEqualTo(200);
         assertThat(response.headers().firstValue("Content-Type")).isEqualTo(Optional.of("application/json"));
-        final var note = new ObjectMapper().readValue(
-            response.body(),
-            new TypeReference<Map<String, Object>>() {
-            }
-        );
-        assertThat(note.get("id")).isEqualTo(noteId.toString());
-        assertThat(note.get("title")).isEqualTo(noteTitle);
-        assertThat(note.get("content")).isEqualTo(noteContent);
-        assertThat(note.get("creationTime")).isEqualTo(noteCreationTime.toString());
-        assertThat(note.get("modificationTime")).isEqualTo(noteModificationTime.toString());
+        final var responseObject = gson.fromJson(response.body(), Map.class);
+        assertThat(responseObject.size()).isEqualTo(5);
+        assertThat(responseObject.get("id")).isEqualTo(noteId.toString());
+        assertThat(responseObject.get("title")).isEqualTo(noteTitle);
+        assertThat(responseObject.get("content")).isEqualTo(noteContent);
+        assertThat(responseObject.get("creationTime")).isEqualTo(noteCreationTime.toString());
+        assertThat(responseObject.get("modificationTime")).isEqualTo(noteModificationTime.toString());
     }
 
     @Test
@@ -240,20 +235,17 @@ class NoteApiControllerTest {
 
         assertThat(response.statusCode()).isEqualTo(200);
         assertThat(response.headers().firstValue("Content-Type")).isEqualTo(Optional.of("application/json"));
-        final var responseBody = new ObjectMapper().readValue(
-            response.body(),
-            new TypeReference<Map<String, Object>>() {
-            }
-        );
-        assertThat(responseBody).hasSize(2).containsKey("pagination");
-        final var data = (List<Map<String, Object>>) responseBody.get("data");
-        assertThat(data).hasSize(1);
-        final var note = data.getFirst();
+        final var responseObject = gson.fromJson(response.body(), JsonObject.class);
+        assertThat(responseObject.size()).isEqualTo(2);
+        final var data = responseObject.getAsJsonArray("data");
+        assertThat(data.size()).isEqualTo(1);
+        final var note = gson.fromJson(data.get(0), Map.class);
         assertThat(note.get("id")).isEqualTo(noteId.toString());
         assertThat(note.get("title")).isEqualTo(noteTitle);
         assertThat(note.get("content")).isEqualTo(noteContent);
         assertThat(note.get("creationTime")).isEqualTo(noteCreationTime.toString());
         assertThat(note.get("modificationTime")).isEqualTo(noteModificationTime.toString());
+        assertThat(responseObject.get("pagination")).isNotNull();
     }
 
     @Test
@@ -288,14 +280,11 @@ class NoteApiControllerTest {
 
         assertThat(response.statusCode()).isEqualTo(200);
         assertThat(response.headers().firstValue("Content-Type")).isEqualTo(Optional.of("application/json"));
-        final var responseBody = new ObjectMapper().readValue(
-            response.body(),
-            new TypeReference<Map<String, Object>>() {
-            }
-        );
-        assertThat(responseBody).hasSize(2).containsKey("pagination");
-        final var data = (List<Map<String, Object>>) responseBody.get("data");
-        assertThat(data).hasSize(0);
+        final var responseObject = gson.fromJson(response.body(), JsonObject.class);
+        assertThat(responseObject.size()).isEqualTo(2);
+        final var data = responseObject.getAsJsonArray("data");
+        assertThat(data.size()).isEqualTo(0);
+        assertThat(responseObject.get("pagination")).isNotNull();
     }
 
     @Test

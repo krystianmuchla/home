@@ -1,6 +1,5 @@
 package com.github.krystianmuchla.home.api;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.github.krystianmuchla.home.error.exception.InternalException;
 import com.github.krystianmuchla.home.util.StreamService;
 import jakarta.servlet.http.Cookie;
@@ -17,15 +16,9 @@ public class ResponseWriter {
         writeString(response, html);
     }
 
-    public static void writeJson(final HttpServletResponse response, final Object jsonObject) {
-        final var objectMapper = ObjectMapperHolder.INSTANCE;
-        final String jsonString;
-        try {
-            jsonString = objectMapper.writeValueAsString(jsonObject);
-        } catch (final JsonProcessingException exception) {
-            throw new InternalException(exception);
-        }
-        writeJson(response, jsonString);
+    public static void writeJson(final HttpServletResponse response, final Object object) {
+        final var json = GsonHolder.INSTANCE.toJson(object);
+        writeJson(response, json);
     }
 
     public static void writeJson(final HttpServletResponse response, final String json) {

@@ -1,9 +1,9 @@
 package com.github.krystianmuchla.home.note;
 
-import com.github.krystianmuchla.home.util.InstantFactory;
 import com.github.krystianmuchla.home.error.exception.InternalException;
 import com.github.krystianmuchla.home.note.grave.NoteGrave;
 import com.github.krystianmuchla.home.note.sync.NoteRequest;
+import com.github.krystianmuchla.home.util.InstantFactory;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -49,8 +49,8 @@ public record Note(UUID id, UUID userId, String title, String content, Instant c
             userId,
             request.title(),
             request.content(),
-            request.creationTime().toInstant(),
-            request.modificationTime().toInstant()
+            request.creationTime(),
+            request.modificationTime()
         );
     }
 

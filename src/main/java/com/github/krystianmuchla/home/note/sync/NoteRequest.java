@@ -6,15 +6,15 @@ import com.github.krystianmuchla.home.error.exception.validation.ValidationExcep
 import com.github.krystianmuchla.home.note.Note;
 import com.github.krystianmuchla.home.util.MultiValueHashMap;
 
-import java.time.ZonedDateTime;
+import java.time.Instant;
 import java.util.UUID;
 
 public record NoteRequest(
     UUID id,
     String title,
     String content,
-    ZonedDateTime creationTime,
-    ZonedDateTime modificationTime
+    Instant creationTime,
+    Instant modificationTime
 ) implements RequestBody {
     @Override
     public void validate() {

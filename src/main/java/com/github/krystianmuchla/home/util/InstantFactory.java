@@ -11,6 +11,9 @@ public class InstantFactory {
     }
 
     public static Instant create(final Timestamp timestamp) {
+        if (timestamp == null) {
+            return null;
+        }
         return timestamp.toLocalDateTime().toInstant(ZoneOffset.UTC);
     }
 }

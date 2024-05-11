@@ -1,9 +1,9 @@
 package com.github.krystianmuchla.home.api;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.github.krystianmuchla.home.error.exception.ContentTypeException;
 import com.github.krystianmuchla.home.error.exception.InternalException;
 import com.github.krystianmuchla.home.error.exception.RequestException;
+import com.google.gson.JsonSyntaxException;
 import jakarta.servlet.ServletInputStream;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
@@ -70,8 +70,8 @@ public class RequestReader {
         }
         final T object;
         try {
-            object = ObjectMapperHolder.INSTANCE.readValue(requestBody, clazz);
-        } catch (final JsonProcessingException exception) {
+            object = GsonHolder.INSTANCE.fromJson(requestBody, clazz);
+        } catch (final JsonSyntaxException exception) {
             throw new RequestException(exception);
         }
         object.validate();
