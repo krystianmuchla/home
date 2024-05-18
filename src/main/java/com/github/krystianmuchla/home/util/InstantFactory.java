@@ -7,7 +7,14 @@ import java.time.temporal.ChronoUnit;
 
 public class InstantFactory {
     public static Instant create() {
-        return Instant.now().truncatedTo(ChronoUnit.MILLIS);
+        return create(Instant.now());
+    }
+
+    public static Instant create(final Instant instant) {
+        if (instant == null) {
+            return null;
+        }
+        return instant.truncatedTo(ChronoUnit.MILLIS);
     }
 
     public static Instant create(final Timestamp timestamp) {

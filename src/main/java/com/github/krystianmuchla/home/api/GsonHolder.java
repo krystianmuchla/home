@@ -1,8 +1,10 @@
 package com.github.krystianmuchla.home.api;
 
+import com.github.krystianmuchla.home.error.exception.RequestException;
 import com.google.gson.*;
 
 import java.time.Instant;
+import java.time.format.DateTimeParseException;
 
 public class GsonHolder {
     public static final Gson INSTANCE = new GsonBuilder()
@@ -17,7 +19,11 @@ public class GsonHolder {
     private static JsonDeserializer<Instant> instantDeserializer() {
         return (element, type, context) -> {
             final var string = element.getAsJsonPrimitive().getAsString();
-            return Instant.parse(string);
+            try {
+                return Instant.parse(string);
+            } catch (final DateTimeParseException exception) {
+                throw new RequestException(exception);
+            }
         };
     }
 }

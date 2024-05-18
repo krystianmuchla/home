@@ -18,7 +18,6 @@ public class AppContext {
             System.setProperty("database.url", dbContainer.getJdbcUrl());
             System.setProperty("database.user", dbContainer.getUsername());
             System.setProperty("database.password", dbContainer.getPassword());
-            System.setProperty("note-grave-cleaner.enabled", "false");
             App.main();
             initialized = true;
         }
