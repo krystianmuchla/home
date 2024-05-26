@@ -3,17 +3,18 @@ package com.github.krystianmuchla.home.id.controller;
 import com.github.krystianmuchla.home.api.Controller;
 import com.github.krystianmuchla.home.api.ResponseWriter;
 import com.github.krystianmuchla.home.error.exception.AuthenticationException;
-import com.github.krystianmuchla.home.ui.Html;
-import com.github.krystianmuchla.home.ui.Script;
-import com.github.krystianmuchla.home.ui.Style;
-import com.github.krystianmuchla.home.ui.element.LabeledTextInput;
+import com.github.krystianmuchla.home.html.Script;
+import com.github.krystianmuchla.home.html.Style;
+import com.github.krystianmuchla.home.html.element.LabeledTextInput;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
 import java.io.IOException;
 import java.util.List;
 
-import static j2html.TagCreator.*;
+import static com.github.krystianmuchla.home.html.Attribute.attributes;
+import static com.github.krystianmuchla.home.html.Html.document;
+import static com.github.krystianmuchla.home.html.Tag.*;
 
 public class SignInController extends Controller {
     public static final String PATH = "/id/sign_in";
@@ -22,30 +23,37 @@ public class SignInController extends Controller {
     protected void doGet(final HttpServletRequest request, final HttpServletResponse response) throws IOException {
         try {
             session(request);
-            response.sendRedirect("/todo");
+            response.sendRedirect("/drive");
         } catch (final AuthenticationException exception) {
             ResponseWriter.writeHtml(response, html());
         }
     }
 
     private String html() {
-        return Html.dom(
+        final var login = new LabeledTextInput("Login", "login", "text");
+        final var password = new LabeledTextInput("Password", "password", "password");
+        return document(
             List.of(
                 Style.BACKGROUND,
                 Style.BOX,
-                Style.LABELED_TEXT_INPUT,
                 Style.MAIN_BUTTON,
                 Style.MODAL,
-                Style.SIGN_IN_FORM,
-                Style.TEXT_INPUT
+                Style.SIGN_IN_FORM
             ),
             List.of(Script.SIGN_IN_FORM),
-            div(attrs(".background"),
-                div(attrs(".box.modal.sign-in-form"),
-                    LabeledTextInput.html("Login", "login", "text"),
-                    LabeledTextInput.html("Password", "password", "password"),
-                    button(attrs("#sign-in.main-button"), "Sign in"),
-                    a("No account?").withHref("sign_up")
+            List.of(login, password),
+            div(attributes("class", "background"),
+                div(attributes("class", "modal"),
+                    div(attributes("class", "box sign-in-form"),
+                        login.tag(),
+                        password.tag(),
+                        button(attributes("id", "sign-in", "class", "main-button"),
+                            "Sign in"
+                        ),
+                        a(attributes("href", "sign_up"),
+                            "No account?"
+                        )
+                    )
                 )
             )
         );

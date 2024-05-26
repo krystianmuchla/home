@@ -1,6 +1,6 @@
 {
     const signUp = document.getElementById('sign-up');
-    document.onkeypress = function(event) {
+    document.onkeydown = function(event) {
         if (event.key === 'Enter') {
             event.preventDefault();
             signUp.click();
@@ -35,7 +35,7 @@
                     })
                 });
                 if (response.ok) {
-                    window.location.replace('/todo');
+                    window.location.replace('/drive');
                 } else if (response.status === 401) {
                     console.error('Invalid token.');
                 } else {

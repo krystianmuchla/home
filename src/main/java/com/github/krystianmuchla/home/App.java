@@ -2,6 +2,7 @@ package com.github.krystianmuchla.home;
 
 import com.github.krystianmuchla.home.db.changelog.ChangelogService;
 import com.github.krystianmuchla.home.drive.DriveApiController;
+import com.github.krystianmuchla.home.drive.DriveController;
 import com.github.krystianmuchla.home.error.AppErrorHandler;
 import com.github.krystianmuchla.home.error.exception.InternalException;
 import com.github.krystianmuchla.home.id.controller.*;
@@ -45,6 +46,7 @@ public class App {
     private static ServletContextHandler createServletContextHandler() {
         final var servletContextHandler = new ServletContextHandler();
         servletContextHandler.addServlet(DriveApiController.class, DriveApiController.PATH);
+        servletContextHandler.addServlet(DriveController.class, DriveController.PATH);
         servletContextHandler.addServlet(FaviconController.class, FaviconController.PATH);
         servletContextHandler.addServlet(FontController.class, FontController.PATH);
         servletContextHandler.addServlet(HealthApiController.class, HealthApiController.PATH);

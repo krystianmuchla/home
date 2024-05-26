@@ -1,6 +1,6 @@
 {
     const signIn = document.getElementById('sign-in');
-    document.onkeypress = function(event) {
+    document.onkeydown = function(event) {
         if (event.key === 'Enter') {
             event.preventDefault();
             signIn.click();
@@ -22,7 +22,7 @@
                 })
             });
             if (response.ok) {
-                window.location.replace('/todo');
+                window.location.replace('/drive');
             } else if (response.status === 401) {
                 console.error('Incorrect credentials given.');
             } else {

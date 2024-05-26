@@ -1,4 +1,4 @@
-package com.github.krystianmuchla.home.ui;
+package com.github.krystianmuchla.home.html;
 
 import com.github.krystianmuchla.home.util.Resource;
 
