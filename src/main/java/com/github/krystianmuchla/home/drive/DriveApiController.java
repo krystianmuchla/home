@@ -17,7 +17,7 @@ public class DriveApiController extends Controller {
     @Override
     protected void put(final HttpExchange exchange) throws IOException {
         final var user = session(exchange).user();
-        final var filter = RequestReader.readQuery(exchange, DriveFilterRequest.class);
+        final var filter = RequestReader.readQuery(exchange, DriveFilterRequest::new);
         final var directories = directories(filter.path());
         DriveService.uploadFile(user.id(), directories, fileUpload(exchange));
         ResponseWriter.write(exchange, 204);

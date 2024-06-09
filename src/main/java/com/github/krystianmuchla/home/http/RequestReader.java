@@ -5,7 +5,6 @@ import com.github.krystianmuchla.home.api.RequestBody;
 import com.github.krystianmuchla.home.api.RequestQuery;
 import com.github.krystianmuchla.home.exception.BadRequestException;
 import com.github.krystianmuchla.home.exception.ContentTypeException;
-import com.github.krystianmuchla.home.exception.InternalException;
 import com.github.krystianmuchla.home.exception.UnsupportedMediaTypeException;
 import com.github.krystianmuchla.home.id.session.SessionId;
 import com.github.krystianmuchla.home.util.MultiValueHashMap;
@@ -18,29 +17,20 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
 import java.util.Map;
+import java.util.function.Function;
 
 public class RequestReader {
     private static final Logger LOG = LoggerFactory.getLogger(RequestReader.class);
 
-    public static <T extends RequestQuery> T readQuery(final HttpExchange exchange, final Class<T> clazz) {
+    public static <T extends RequestQuery> T readQuery(
+        final HttpExchange exchange,
+        final Function<MultiValueMap<String, String>, T> mapper
+    ) {
         final var query = readQuery(exchange);
-        final Constructor<T> constructor;
-        try {
-            constructor = clazz.getConstructor(MultiValueMap.class);
-        } catch (final NoSuchMethodException exception) {
-            throw new InternalException(exception);
-        }
-        final T instance;
-        try {
-            instance = constructor.newInstance(query);
-        } catch (final InvocationTargetException | InstantiationException | IllegalAccessException exception) {
-            throw new InternalException(exception);
-        }
-        instance.validate();
-        return instance;
+        final var object = mapper.apply(query);
+        object.validate();
+        return object;
     }
 
     @SuppressWarnings("unchecked")

@@ -33,7 +33,7 @@ public class DriveController extends Controller {
             ResponseWriter.write(exchange, 302);
             return;
         }
-        final var filter = RequestReader.readQuery(exchange, DriveFilterRequest.class);
+        final var filter = RequestReader.readQuery(exchange, DriveFilterRequest::new);
         final var directories = directories(filter.path());
         final var list = DriveService.listDirectory(user.id(), directories);
         ResponseWriter.writeHtml(exchange, 200, html(list));

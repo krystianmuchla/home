@@ -21,7 +21,7 @@ public class NoteApiController extends Controller {
     @Override
     protected void delete(final HttpExchange exchange) throws IOException {
         final var user = session(exchange).user();
-        final var filter = RequestReader.readQuery(exchange, NoteFilterRequest.class);
+        final var filter = RequestReader.readQuery(exchange, NoteFilterRequest::new);
         if (filter.isEmpty()) {
             throw new RequestException();
         }
@@ -32,8 +32,8 @@ public class NoteApiController extends Controller {
     @Override
     protected void get(final HttpExchange exchange) throws IOException {
         final var user = session(exchange).user();
-        final var filter = RequestReader.readQuery(exchange, NoteFilterRequest.class);
-        final var pagination = RequestReader.readQuery(exchange, PaginationRequest.class);
+        final var filter = RequestReader.readQuery(exchange, NoteFilterRequest::new);
+        final var pagination = RequestReader.readQuery(exchange, PaginationRequest::new);
         final var result = NoteSql.read(user.id(), filter.ids(), new Pagination(pagination));
         ResponseWriter.writeJson(exchange, 200, new PaginatedResponse<>(result, NoteResponse::new));
     }
