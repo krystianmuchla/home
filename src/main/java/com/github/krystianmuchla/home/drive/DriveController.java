@@ -1,14 +1,14 @@
 package com.github.krystianmuchla.home.drive;
 
-import com.github.krystianmuchla.home.api.Controller;
-import com.github.krystianmuchla.home.api.RequestReader;
-import com.github.krystianmuchla.home.api.ResponseWriter;
-import com.github.krystianmuchla.home.error.exception.AuthenticationException;
+import com.github.krystianmuchla.home.exception.AuthenticationException;
 import com.github.krystianmuchla.home.html.Style;
 import com.github.krystianmuchla.home.html.Tag;
 import com.github.krystianmuchla.home.html.element.Listing;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
+import com.github.krystianmuchla.home.http.Controller;
+import com.github.krystianmuchla.home.http.RequestReader;
+import com.github.krystianmuchla.home.http.ResponseWriter;
+import com.github.krystianmuchla.home.id.user.User;
+import com.sun.net.httpserver.HttpExchange;
 
 import java.io.IOException;
 import java.util.List;
@@ -19,18 +19,24 @@ import static com.github.krystianmuchla.home.html.Html.document;
 import static com.github.krystianmuchla.home.html.Tag.div;
 
 public class DriveController extends Controller {
-    public static final String PATH = "/drive/*";
+    public DriveController() {
+        super("/drive");
+    }
 
     @Override
-    protected void doGet(final HttpServletRequest request, final HttpServletResponse response) throws IOException {
+    protected void get(final HttpExchange exchange) throws IOException {
+        final User user;
         try {
-            final var user = session(request).user();
-            final var directories = directories(RequestReader.readPathParameter(request));
-            final var list = DriveService.listDirectory(user.id(), directories);
-            ResponseWriter.writeHtml(response, html(list));
+            user = session(exchange).user();
         } catch (final AuthenticationException exception) {
-            response.sendRedirect("/id/sign_in");
+            ResponseWriter.writeLocation(exchange, "/id/sign_in");
+            ResponseWriter.write(exchange, 302);
+            return;
         }
+        final var filter = RequestReader.readQuery(exchange, DriveFilterRequest.class);
+        final var directories = directories(filter.path());
+        final var list = DriveService.listDirectory(user.id(), directories);
+        ResponseWriter.writeHtml(exchange, 200, html(list));
     }
 
     private String[] directories(final String path) {

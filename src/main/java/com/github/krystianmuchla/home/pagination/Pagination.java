@@ -1,6 +1,6 @@
 package com.github.krystianmuchla.home.pagination;
 
-import com.github.krystianmuchla.home.error.exception.InternalException;
+import com.github.krystianmuchla.home.exception.InternalException;
 
 public record Pagination(int pageNumber, int pageSize) {
     public static final int MIN_PAGE_NUMBER = 1;

@@ -1,6 +1,6 @@
 package com.github.krystianmuchla.home.id.user;
 
-import com.github.krystianmuchla.home.error.exception.RequestRateException;
+import com.github.krystianmuchla.home.exception.RequestRateException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

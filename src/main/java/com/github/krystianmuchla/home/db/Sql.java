@@ -1,6 +1,6 @@
 package com.github.krystianmuchla.home.db;
 
-import com.github.krystianmuchla.home.error.exception.InternalException;
+import com.github.krystianmuchla.home.exception.InternalException;
 import com.github.krystianmuchla.home.pagination.PaginatedResult;
 import com.github.krystianmuchla.home.pagination.Pagination;
 import com.github.krystianmuchla.home.pagination.PaginationResult;
@@ -12,6 +12,7 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.function.Function;
@@ -94,5 +95,9 @@ public class Sql {
 
     protected static String setters(final LinkedHashMap<String, String> parameters) {
         return parameters.keySet().stream().map(key -> key + " = ?").collect(Collectors.joining(", "));
+    }
+
+    protected static String join(final Collection<?> collection, final String delimiter) {
+        return collection.stream().map(Object::toString).collect(Collectors.joining(delimiter));
     }
 }

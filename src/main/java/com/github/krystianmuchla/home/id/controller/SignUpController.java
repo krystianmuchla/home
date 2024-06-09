@@ -1,13 +1,12 @@
 package com.github.krystianmuchla.home.id.controller;
 
-import com.github.krystianmuchla.home.api.Controller;
-import com.github.krystianmuchla.home.api.ResponseWriter;
-import com.github.krystianmuchla.home.error.exception.AuthenticationException;
+import com.github.krystianmuchla.home.exception.AuthenticationException;
 import com.github.krystianmuchla.home.html.Script;
 import com.github.krystianmuchla.home.html.Style;
 import com.github.krystianmuchla.home.html.element.LabeledTextInput;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
+import com.github.krystianmuchla.home.http.Controller;
+import com.github.krystianmuchla.home.http.ResponseWriter;
+import com.sun.net.httpserver.HttpExchange;
 
 import java.io.IOException;
 import java.util.List;
@@ -17,15 +16,18 @@ import static com.github.krystianmuchla.home.html.Html.document;
 import static com.github.krystianmuchla.home.html.Tag.*;
 
 public class SignUpController extends Controller {
-    public static final String PATH = "/id/sign_up";
+    public SignUpController() {
+        super("/id/sign_up");
+    }
 
     @Override
-    protected void doGet(final HttpServletRequest request, final HttpServletResponse response) throws IOException {
+    protected void get(final HttpExchange exchange) throws IOException {
         try {
-            session(request);
-            response.sendRedirect("/drive");
+            session(exchange);
+            ResponseWriter.writeLocation(exchange, "/drive");
+            ResponseWriter.write(exchange, 302);
         } catch (final AuthenticationException exception) {
-            ResponseWriter.writeHtml(response, html());
+            ResponseWriter.writeHtml(exchange, 200, html());
         }
     }
 

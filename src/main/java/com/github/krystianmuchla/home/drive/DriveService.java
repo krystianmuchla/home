@@ -1,9 +1,9 @@
 package com.github.krystianmuchla.home.drive;
 
-import com.github.krystianmuchla.home.error.exception.AuthorizationException;
-import com.github.krystianmuchla.home.error.exception.InternalException;
-import com.github.krystianmuchla.home.error.exception.MissingResourceException;
-import com.github.krystianmuchla.home.error.exception.validation.ValidationException;
+import com.github.krystianmuchla.home.exception.AuthorizationException;
+import com.github.krystianmuchla.home.exception.InternalException;
+import com.github.krystianmuchla.home.exception.MissingResourceException;
+import com.github.krystianmuchla.home.exception.validation.ValidationException;
 import com.github.krystianmuchla.home.util.StreamService;
 
 import java.io.File;

@@ -1,8 +1,8 @@
 package com.github.krystianmuchla.home.note.sync;
 
 import com.github.krystianmuchla.home.api.RequestBody;
-import com.github.krystianmuchla.home.error.exception.validation.ValidationError;
-import com.github.krystianmuchla.home.error.exception.validation.ValidationException;
+import com.github.krystianmuchla.home.exception.validation.ValidationError;
+import com.github.krystianmuchla.home.exception.validation.ValidationException;
 import com.github.krystianmuchla.home.note.Note;
 import com.github.krystianmuchla.home.util.InstantFactory;
 import com.github.krystianmuchla.home.util.MultiValueHashMap;

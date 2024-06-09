@@ -1,7 +1,7 @@
 package com.github.krystianmuchla.home.util;
 
 import com.github.krystianmuchla.home.db.changelog.ChangelogService;
-import com.github.krystianmuchla.home.error.exception.InternalException;
+import com.github.krystianmuchla.home.exception.InternalException;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;

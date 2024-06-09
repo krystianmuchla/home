@@ -18,15 +18,15 @@ import java.util.stream.Stream;
 public class NoteSyncService {
     public static List<Note> sync(final UUID userId, final List<Note> externalNotes) {
         if (externalNotes == null || externalNotes.isEmpty()) {
-            return NoteSql.readByUserId(userId);
+            return NoteSql.read(userId);
         }
-        final var notes = toMap(NoteSql.readByUserIdWithLock(userId), NoteGraveSql.readByUserIdWithLock(userId));
-        final var excludedNotes = sync(notes, externalNotes);
+        final var notes = toMap(NoteSql.readForUpdate(userId), NoteGraveSql.readForUpdate(userId));
+        final var excludedNotes = sync(userId, notes, externalNotes);
         excludedNotes.forEach(notes::remove);
         return List.copyOf(notes.values());
     }
 
-    private static List<UUID> sync(final Map<UUID, Note> notes, final List<Note> externalNotes) {
+    private static List<UUID> sync(final UUID userId, final Map<UUID, Note> notes, final List<Note> externalNotes) {
         final var excludedNotes = new ArrayList<UUID>();
         for (final var externalNote : externalNotes) {
             final var id = externalNote.id();
@@ -45,7 +45,7 @@ public class NoteSyncService {
                         }
                     } else {
                         if (note.hasContent()) {
-                            NoteService.delete(externalNote);
+                            NoteService.delete(userId, externalNote);
                         } else {
                             NoteGraveService.update(externalNote.asNoteGrave());
                         }

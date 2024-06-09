@@ -1,7 +1,7 @@
 package com.github.krystianmuchla.home.note.grave;
 
 import com.github.krystianmuchla.home.db.Sql;
-import com.github.krystianmuchla.home.error.exception.InternalException;
+import com.github.krystianmuchla.home.exception.InternalException;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -22,7 +22,7 @@ public class NoteGraveSql extends Sql {
         }
     }
 
-    public static List<NoteGrave> readByUserIdWithLock(final UUID userId) {
+    public static List<NoteGrave> readForUpdate(final UUID userId) {
         return executeQuery(
             "SELECT * FROM %s WHERE %s = ? FOR UPDATE".formatted(NoteGrave.NOTE_GRAVE, NoteGrave.USER_ID),
             mapper(),

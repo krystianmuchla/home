@@ -14,7 +14,7 @@ public class AppContext {
         if (!initialized) {
             dbContainer = new MySQLContainer<>("mysql:8.1.0");
             dbContainer.start();
-            System.setProperty("port", PORT);
+            System.setProperty("http.port", PORT);
             System.setProperty("database.url", dbContainer.getJdbcUrl());
             System.setProperty("database.user", dbContainer.getUsername());
             System.setProperty("database.password", dbContainer.getPassword());

@@ -1,13 +1,18 @@
 package com.github.krystianmuchla.home;
 
-import com.github.krystianmuchla.home.api.Controller;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
+import com.github.krystianmuchla.home.http.Controller;
+import com.github.krystianmuchla.home.http.ResponseWriter;
+import com.sun.net.httpserver.HttpExchange;
+
+import java.io.IOException;
 
 public class FaviconController extends Controller {
-    public static final String PATH = "/favicon.ico";
+    public FaviconController() {
+        super("/favicon.ico");
+    }
 
     @Override
-    protected void doGet(final HttpServletRequest request, final HttpServletResponse response) {
+    protected void get(final HttpExchange exchange) throws IOException {
+        ResponseWriter.write(exchange, 200);
     }
 }

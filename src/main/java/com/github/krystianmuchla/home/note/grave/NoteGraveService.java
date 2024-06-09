@@ -1,6 +1,6 @@
 package com.github.krystianmuchla.home.note.grave;
 
-import com.github.krystianmuchla.home.error.exception.MissingResourceException;
+import com.github.krystianmuchla.home.exception.MissingResourceException;
 
 public class NoteGraveService {
     public static void update(final NoteGrave noteGrave) {

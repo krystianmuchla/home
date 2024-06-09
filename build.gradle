@@ -10,20 +10,11 @@ repositories {
 }
 
 dependencies {
-    final jettyVersion = '11.0.20'
-    implementation "org.eclipse.jetty:jetty-server:$jettyVersion"
-    implementation "org.eclipse.jetty:jetty-servlet:$jettyVersion"
-    compileOnly 'jakarta.servlet:jakarta.servlet-api:6.0.0'
-
     implementation 'com.google.code.gson:gson:2.10.1'
-
     implementation 'com.mysql:mysql-connector-j:8.4.0'
-
     implementation 'ch.qos.logback:logback-classic:1.5.6'
-
     testImplementation 'org.junit.jupiter:junit-jupiter:5.10.2'
     testImplementation 'org.assertj:assertj-core:3.25.3'
-
     final testContainersVersion = '1.19.8'
     testImplementation "org.testcontainers:junit-jupiter:$testContainersVersion"
     testImplementation "org.testcontainers:mysql:$testContainersVersion"
@@ -32,6 +23,7 @@ dependencies {
 application {
     final driveLocation = projectDir.toPath().resolve('home-local').resolve('drive').toString()
     applicationDefaultJvmArgs = [
+        '-Dhttp.port=80',
         '-Ddatabase.url=jdbc:mysql://localhost:3306/home',
         '-Ddatabase.user=root',
         '-Ddatabase.password=root',

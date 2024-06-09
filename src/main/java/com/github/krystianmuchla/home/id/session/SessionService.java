@@ -1,7 +1,10 @@
 package com.github.krystianmuchla.home.id.session;
 
+import com.github.krystianmuchla.home.exception.AuthenticationException;
 import com.github.krystianmuchla.home.id.SecureRandomFactory;
+import com.github.krystianmuchla.home.id.accessdata.AccessDataSql;
 import com.github.krystianmuchla.home.id.user.User;
+import com.github.krystianmuchla.home.id.user.UserGuardService;
 
 import java.util.Base64;
 import java.util.Map;
@@ -24,10 +27,16 @@ public class SessionService {
     }
 
     public static Session getSession(final SessionId sessionId) {
-        if (sessionId == null) {
-            return null;
+        final var accessData = AccessDataSql.read(sessionId.login());
+        if (accessData == null) {
+            throw new AuthenticationException();
         }
-        return SESSIONS.get(sessionId);
+        UserGuardService.inspect(accessData.userId());
+        final var session = SESSIONS.get(sessionId);
+        if (session == null) {
+            throw new AuthenticationException(accessData.userId());
+        }
+        return session;
     }
 
     public static void removeSession(final SessionId sessionId) {

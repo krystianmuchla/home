@@ -1,10 +1,13 @@
 package com.github.krystianmuchla.home.util;
 
-import java.util.Collection;
+import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
-public interface MultiValueMap<T, U> extends Map<T, Collection<U>> {
-    void add(final T key, final U value);
+public interface MultiValueMap<K, V> extends Map<K, List<V>> {
+    void add(final K key, final V value);
 
-    void addAll(final T key, final Collection<U> values);
+    void addAll(final K key, final List<V> values);
+
+    Optional<V> getFirst(final K key);
 }

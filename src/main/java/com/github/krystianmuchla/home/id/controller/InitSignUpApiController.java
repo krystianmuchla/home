@@ -1,20 +1,24 @@
 package com.github.krystianmuchla.home.id.controller;
 
-import com.github.krystianmuchla.home.api.Controller;
+import com.github.krystianmuchla.home.http.Controller;
+import com.github.krystianmuchla.home.http.ResponseWriter;
 import com.github.krystianmuchla.home.id.SignUpToken;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
+import com.sun.net.httpserver.HttpExchange;
+
+import java.io.IOException;
 
 public class InitSignUpApiController extends Controller {
-    public static final String PATH = "/api/id/sign_up/init";
+    public InitSignUpApiController() {
+        super("/api/id/sign_up/init");
+    }
 
     @Override
-    protected void doPost(final HttpServletRequest request, final HttpServletResponse response) {
+    protected void post(final HttpExchange exchange) throws IOException {
         final var success = SignUpToken.INSTANCE.generateAndLog();
         if (success) {
-            response.setStatus(202);
+            ResponseWriter.write(exchange, 202);
         } else {
-            response.setStatus(409);
+            ResponseWriter.write(exchange, 409);
         }
     }
 }

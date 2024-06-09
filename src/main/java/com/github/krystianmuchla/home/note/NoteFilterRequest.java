@@ -1,0 +1,31 @@
+package com.github.krystianmuchla.home.note;
+
+import com.github.krystianmuchla.home.api.RequestQuery;
+import com.github.krystianmuchla.home.exception.BadRequestException;
+import com.github.krystianmuchla.home.util.MultiValueMap;
+
+import java.util.Set;
+import java.util.UUID;
+import java.util.stream.Collectors;
+
+public record NoteFilterRequest(Set<UUID> ids) implements RequestQuery {
+    public NoteFilterRequest(final MultiValueMap<String, String> query) {
+        this(resolveId(query));
+    }
+
+    public boolean isEmpty() {
+        return ids.isEmpty();
+    }
+
+    private static Set<UUID> resolveId(final MultiValueMap<String, String> query) {
+        final var id = query.get("id");
+        if (id == null) {
+            return Set.of();
+        }
+        try {
+            return id.stream().map(UUID::fromString).collect(Collectors.toSet());
+        } catch (final IllegalArgumentException exception) {
+            throw new BadRequestException(exception);
+        }
+    }
+}

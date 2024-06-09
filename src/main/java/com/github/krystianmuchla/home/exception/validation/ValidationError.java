@@ -1,4 +1,4 @@
-package com.github.krystianmuchla.home.error.exception.validation;
+package com.github.krystianmuchla.home.exception.validation;
 
 import java.util.Map;
 

@@ -1,12 +1,13 @@
-package com.github.krystianmuchla.home.error.exception;
+package com.github.krystianmuchla.home.exception;
 
-import com.github.krystianmuchla.home.error.AppError;
+import com.github.krystianmuchla.home.http.ResponseWriter;
 import com.github.krystianmuchla.home.id.user.UserGuardService;
-import jakarta.servlet.http.HttpServletResponse;
+import com.sun.net.httpserver.HttpExchange;
 
+import java.io.IOException;
 import java.util.UUID;
 
-public class AuthenticationException extends RuntimeException implements AppError {
+public class AuthenticationException extends RuntimeException implements HttpException {
     private final UUID userId;
 
     public AuthenticationException() {
@@ -19,10 +20,10 @@ public class AuthenticationException extends RuntimeException implements AppErro
     }
 
     @Override
-    public void handle(final HttpServletResponse response) {
+    public void handle(final HttpExchange exchange) throws IOException {
         if (userId != null) {
             UserGuardService.incrementAuthFailures(userId);
         }
-        response.setStatus(401);
+        ResponseWriter.write(exchange, 401);
     }
 }

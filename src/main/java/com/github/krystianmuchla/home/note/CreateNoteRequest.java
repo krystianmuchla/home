@@ -2,8 +2,8 @@ package com.github.krystianmuchla.home.note;
 
 import com.github.krystianmuchla.home.util.MultiValueHashMap;
 import com.github.krystianmuchla.home.api.RequestBody;
-import com.github.krystianmuchla.home.error.exception.validation.ValidationError;
-import com.github.krystianmuchla.home.error.exception.validation.ValidationException;
+import com.github.krystianmuchla.home.exception.validation.ValidationError;
+import com.github.krystianmuchla.home.exception.validation.ValidationException;
 
 public record CreateNoteRequest(String title, String content) implements RequestBody {
     @Override

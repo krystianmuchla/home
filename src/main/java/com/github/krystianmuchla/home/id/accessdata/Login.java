@@ -1,6 +1,6 @@
 package com.github.krystianmuchla.home.id.accessdata;
 
-import com.github.krystianmuchla.home.error.exception.validation.ValidationError;
+import com.github.krystianmuchla.home.exception.validation.ValidationError;
 
 public class Login {
     public static class Validator {

@@ -1,17 +1,22 @@
 package com.github.krystianmuchla.home.id.controller;
 
-import com.github.krystianmuchla.home.api.Controller;
+import com.github.krystianmuchla.home.http.Controller;
+import com.github.krystianmuchla.home.http.RequestReader;
+import com.github.krystianmuchla.home.http.ResponseWriter;
 import com.github.krystianmuchla.home.id.session.SessionService;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
+import com.sun.net.httpserver.HttpExchange;
+
+import java.io.IOException;
 
 public class SignOutApiController extends Controller {
-    public static final String PATH = "/api/id/sign_out";
+    public SignOutApiController() {
+        super("/api/id/sign_out");
+    }
 
     @Override
-    protected void doDelete(final HttpServletRequest request, final HttpServletResponse response) {
-        final var sessionId = sessionId(request);
+    protected void delete(final HttpExchange exchange) throws IOException {
+        final var sessionId = RequestReader.readSessionId(exchange);
         SessionService.removeSession(sessionId);
-        response.setStatus(204);
+        ResponseWriter.write(exchange, 204);
     }
 }

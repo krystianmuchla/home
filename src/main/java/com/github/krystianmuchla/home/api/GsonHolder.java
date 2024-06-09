@@ -1,6 +1,6 @@
 package com.github.krystianmuchla.home.api;
 
-import com.github.krystianmuchla.home.error.exception.RequestException;
+import com.github.krystianmuchla.home.exception.RequestException;
 import com.google.gson.*;
 
 import java.time.Instant;

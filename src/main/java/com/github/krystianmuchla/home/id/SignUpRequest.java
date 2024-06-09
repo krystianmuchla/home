@@ -1,8 +1,8 @@
 package com.github.krystianmuchla.home.id;
 
 import com.github.krystianmuchla.home.api.RequestBody;
-import com.github.krystianmuchla.home.error.exception.validation.ValidationError;
-import com.github.krystianmuchla.home.error.exception.validation.ValidationException;
+import com.github.krystianmuchla.home.exception.validation.ValidationError;
+import com.github.krystianmuchla.home.exception.validation.ValidationException;
 import com.github.krystianmuchla.home.id.accessdata.Login;
 import com.github.krystianmuchla.home.id.accessdata.Password;
 import com.github.krystianmuchla.home.util.MultiValueHashMap;

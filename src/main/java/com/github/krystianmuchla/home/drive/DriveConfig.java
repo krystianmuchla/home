@@ -1,7 +1,7 @@
 package com.github.krystianmuchla.home.drive;
 
 import com.github.krystianmuchla.home.Config;
-import com.github.krystianmuchla.home.error.exception.InternalException;
+import com.github.krystianmuchla.home.exception.InternalException;
 
 public class DriveConfig extends Config {
     public static final String LOCATION;

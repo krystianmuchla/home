@@ -1,10 +1,11 @@
 package com.github.krystianmuchla.home.note;
 
 import com.github.krystianmuchla.home.util.InstantFactory;
-import com.github.krystianmuchla.home.error.exception.MissingResourceException;
+import com.github.krystianmuchla.home.exception.MissingResourceException;
 import com.github.krystianmuchla.home.note.grave.NoteGrave;
 import com.github.krystianmuchla.home.note.grave.NoteGraveSql;
 
+import java.util.Set;
 import java.util.UUID;
 
 public class NoteService {
@@ -21,25 +22,26 @@ public class NoteService {
         NoteSql.create(note);
     }
 
-    public static Note read(final UUID id, final UUID userId) {
-        final var result = NoteSql.readByIdAndUserId(id, userId);
+    public static Note read(final UUID userId, final UUID id) {
+        final var result = NoteSql.read(userId, id);
         if (result == null) {
             throw new MissingResourceException();
         }
         return result;
     }
 
-    public static void update(final UUID id, final UUID userId, final String title, final String content) {
-        final var result = NoteSql.update(id, userId, title, content, InstantFactory.create());
+    public static void update(final UUID userId, final UUID id, final String title, final String content) {
+        final var result = NoteSql.update(userId, id, title, content, InstantFactory.create());
         if (!result) {
             throw new MissingResourceException();
         }
     }
 
+    // todo pass user id
     public static void update(final Note note) {
         final var result = NoteSql.update(
-            note.id(),
             note.userId(),
+            note.id(),
             note.title(),
             note.content(),
             note.modificationTime()
@@ -49,17 +51,17 @@ public class NoteService {
         }
     }
 
-    public static void delete(final UUID id, final UUID userId) {
-        final var result = NoteSql.deleteByIdAndUserId(id, userId);
+    public static void delete(final UUID userId, final Set<UUID> ids) {
+        final var result = NoteSql.delete(userId, ids);
         if (!result) {
             throw new MissingResourceException();
         }
-        final var noteGrave = new NoteGrave(id, userId);
-        NoteGraveSql.create(noteGrave);
+        final var noteGraves = ids.stream().map(id -> new NoteGrave(id, userId)).toArray(NoteGrave[]::new);
+        NoteGraveSql.create(noteGraves);
     }
 
-    public static void delete(final Note note) {
-        final var result = NoteSql.delete(note);
+    public static void delete(final UUID userId, final Note note) {
+        final var result = NoteSql.delete(userId, note);
         if (!result) {
             throw new MissingResourceException();
         }

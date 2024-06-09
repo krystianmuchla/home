@@ -1,23 +1,26 @@
 package com.github.krystianmuchla.home.id.controller;
 
-import com.github.krystianmuchla.home.api.Controller;
-import com.github.krystianmuchla.home.api.RequestReader;
-import com.github.krystianmuchla.home.api.ResponseWriter;
+import com.github.krystianmuchla.home.http.Controller;
+import com.github.krystianmuchla.home.http.RequestReader;
+import com.github.krystianmuchla.home.http.ResponseWriter;
 import com.github.krystianmuchla.home.id.SignInRequest;
 import com.github.krystianmuchla.home.id.session.SessionService;
 import com.github.krystianmuchla.home.id.user.UserService;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
+import com.sun.net.httpserver.HttpExchange;
+
+import java.io.IOException;
 
 public class SignInApiController extends Controller {
-    public static final String PATH = "/api/id/sign_in";
+    public SignInApiController() {
+        super("/api/id/sign_in");
+    }
 
     @Override
-    protected void doPost(final HttpServletRequest request, final HttpServletResponse response) {
-        final var signInRequest = RequestReader.readJson(request, SignInRequest.class);
+    protected void post(final HttpExchange exchange) throws IOException {
+        final var signInRequest = RequestReader.readJson(exchange, SignInRequest.class);
         final var user = UserService.getUser(signInRequest.login(), signInRequest.password());
         final var sessionId = SessionService.createSession(signInRequest.login(), user);
-        ResponseWriter.addCookies(response, sessionId.asCookies());
-        response.setStatus(204);
+        ResponseWriter.writeCookies(exchange, sessionId.asCookies());
+        ResponseWriter.write(exchange, 204);
     }
 }

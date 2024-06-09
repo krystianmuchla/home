@@ -1,16 +1,14 @@
 package com.github.krystianmuchla.home.note;
 
 import com.github.krystianmuchla.home.db.Sql;
-import com.github.krystianmuchla.home.error.exception.InternalException;
+import com.github.krystianmuchla.home.exception.InternalException;
 import com.github.krystianmuchla.home.pagination.PaginatedResult;
 import com.github.krystianmuchla.home.pagination.Pagination;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.Instant;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 import java.util.function.Function;
 
 public class NoteSql extends Sql {
@@ -27,7 +25,7 @@ public class NoteSql extends Sql {
         }
     }
 
-    public static List<Note> readByUserId(final UUID userId) {
+    public static List<Note> read(final UUID userId) {
         return executeQuery(
             "SELECT * FROM %s WHERE %s = ?".formatted(Note.NOTE, Note.USER_ID),
             mapper(),
@@ -35,18 +33,31 @@ public class NoteSql extends Sql {
         );
     }
 
-    public static PaginatedResult<Note> readByUserId(final UUID userId, final Pagination pagination) {
-        final var result = executeQuery(
-            "SELECT * FROM %s WHERE %s = ? LIMIT ? OFFSET ?".formatted(Note.NOTE, Note.USER_ID),
-            mapper(),
-            userId.toString(),
-            limit(pagination.pageSize()),
-            offset(pagination.pageNumber(), pagination.pageSize())
-        );
+    // todo sql builder
+    public static PaginatedResult<Note> read(final UUID userId, final Set<UUID> ids, final Pagination pagination) {
+        final List<Note> result;
+        if (ids.isEmpty()) {
+            result = executeQuery(
+                "SELECT * FROM %s WHERE %s = ? LIMIT ? OFFSET ?".formatted(Note.NOTE, Note.USER_ID),
+                mapper(),
+                userId.toString(),
+                limit(pagination.pageSize()),
+                offset(pagination.pageNumber(), pagination.pageSize())
+            );
+        } else {
+            result = executeQuery(
+                "SELECT * FROM %s WHERE %s IN (?) AND %s = ? LIMIT ? OFFSET ?".formatted(Note.NOTE, Note.ID, Note.USER_ID),
+                mapper(),
+                join(ids, ","),
+                userId.toString(),
+                limit(pagination.pageSize()),
+                offset(pagination.pageNumber(), pagination.pageSize())
+            );
+        }
         return paginatedResult(pagination, result);
     }
 
-    public static List<Note> readByUserIdWithLock(final UUID userId) {
+    public static List<Note> readForUpdate(final UUID userId) {
         return executeQuery(
             "SELECT * FROM %s WHERE %s = ? FOR UPDATE".formatted(Note.NOTE, Note.USER_ID),
             mapper(),
@@ -54,7 +65,7 @@ public class NoteSql extends Sql {
         );
     }
 
-    public static Note readByIdAndUserId(final UUID id, final UUID userId) {
+    public static Note read(final UUID userId, final UUID id) {
         final var result = executeQuery(
             "SELECT * FROM %s WHERE %s = ? AND %s = ?".formatted(Note.NOTE, Note.ID, Note.USER_ID),
             mapper(),
@@ -64,8 +75,8 @@ public class NoteSql extends Sql {
     }
 
     public static boolean update(
-        final UUID id,
         final UUID userId,
+        final UUID id,
         final String title,
         final String content,
         final Instant modificationTime
@@ -92,15 +103,16 @@ public class NoteSql extends Sql {
         return boolResult(result);
     }
 
-    public static boolean delete(final Note note) {
-        return deleteByIdAndUserId(note.id(), note.userId());
+    public static boolean delete(final UUID userId, final Note note) {
+        return delete(userId, List.of(note.id()));
     }
 
-    public static boolean deleteByIdAndUserId(final UUID id, final UUID userId) {
+    public static boolean delete(final UUID userId, final Collection<UUID> ids) {
         final var result = executeUpdate(
-            "DELETE FROM %s WHERE %s = ? AND %s = ?".formatted(Note.NOTE, Note.ID, Note.USER_ID),
-            id.toString(),
-            userId.toString());
+            "DELETE FROM %s WHERE %s IN (?) AND %s = ?".formatted(Note.NOTE, Note.ID, Note.USER_ID),
+            join(ids, ","),
+            userId.toString()
+        );
         return boolResult(result);
     }
 

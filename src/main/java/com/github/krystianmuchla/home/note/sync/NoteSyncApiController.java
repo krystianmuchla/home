@@ -1,28 +1,30 @@
 package com.github.krystianmuchla.home.note.sync;
 
-import com.github.krystianmuchla.home.api.Controller;
-import com.github.krystianmuchla.home.api.RequestReader;
-import com.github.krystianmuchla.home.api.ResponseWriter;
 import com.github.krystianmuchla.home.db.Transaction;
+import com.github.krystianmuchla.home.http.Controller;
+import com.github.krystianmuchla.home.http.RequestReader;
+import com.github.krystianmuchla.home.http.ResponseWriter;
 import com.github.krystianmuchla.home.note.Note;
 import com.github.krystianmuchla.home.note.NoteResponse;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
+import com.sun.net.httpserver.HttpExchange;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.UUID;
 
 public class NoteSyncApiController extends Controller {
-    public static final String PATH = "/api/notes/sync";
+    public NoteSyncApiController() {
+        super("/api/notes/sync");
+    }
 
     @Override
-    protected void doPut(final HttpServletRequest request, final HttpServletResponse response) {
-        final var user = session(request).user();
-        final var syncNotesRequest = RequestReader.readJson(request, SyncNotesRequest.class);
+    protected void put(final HttpExchange exchange) throws IOException {
+        final var user = session(exchange).user();
+        final var syncNotesRequest = RequestReader.readJson(exchange, SyncNotesRequest.class);
         final var notes = Transaction.run(
             () -> NoteSyncService.sync(user.id(), map(user.id(), syncNotesRequest.notes()))
         );
-        ResponseWriter.writeJson(response, new NoteSyncResponse(map(notes)));
+        ResponseWriter.writeJson(exchange, 200, new NoteSyncResponse(map(notes)));
     }
 
     private static List<Note> map(final UUID userId, final List<NoteRequest> notes) {

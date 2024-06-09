@@ -1,7 +1,7 @@
 package com.github.krystianmuchla.home.db;
 
-import com.github.krystianmuchla.home.error.exception.InternalException;
-import com.github.krystianmuchla.home.error.exception.TransactionException;
+import com.github.krystianmuchla.home.exception.InternalException;
+import com.github.krystianmuchla.home.exception.TransactionException;
 
 import java.sql.SQLException;
 import java.util.function.Supplier;

@@ -1,14 +1,15 @@
-package com.github.krystianmuchla.home.error.exception.validation;
+package com.github.krystianmuchla.home.exception.validation;
 
-import com.github.krystianmuchla.home.api.ResponseWriter;
-import com.github.krystianmuchla.home.error.AppError;
+import com.github.krystianmuchla.home.exception.HttpException;
+import com.github.krystianmuchla.home.http.ResponseWriter;
 import com.github.krystianmuchla.home.util.MultiValueHashMap;
 import com.github.krystianmuchla.home.util.MultiValueMap;
-import jakarta.servlet.http.HttpServletResponse;
+import com.sun.net.httpserver.HttpExchange;
 
+import java.io.IOException;
 import java.util.Map;
 
-public class ValidationException extends RuntimeException implements AppError {
+public class ValidationException extends RuntimeException implements HttpException {
     private final MultiValueMap<String, ValidationError> errors;
 
     public ValidationException() {
@@ -25,10 +26,11 @@ public class ValidationException extends RuntimeException implements AppError {
     }
 
     @Override
-    public void handle(final HttpServletResponse response) {
-        response.setStatus(400);
-        if (!errors.isEmpty()) {
-            ResponseWriter.writeJson(response, Map.of("invalidParameters", errors));
+    public void handle(final HttpExchange exchange) throws IOException {
+        if (errors.isEmpty()) {
+            ResponseWriter.write(exchange, 400);
+        } else {
+            ResponseWriter.writeJson(exchange, 400, Map.of("invalidParameters", errors));
         }
     }
 }

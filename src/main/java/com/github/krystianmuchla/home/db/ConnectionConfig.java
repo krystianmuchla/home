@@ -1,7 +1,7 @@
 package com.github.krystianmuchla.home.db;
 
 import com.github.krystianmuchla.home.Config;
-import com.github.krystianmuchla.home.error.exception.InternalException;
+import com.github.krystianmuchla.home.exception.InternalException;
 
 public class ConnectionConfig extends Config {
     public static final String URL;

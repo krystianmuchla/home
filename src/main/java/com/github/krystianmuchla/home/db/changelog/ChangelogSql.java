@@ -1,7 +1,7 @@
 package com.github.krystianmuchla.home.db.changelog;
 
 import com.github.krystianmuchla.home.db.Sql;
-import com.github.krystianmuchla.home.error.exception.InternalException;
+import com.github.krystianmuchla.home.exception.InternalException;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;

@@ -122,8 +122,8 @@ class NoteApiControllerTest {
         final var noteContent = "Note content";
         final var noteCreationTime = Instant.parse("2010-10-10T10:10:10.100Z");
         final var noteModificationTime = Instant.parse("2011-11-11T11:11:11.111Z");
-        Transaction.run(
-            () -> NoteSql.create(
+        Transaction.run(() -> {
+            NoteSql.create(
                 new Note(
                     noteId,
                     user.id(),
@@ -132,11 +132,21 @@ class NoteApiControllerTest {
                     noteCreationTime,
                     noteModificationTime
                 )
-            )
-        );
+            );
+            NoteSql.create(
+                new Note(
+                    UUID.fromString("32ad70b0-4e30-495a-b5c6-35c45b0243a7"),
+                    user.id(),
+                    noteTitle,
+                    noteContent,
+                    noteCreationTime,
+                    noteModificationTime
+                )
+            );
+        });
         final var client = HttpClient.newHttpClient();
         final var request = HttpRequest.newBuilder()
-            .uri(new URI(AppContext.HOST + "/api/notes/" + noteId))
+            .uri(new URI(AppContext.HOST + "/api/notes?id=" + noteId))
             .header("Cookie", cookie)
             .GET()
             .build();
@@ -146,62 +156,17 @@ class NoteApiControllerTest {
 
         assertThat(response.statusCode()).isEqualTo(200);
         assertThat(response.headers().firstValue("Content-Type")).isEqualTo(Optional.of("application/json"));
-        final var responseObject = gson.fromJson(response.body(), Map.class);
-        assertThat(responseObject.size()).isEqualTo(5);
-        assertThat(responseObject.get("id")).isEqualTo(noteId.toString());
-        assertThat(responseObject.get("title")).isEqualTo(noteTitle);
-        assertThat(responseObject.get("content")).isEqualTo(noteContent);
-        assertThat(responseObject.get("creationTime")).isEqualTo(noteCreationTime.toString());
-        assertThat(responseObject.get("modificationTime")).isEqualTo(noteModificationTime.toString());
-    }
-
-    @Test
-    void shouldNotGetNoteOfOtherUser() throws Exception {
-        final var noteId = UUID.fromString("81f6d5f3-9226-437f-bf5d-3e9eba985eb7");
-        final var userId = UUID.fromString("12ed4828-69a3-4094-a173-1e087326eee5");
-        final var noteTitle = "Note title";
-        final var noteContent = "Note content";
-        final var noteCreationTime = Instant.parse("2010-10-10T10:10:10.100Z");
-        final var noteModificationTime = Instant.parse("2011-11-11T11:11:11.111Z");
-        Transaction.run(
-            () -> NoteSql.create(
-                new Note(
-                    noteId,
-                    userId,
-                    noteTitle,
-                    noteContent,
-                    noteCreationTime,
-                    noteModificationTime
-                )
-            )
-        );
-        final var client = HttpClient.newHttpClient();
-        final var request = HttpRequest.newBuilder()
-            .uri(new URI(AppContext.HOST + "/api/notes/" + noteId))
-            .header("Cookie", cookie)
-            .GET()
-            .build();
-
-        final var response = client.send(request, HttpResponse.BodyHandlers.ofString());
-        client.close();
-
-        assertThat(response.statusCode()).isEqualTo(404);
-        assertThat(response.body()).isEmpty();
-    }
-
-    @Test
-    void shouldNotGetNoteWithoutAuthorization() throws Exception {
-        final var client = HttpClient.newHttpClient();
-        final var request = HttpRequest.newBuilder()
-            .uri(new URI(AppContext.HOST + "/api/notes/" + UUID.fromString("17e3721e-d7b0-43f2-9f84-b5b7299525bb")))
-            .GET()
-            .build();
-
-        final var response = client.send(request, HttpResponse.BodyHandlers.ofString());
-        client.close();
-
-        assertThat(response.statusCode()).isEqualTo(401);
-        assertThat(response.body()).isEmpty();
+        final var responseObject = gson.fromJson(response.body(), JsonObject.class);
+        assertThat(responseObject.size()).isEqualTo(2);
+        final var data = responseObject.getAsJsonArray("data");
+        assertThat(data.size()).isEqualTo(1);
+        final var note = gson.fromJson(data.get(0), Map.class);
+        assertThat(note.get("id")).isEqualTo(noteId.toString());
+        assertThat(note.get("title")).isEqualTo(noteTitle);
+        assertThat(note.get("content")).isEqualTo(noteContent);
+        assertThat(note.get("creationTime")).isEqualTo(noteCreationTime.toString());
+        assertThat(note.get("modificationTime")).isEqualTo(noteModificationTime.toString());
+        assertThat(responseObject.get("pagination")).isNotNull();
     }
 
     @Test
@@ -323,15 +288,16 @@ class NoteApiControllerTest {
         final var noteContent = "New note content";
         final var client = HttpClient.newHttpClient();
         final var request = HttpRequest.newBuilder()
-            .uri(new URI(AppContext.HOST + "/api/notes/" + noteId))
+            .uri(new URI(AppContext.HOST + "/api/notes"))
             .header("Content-Type", "application/json")
             .header("Cookie", cookie)
             .PUT(HttpRequest.BodyPublishers.ofString("""
                 {
+                  "id": "%s",
                   "title": "%s",
                   "content": "%s"
                 }
-                """.formatted(noteTitle, noteContent)))
+                """.formatted(noteId, noteTitle, noteContent)))
             .build();
 
         final var response = client.send(request, HttpResponse.BodyHandlers.ofString());
@@ -371,15 +337,16 @@ class NoteApiControllerTest {
         final var noteContent = "New note content";
         final var client = HttpClient.newHttpClient();
         final var request = HttpRequest.newBuilder()
-            .uri(new URI(AppContext.HOST + "/api/notes/" + noteId))
+            .uri(new URI(AppContext.HOST + "/api/notes"))
             .header("Content-Type", "application/json")
             .header("Cookie", cookie)
             .PUT(HttpRequest.BodyPublishers.ofString("""
                 {
+                  "id": "%s",
                   "title": "%s",
                   "content": "%s"
                 }
-                """.formatted(noteTitle, noteContent)))
+                """.formatted(noteId, noteTitle, noteContent)))
             .build();
 
         final var response = client.send(request, HttpResponse.BodyHandlers.ofString());
@@ -393,7 +360,7 @@ class NoteApiControllerTest {
     void shouldNotPutNoteWithoutAuthorization() throws Exception {
         final var client = HttpClient.newHttpClient();
         final var request = HttpRequest.newBuilder()
-            .uri(new URI(AppContext.HOST + "/api/notes/" + UUID.fromString("c914474a-6c4c-41c4-99cb-8e1b494878a0")))
+            .uri(new URI(AppContext.HOST + "/api/notes"))
             .header("Content-Type", "application/json")
             .PUT(HttpRequest.BodyPublishers.ofString("{}"))
             .build();
@@ -423,7 +390,7 @@ class NoteApiControllerTest {
         );
         final var client = HttpClient.newHttpClient();
         final var request = HttpRequest.newBuilder()
-            .uri(new URI(AppContext.HOST + "/api/notes/" + noteId))
+            .uri(new URI(AppContext.HOST + "/api/notes?id=" + noteId))
             .header("Cookie", cookie)
             .DELETE()
             .build();
@@ -462,7 +429,7 @@ class NoteApiControllerTest {
         );
         final var client = HttpClient.newHttpClient();
         final var request = HttpRequest.newBuilder()
-            .uri(new URI(AppContext.HOST + "/api/notes/" + noteId))
+            .uri(new URI(AppContext.HOST + "/api/notes?id=" + noteId))
             .header("Cookie", cookie)
             .DELETE()
             .build();
@@ -478,7 +445,7 @@ class NoteApiControllerTest {
     void shouldNotDeleteNoteWithoutAuthorization() throws Exception {
         final var client = HttpClient.newHttpClient();
         final var request = HttpRequest.newBuilder()
-            .uri(new URI(AppContext.HOST + "/api/notes/" + UUID.fromString("80a13f20-27a7-4706-81b1-17c40bd0555f")))
+            .uri(new URI(AppContext.HOST + "/api/notes?id=" + UUID.fromString("80a13f20-27a7-4706-81b1-17c40bd0555f")))
             .DELETE()
             .build();
 

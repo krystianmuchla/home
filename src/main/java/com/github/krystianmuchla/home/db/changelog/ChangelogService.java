@@ -2,7 +2,7 @@ package com.github.krystianmuchla.home.db.changelog;
 
 import com.github.krystianmuchla.home.db.Sql;
 import com.github.krystianmuchla.home.db.Transaction;
-import com.github.krystianmuchla.home.error.exception.InternalException;
+import com.github.krystianmuchla.home.exception.InternalException;
 import com.github.krystianmuchla.home.util.InstantFactory;
 import com.github.krystianmuchla.home.util.Resource;
 import org.slf4j.Logger;

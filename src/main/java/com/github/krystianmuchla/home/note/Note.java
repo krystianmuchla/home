@@ -1,6 +1,6 @@
 package com.github.krystianmuchla.home.note;
 
-import com.github.krystianmuchla.home.error.exception.InternalException;
+import com.github.krystianmuchla.home.exception.InternalException;
 import com.github.krystianmuchla.home.note.grave.NoteGrave;
 import com.github.krystianmuchla.home.note.sync.NoteRequest;
 import com.github.krystianmuchla.home.util.InstantFactory;

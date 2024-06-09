@@ -1,8 +1,8 @@
 package com.github.krystianmuchla.home.id.user;
 
-import com.github.krystianmuchla.home.error.exception.AuthenticationException;
-import com.github.krystianmuchla.home.error.exception.ConflictException;
-import com.github.krystianmuchla.home.error.exception.InternalException;
+import com.github.krystianmuchla.home.exception.AuthenticationException;
+import com.github.krystianmuchla.home.exception.ConflictException;
+import com.github.krystianmuchla.home.exception.InternalException;
 import com.github.krystianmuchla.home.id.SecureRandomFactory;
 import com.github.krystianmuchla.home.id.accessdata.AccessData;
 import com.github.krystianmuchla.home.id.accessdata.AccessDataSql;
@@ -29,7 +29,7 @@ public class UserService {
     }
 
     public static User createUser(final String login, final String password) {
-        var accessData = AccessDataSql.readByLogin(login);
+        var accessData = AccessDataSql.read(login);
         if (accessData != null) {
             throw new ConflictException("USER_ALREADY_EXISTS");
         }
@@ -43,7 +43,7 @@ public class UserService {
     }
 
     public static User getUser(final String login, final String password) {
-        final var accessData = AccessDataSql.readByLogin(login);
+        final var accessData = AccessDataSql.read(login);
         if (accessData == null) {
             throw new AuthenticationException();
         }
@@ -52,7 +52,7 @@ public class UserService {
         if (!Arrays.equals(secret, accessData.secret())) {
             throw new AuthenticationException(accessData.userId());
         }
-        return UserSql.readById(accessData.userId());
+        return UserSql.read(accessData.userId());
     }
 
     private static byte[] secret(final byte[] salt, final String password) {

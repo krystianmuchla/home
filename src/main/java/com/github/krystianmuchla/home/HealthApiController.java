@@ -1,15 +1,18 @@
 package com.github.krystianmuchla.home;
 
-import com.github.krystianmuchla.home.api.Controller;
-import com.github.krystianmuchla.home.api.ResponseWriter;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
+import com.github.krystianmuchla.home.http.Controller;
+import com.github.krystianmuchla.home.http.ResponseWriter;
+import com.sun.net.httpserver.HttpExchange;
+
+import java.io.IOException;
 
 public class HealthApiController extends Controller {
-    public static final String PATH = "/api/health";
+    public HealthApiController() {
+        super("/api/health");
+    }
 
     @Override
-    protected void doGet(final HttpServletRequest request, final HttpServletResponse response) {
-        ResponseWriter.writeJson(response, "{}");
+    protected void get(final HttpExchange exchange) throws IOException {
+        ResponseWriter.writeJson(exchange, 200, "{}");
     }
 }
