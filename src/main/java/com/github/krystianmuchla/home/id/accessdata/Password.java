@@ -1,6 +1,6 @@
 package com.github.krystianmuchla.home.id.accessdata;
 
-import com.github.krystianmuchla.home.exception.validation.ValidationError;
+import com.github.krystianmuchla.home.exception.ValidationError;
 
 import java.util.ArrayList;
 import java.util.List;

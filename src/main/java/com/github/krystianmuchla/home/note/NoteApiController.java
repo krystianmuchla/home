@@ -2,7 +2,7 @@ package com.github.krystianmuchla.home.note;
 
 import com.github.krystianmuchla.home.api.IdResponse;
 import com.github.krystianmuchla.home.db.Transaction;
-import com.github.krystianmuchla.home.exception.RequestException;
+import com.github.krystianmuchla.home.exception.http.BadRequestException;
 import com.github.krystianmuchla.home.http.Controller;
 import com.github.krystianmuchla.home.http.RequestReader;
 import com.github.krystianmuchla.home.http.ResponseWriter;
@@ -23,7 +23,7 @@ public class NoteApiController extends Controller {
         final var user = session(exchange).user();
         final var filter = RequestReader.readQuery(exchange, NoteFilterRequest::new);
         if (filter.isEmpty()) {
-            throw new RequestException();
+            throw new BadRequestException();
         }
         Transaction.run(() -> NoteService.delete(user.id(), filter.ids()));
         ResponseWriter.write(exchange, 204);

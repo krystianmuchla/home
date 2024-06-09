@@ -1,6 +1,6 @@
 package com.github.krystianmuchla.home.id.session;
 
-import com.github.krystianmuchla.home.exception.AuthenticationException;
+import com.github.krystianmuchla.home.exception.http.UnauthorizedException;
 import com.github.krystianmuchla.home.id.SecureRandomFactory;
 import com.github.krystianmuchla.home.id.accessdata.AccessDataSql;
 import com.github.krystianmuchla.home.id.user.User;
@@ -29,12 +29,12 @@ public class SessionService {
     public static Session getSession(final SessionId sessionId) {
         final var accessData = AccessDataSql.read(sessionId.login());
         if (accessData == null) {
-            throw new AuthenticationException();
+            throw new UnauthorizedException();
         }
         UserGuardService.inspect(accessData.userId());
         final var session = SESSIONS.get(sessionId);
         if (session == null) {
-            throw new AuthenticationException(accessData.userId());
+            throw new UnauthorizedException(accessData.userId());
         }
         return session;
     }

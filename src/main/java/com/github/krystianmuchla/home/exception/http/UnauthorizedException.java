@@ -1,4 +1,4 @@
-package com.github.krystianmuchla.home.exception;
+package com.github.krystianmuchla.home.exception.http;
 
 import com.github.krystianmuchla.home.http.ResponseWriter;
 import com.github.krystianmuchla.home.id.user.UserGuardService;
@@ -7,15 +7,14 @@ import com.sun.net.httpserver.HttpExchange;
 import java.io.IOException;
 import java.util.UUID;
 
-public class AuthenticationException extends RuntimeException implements HttpException {
+public class UnauthorizedException extends RuntimeException implements HttpException {
     private final UUID userId;
 
-    public AuthenticationException() {
+    public UnauthorizedException() {
         this(null);
     }
 
-    public AuthenticationException(final UUID userId) {
-        super("Unauthenticated");
+    public UnauthorizedException(final UUID userId) {
         this.userId = userId;
     }
 

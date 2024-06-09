@@ -1,6 +1,6 @@
-package com.github.krystianmuchla.home.exception.validation;
+package com.github.krystianmuchla.home.exception.http;
 
-import com.github.krystianmuchla.home.exception.HttpException;
+import com.github.krystianmuchla.home.exception.ValidationError;
 import com.github.krystianmuchla.home.http.ResponseWriter;
 import com.github.krystianmuchla.home.util.MultiValueHashMap;
 import com.github.krystianmuchla.home.util.MultiValueMap;
@@ -9,18 +9,23 @@ import com.sun.net.httpserver.HttpExchange;
 import java.io.IOException;
 import java.util.Map;
 
-public class ValidationException extends RuntimeException implements HttpException {
+public class BadRequestException extends RuntimeException implements HttpException {
     private final MultiValueMap<String, ValidationError> errors;
 
-    public ValidationException() {
-        errors = new MultiValueHashMap<>();
+    public BadRequestException() {
+        this.errors = null;
     }
 
-    public ValidationException(final String parameter, ValidationError error) {
+    public BadRequestException(final Throwable cause) {
+        super(cause);
+        this.errors = null;
+    }
+
+    public BadRequestException(final String parameter, final ValidationError error) {
         this(MultiValueHashMap.of(parameter, error));
     }
 
-    public ValidationException(final MultiValueMap<String, ValidationError> errors) {
+    public BadRequestException(final MultiValueMap<String, ValidationError> errors) {
         super("Invalid input parameters: " + String.join(",", errors.keySet()));
         this.errors = errors;
     }

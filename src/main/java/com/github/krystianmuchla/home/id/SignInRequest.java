@@ -1,8 +1,8 @@
 package com.github.krystianmuchla.home.id;
 
 import com.github.krystianmuchla.home.api.RequestBody;
-import com.github.krystianmuchla.home.exception.validation.ValidationError;
-import com.github.krystianmuchla.home.exception.validation.ValidationException;
+import com.github.krystianmuchla.home.exception.http.BadRequestException;
+import com.github.krystianmuchla.home.exception.ValidationError;
 import com.github.krystianmuchla.home.util.MultiValueHashMap;
 
 public record SignInRequest(String login, String password) implements RequestBody {
@@ -16,7 +16,7 @@ public record SignInRequest(String login, String password) implements RequestBod
             errors.add("password", ValidationError.nullValue());
         }
         if (!errors.isEmpty()) {
-            throw new ValidationException(errors);
+            throw new BadRequestException(errors);
         }
     }
 }

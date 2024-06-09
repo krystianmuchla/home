@@ -1,6 +1,6 @@
 package com.github.krystianmuchla.home.api;
 
-import com.github.krystianmuchla.home.exception.RequestException;
+import com.github.krystianmuchla.home.exception.http.BadRequestException;
 import com.google.gson.*;
 
 import java.time.Instant;
@@ -22,7 +22,7 @@ public class GsonHolder {
             try {
                 return Instant.parse(string);
             } catch (final DateTimeParseException exception) {
-                throw new RequestException(exception);
+                throw new BadRequestException(exception);
             }
         };
     }

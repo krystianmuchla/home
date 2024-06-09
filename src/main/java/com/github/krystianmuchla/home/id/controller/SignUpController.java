@@ -1,6 +1,6 @@
 package com.github.krystianmuchla.home.id.controller;
 
-import com.github.krystianmuchla.home.exception.AuthenticationException;
+import com.github.krystianmuchla.home.exception.http.UnauthorizedException;
 import com.github.krystianmuchla.home.html.Script;
 import com.github.krystianmuchla.home.html.Style;
 import com.github.krystianmuchla.home.html.element.LabeledTextInput;
@@ -26,7 +26,7 @@ public class SignUpController extends Controller {
             session(exchange);
             ResponseWriter.writeLocation(exchange, "/drive");
             ResponseWriter.write(exchange, 302);
-        } catch (final AuthenticationException exception) {
+        } catch (final UnauthorizedException exception) {
             ResponseWriter.writeHtml(exchange, 200, html());
         }
     }

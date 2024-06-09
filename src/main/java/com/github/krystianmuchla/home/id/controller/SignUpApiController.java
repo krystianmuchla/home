@@ -1,7 +1,7 @@
 package com.github.krystianmuchla.home.id.controller;
 
 import com.github.krystianmuchla.home.db.Transaction;
-import com.github.krystianmuchla.home.exception.AuthenticationException;
+import com.github.krystianmuchla.home.exception.http.UnauthorizedException;
 import com.github.krystianmuchla.home.http.Controller;
 import com.github.krystianmuchla.home.http.RequestReader;
 import com.github.krystianmuchla.home.http.ResponseWriter;
@@ -23,7 +23,7 @@ public class SignUpApiController extends Controller {
         final var signUpRequest = RequestReader.readJson(exchange, SignUpRequest.class);
         final var tokenValid = SignUpToken.INSTANCE.test(signUpRequest.token());
         if (!tokenValid) {
-            throw new AuthenticationException();
+            throw new UnauthorizedException();
         }
         final var userId = Transaction.run(
             () -> UserService.createUser(signUpRequest.login(), signUpRequest.password())

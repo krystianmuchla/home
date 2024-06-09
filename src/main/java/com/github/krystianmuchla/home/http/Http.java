@@ -1,8 +1,8 @@
 package com.github.krystianmuchla.home.http;
 
-import com.github.krystianmuchla.home.exception.HttpException;
 import com.github.krystianmuchla.home.exception.InternalException;
 import com.github.krystianmuchla.home.exception.TransactionException;
+import com.github.krystianmuchla.home.exception.http.HttpException;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import com.sun.net.httpserver.HttpServer;

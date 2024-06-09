@@ -1,6 +1,6 @@
 package com.github.krystianmuchla.home.http;
 
-import com.github.krystianmuchla.home.exception.MethodNotAllowedException;
+import com.github.krystianmuchla.home.exception.http.MethodNotAllowedException;
 import com.github.krystianmuchla.home.id.session.Session;
 import com.github.krystianmuchla.home.id.session.SessionService;
 import com.sun.net.httpserver.HttpExchange;

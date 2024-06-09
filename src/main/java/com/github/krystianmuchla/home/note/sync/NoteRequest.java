@@ -1,8 +1,8 @@
 package com.github.krystianmuchla.home.note.sync;
 
 import com.github.krystianmuchla.home.api.RequestBody;
-import com.github.krystianmuchla.home.exception.validation.ValidationError;
-import com.github.krystianmuchla.home.exception.validation.ValidationException;
+import com.github.krystianmuchla.home.exception.http.BadRequestException;
+import com.github.krystianmuchla.home.exception.ValidationError;
 import com.github.krystianmuchla.home.note.Note;
 import com.github.krystianmuchla.home.util.InstantFactory;
 import com.github.krystianmuchla.home.util.MultiValueHashMap;
@@ -38,7 +38,7 @@ public record NoteRequest(
             errors.add("modificationTime", ValidationError.wrongFormat());
         }
         if (!errors.isEmpty()) {
-            throw new ValidationException(errors);
+            throw new BadRequestException(errors);
         }
     }
 }

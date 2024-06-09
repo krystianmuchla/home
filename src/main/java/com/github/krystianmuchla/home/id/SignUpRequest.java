@@ -1,8 +1,8 @@
 package com.github.krystianmuchla.home.id;
 
 import com.github.krystianmuchla.home.api.RequestBody;
-import com.github.krystianmuchla.home.exception.validation.ValidationError;
-import com.github.krystianmuchla.home.exception.validation.ValidationException;
+import com.github.krystianmuchla.home.exception.http.BadRequestException;
+import com.github.krystianmuchla.home.exception.ValidationError;
 import com.github.krystianmuchla.home.id.accessdata.Login;
 import com.github.krystianmuchla.home.id.accessdata.Password;
 import com.github.krystianmuchla.home.util.MultiValueHashMap;
@@ -23,7 +23,7 @@ public record SignUpRequest(String login, String password, String token) impleme
             errors.add("token", ValidationError.nullValue());
         }
         if (!errors.isEmpty()) {
-            throw new ValidationException(errors);
+            throw new BadRequestException(errors);
         }
     }
 }

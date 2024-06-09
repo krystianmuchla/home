@@ -1,8 +1,8 @@
 package com.github.krystianmuchla.home.note;
 
 import com.github.krystianmuchla.home.api.RequestBody;
-import com.github.krystianmuchla.home.exception.validation.ValidationError;
-import com.github.krystianmuchla.home.exception.validation.ValidationException;
+import com.github.krystianmuchla.home.exception.http.BadRequestException;
+import com.github.krystianmuchla.home.exception.ValidationError;
 import com.github.krystianmuchla.home.util.MultiValueHashMap;
 
 import java.util.UUID;
@@ -21,7 +21,7 @@ public record UpdateNoteRequest(UUID id, String title, String content) implement
             errors.add("content", ValidationError.aboveMaxLength(Note.CONTENT_MAX_LENGTH));
         }
         if (!errors.isEmpty()) {
-            throw new ValidationException(errors);
+            throw new BadRequestException(errors);
         }
     }
 }

@@ -1,7 +1,7 @@
 package com.github.krystianmuchla.home.id.user;
 
-import com.github.krystianmuchla.home.exception.AuthenticationException;
-import com.github.krystianmuchla.home.exception.ConflictException;
+import com.github.krystianmuchla.home.exception.http.UnauthorizedException;
+import com.github.krystianmuchla.home.exception.http.ConflictException;
 import com.github.krystianmuchla.home.exception.InternalException;
 import com.github.krystianmuchla.home.id.SecureRandomFactory;
 import com.github.krystianmuchla.home.id.accessdata.AccessData;
@@ -45,12 +45,12 @@ public class UserService {
     public static User getUser(final String login, final String password) {
         final var accessData = AccessDataSql.read(login);
         if (accessData == null) {
-            throw new AuthenticationException();
+            throw new UnauthorizedException();
         }
         UserGuardService.inspect(accessData.userId());
         final var secret = secret(accessData.salt(), password);
         if (!Arrays.equals(secret, accessData.secret())) {
-            throw new AuthenticationException(accessData.userId());
+            throw new UnauthorizedException(accessData.userId());
         }
         return UserSql.read(accessData.userId());
     }

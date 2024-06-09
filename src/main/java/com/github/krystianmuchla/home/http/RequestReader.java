@@ -3,9 +3,8 @@ package com.github.krystianmuchla.home.http;
 import com.github.krystianmuchla.home.api.GsonHolder;
 import com.github.krystianmuchla.home.api.RequestBody;
 import com.github.krystianmuchla.home.api.RequestQuery;
-import com.github.krystianmuchla.home.exception.BadRequestException;
-import com.github.krystianmuchla.home.exception.ContentTypeException;
-import com.github.krystianmuchla.home.exception.UnsupportedMediaTypeException;
+import com.github.krystianmuchla.home.exception.http.BadRequestException;
+import com.github.krystianmuchla.home.exception.http.UnsupportedMediaTypeException;
 import com.github.krystianmuchla.home.id.session.SessionId;
 import com.github.krystianmuchla.home.util.MultiValueHashMap;
 import com.github.krystianmuchla.home.util.MultiValueMap;
@@ -79,7 +78,7 @@ public class RequestReader {
     public static InputStream readStream(final HttpExchange exchange) {
         final var contentType = readHeader(exchange, "Content-Type");
         if (contentType == null || !contentType.contains("application/octet-stream")) {
-            throw new ContentTypeException();
+            throw new UnsupportedMediaTypeException();
         }
         return exchange.getRequestBody();
     }

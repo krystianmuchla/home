@@ -1,7 +1,7 @@
 package com.github.krystianmuchla.home.drive;
 
-import com.github.krystianmuchla.home.exception.validation.ValidationError;
-import com.github.krystianmuchla.home.exception.validation.ValidationException;
+import com.github.krystianmuchla.home.exception.http.BadRequestException;
+import com.github.krystianmuchla.home.exception.ValidationError;
 import com.github.krystianmuchla.home.http.Controller;
 import com.github.krystianmuchla.home.http.RequestReader;
 import com.github.krystianmuchla.home.http.ResponseWriter;
@@ -36,7 +36,7 @@ public class DriveApiController extends Controller {
     private FileUpload fileUpload(final HttpExchange exchange) {
         final var fileName = RequestReader.readHeader(exchange, "Content-ID");
         if (fileName == null || fileName.isEmpty()) {
-            throw new ValidationException("Content-ID", ValidationError.emptyValue());
+            throw new BadRequestException("Content-ID", ValidationError.emptyValue());
         }
         return new FileUpload(fileName, RequestReader.readStream(exchange));
     }

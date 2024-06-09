@@ -1,7 +1,7 @@
 package com.github.krystianmuchla.home.note;
 
 import com.github.krystianmuchla.home.api.RequestQuery;
-import com.github.krystianmuchla.home.exception.BadRequestException;
+import com.github.krystianmuchla.home.exception.http.BadRequestException;
 import com.github.krystianmuchla.home.util.MultiValueMap;
 
 import java.util.Set;

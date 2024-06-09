@@ -1,9 +1,9 @@
 package com.github.krystianmuchla.home.drive;
 
-import com.github.krystianmuchla.home.exception.AuthorizationException;
+import com.github.krystianmuchla.home.exception.http.BadRequestException;
+import com.github.krystianmuchla.home.exception.http.ForbiddenException;
 import com.github.krystianmuchla.home.exception.InternalException;
-import com.github.krystianmuchla.home.exception.MissingResourceException;
-import com.github.krystianmuchla.home.exception.validation.ValidationException;
+import com.github.krystianmuchla.home.exception.http.NotFoundException;
 import com.github.krystianmuchla.home.util.StreamService;
 
 import java.io.File;
@@ -34,9 +34,9 @@ public class DriveService {
                 .map(Path::toString)
                 .collect(Collectors.toSet());
         } catch (final NotDirectoryException exception) {
-            throw new ValidationException();
+            throw new BadRequestException();
         } catch (final NoSuchFileException exception) {
-            throw new MissingResourceException();
+            throw new NotFoundException();
         } catch (final IOException exception) {
             throw new InternalException(exception);
         }
@@ -57,10 +57,10 @@ public class DriveService {
         final var path = path(userId, directories, fileName);
         final var file = path.toFile();
         if (!file.exists()) {
-            throw new MissingResourceException();
+            throw new NotFoundException();
         }
         if (!file.isFile()) {
-            throw new ValidationException();
+            throw new BadRequestException();
         }
         return file;
     }
@@ -89,7 +89,7 @@ public class DriveService {
 
     private static void authorization(final Path userDrivePath, final Path path) {
         if (!path.startsWith(userDrivePath)) {
-            throw new AuthorizationException();
+            throw new ForbiddenException();
         }
     }
 

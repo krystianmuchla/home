@@ -1,4 +1,4 @@
-package com.github.krystianmuchla.home.exception;
+package com.github.krystianmuchla.home.exception.http;
 
 import com.github.krystianmuchla.home.http.ResponseWriter;
 import com.sun.net.httpserver.HttpExchange;

@@ -1,6 +1,6 @@
 package com.github.krystianmuchla.home.id.user;
 
-import com.github.krystianmuchla.home.exception.RequestRateException;
+import com.github.krystianmuchla.home.exception.http.TooManyRequestsException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -20,7 +20,7 @@ public class UserGuardService {
             return;
         }
         if (failures >= MAX_FAILURES) {
-            throw new RequestRateException();
+            throw new TooManyRequestsException();
         }
     }
 

@@ -1,6 +1,6 @@
 package com.github.krystianmuchla.home.drive;
 
-import com.github.krystianmuchla.home.exception.AuthenticationException;
+import com.github.krystianmuchla.home.exception.http.UnauthorizedException;
 import com.github.krystianmuchla.home.html.Style;
 import com.github.krystianmuchla.home.html.Tag;
 import com.github.krystianmuchla.home.html.element.Listing;
@@ -28,7 +28,7 @@ public class DriveController extends Controller {
         final User user;
         try {
             user = session(exchange).user();
-        } catch (final AuthenticationException exception) {
+        } catch (final UnauthorizedException exception) {
             ResponseWriter.writeLocation(exchange, "/id/sign_in");
             ResponseWriter.write(exchange, 302);
             return;
