@@ -5,7 +5,7 @@ import java.sql.SQLException;
 import java.util.UUID;
 
 public record AccessData(UUID id, UUID userId, String login, byte[] salt, byte[] secret) {
-    public static final String ACCESS_DATA = "access_data";
+    public static final String TABLE = "access_data";
     public static final String ID = "id";
     public static final String USER_ID = "user_id";
     public static final String LOGIN = "login";

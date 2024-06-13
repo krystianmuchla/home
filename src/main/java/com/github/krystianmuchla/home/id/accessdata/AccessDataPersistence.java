@@ -1,5 +1,6 @@
 package com.github.krystianmuchla.home.id.accessdata;
 
+import com.github.krystianmuchla.home.db.Persistence;
 import com.github.krystianmuchla.home.db.Sql;
 import com.github.krystianmuchla.home.exception.InternalException;
 
@@ -9,18 +10,22 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
 
-public class AccessDataSql extends Sql {
+import static com.github.krystianmuchla.home.db.Sql.eq;
+
+public class AccessDataPersistence extends Persistence {
     private static final Map<String, AccessData> READ_CACHE = new ConcurrentHashMap<>();
 
     public static void create(final AccessData accessData) {
-        executeUpdate(
-            "INSERT INTO %s VALUES (?, ?, ?, ?, ?)".formatted(AccessData.ACCESS_DATA),
-            accessData.id().toString(),
-            accessData.userId().toString(),
-            accessData.login(),
-            accessData.salt(),
-            accessData.secret()
-        );
+        final var sql = new Sql.Builder()
+            .insertInto(AccessData.TABLE)
+            .values(
+                accessData.id(),
+                accessData.userId(),
+                accessData.login(),
+                accessData.salt(),
+                accessData.secret()
+            );
+        executeUpdate(sql.build());
     }
 
     public static AccessData read(final String login) {
@@ -28,11 +33,13 @@ public class AccessDataSql extends Sql {
         if (cachedAccessData != null) {
             return cachedAccessData;
         }
-        final var result = executeQuery(
-            "SELECT * FROM %s WHERE %s = ?".formatted(AccessData.ACCESS_DATA, AccessData.LOGIN),
-            mapper(),
-            login
-        );
+        final var sql = new Sql.Builder()
+            .select()
+            .from(AccessData.TABLE)
+            .where(
+                eq(AccessData.LOGIN, login)
+            );
+        final var result = executeQuery(sql.build(), mapper());
         final var accessData = singleResult(result);
         if (accessData != null) {
             READ_CACHE.put(login, accessData);

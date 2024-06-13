@@ -5,7 +5,7 @@ import com.github.krystianmuchla.home.exception.http.ConflictException;
 import com.github.krystianmuchla.home.exception.InternalException;
 import com.github.krystianmuchla.home.id.SecureRandomFactory;
 import com.github.krystianmuchla.home.id.accessdata.AccessData;
-import com.github.krystianmuchla.home.id.accessdata.AccessDataSql;
+import com.github.krystianmuchla.home.id.accessdata.AccessDataPersistence;
 
 import javax.crypto.SecretKey;
 import javax.crypto.SecretKeyFactory;
@@ -29,21 +29,21 @@ public class UserService {
     }
 
     public static User createUser(final String login, final String password) {
-        var accessData = AccessDataSql.read(login);
+        var accessData = AccessDataPersistence.read(login);
         if (accessData != null) {
             throw new ConflictException("USER_ALREADY_EXISTS");
         }
         final var user = new User(UUID.randomUUID());
-        UserSql.create(user);
+        UserPersistence.create(user);
         final var salt = SecureRandomFactory.createBytes(SALT_BYTES);
         final var secret = secret(salt, password);
         accessData = new AccessData(UUID.randomUUID(), user.id(), login, salt, secret);
-        AccessDataSql.create(accessData);
+        AccessDataPersistence.create(accessData);
         return user;
     }
 
     public static User getUser(final String login, final String password) {
-        final var accessData = AccessDataSql.read(login);
+        final var accessData = AccessDataPersistence.read(login);
         if (accessData == null) {
             throw new UnauthorizedException();
         }
@@ -52,7 +52,7 @@ public class UserService {
         if (!Arrays.equals(secret, accessData.secret())) {
             throw new UnauthorizedException(accessData.userId());
         }
-        return UserSql.read(accessData.userId());
+        return UserPersistence.read(accessData.userId());
     }
 
     private static byte[] secret(final byte[] salt, final String password) {

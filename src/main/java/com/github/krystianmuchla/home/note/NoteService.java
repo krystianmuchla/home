@@ -1,70 +1,60 @@
 package com.github.krystianmuchla.home.note;
 
-import com.github.krystianmuchla.home.util.InstantFactory;
+import com.github.krystianmuchla.home.exception.http.BadRequestException;
 import com.github.krystianmuchla.home.exception.http.NotFoundException;
-import com.github.krystianmuchla.home.note.grave.NoteGrave;
-import com.github.krystianmuchla.home.note.grave.NoteGraveSql;
+import com.github.krystianmuchla.home.note.grave.NoteGravePersistence;
+import com.github.krystianmuchla.home.util.InstantFactory;
 
-import java.util.Set;
 import java.util.UUID;
 
 public class NoteService {
-    public static UUID create(final UUID userId, final String title, final String content) {
+    public static UUID create(final UUID userId, final CreateNoteRequest request) {
         final var id = UUID.randomUUID();
         final var creationTime = InstantFactory.create();
-        final var note = new Note(id, userId, title, content, creationTime);
-        NoteSql.create(note);
-        return note.id();
+        final var note = new Note(id, userId, request.title(), request.content(), creationTime);
+        NotePersistence.create(note);
+        return note.id;
     }
 
     public static void create(final Note note) {
-        NoteGraveSql.delete(note.asNoteGrave());
-        NoteSql.create(note);
+        NoteGravePersistence.delete(note.asNoteGrave());
+        NotePersistence.create(note);
     }
 
-    public static Note read(final UUID userId, final UUID id) {
-        final var result = NoteSql.read(userId, id);
-        if (result == null) {
+    public static void update(final UUID userId, final UpdateNoteRequest request) {
+        final var note = NotePersistence.readForUpdate(userId, request.id());
+        if (note == null) {
             throw new NotFoundException();
         }
-        return result;
+        note.title = request.title();
+        note.content = request.content();
+        note.modificationTime = InstantFactory.create();
+        update(note);
     }
 
-    public static void update(final UUID userId, final UUID id, final String title, final String content) {
-        final var result = NoteSql.update(userId, id, title, content, InstantFactory.create());
-        if (!result) {
-            throw new NotFoundException();
-        }
-    }
-
-    // todo pass user id
     public static void update(final Note note) {
-        final var result = NoteSql.update(
-            note.userId(),
-            note.id(),
-            note.title(),
-            note.content(),
-            note.modificationTime()
-        );
+        final var result = NotePersistence.update(note);
         if (!result) {
             throw new NotFoundException();
         }
     }
 
-    public static void delete(final UUID userId, final Set<UUID> ids) {
-        final var result = NoteSql.delete(userId, ids);
-        if (!result) {
+    public static void delete(final UUID userId, final NoteFilterRequest request) {
+        if (request.isEmpty()) {
+            throw new BadRequestException();
+        }
+        final var notes = NotePersistence.readForUpdate(userId, request.ids());
+        if (notes.isEmpty()) {
             throw new NotFoundException();
         }
-        final var noteGraves = ids.stream().map(id -> new NoteGrave(id, userId)).toArray(NoteGrave[]::new);
-        NoteGraveSql.create(noteGraves);
+        notes.stream().peek(note -> note.modificationTime = InstantFactory.create()).forEach(NoteService::delete);
     }
 
-    public static void delete(final UUID userId, final Note note) {
-        final var result = NoteSql.delete(userId, note);
+    public static void delete(final Note note) {
+        final var result = NotePersistence.delete(note);
         if (!result) {
             throw new NotFoundException();
         }
-        NoteGraveSql.create(note.asNoteGrave());
+        NoteGravePersistence.create(note.asNoteGrave());
     }
 }

@@ -2,15 +2,13 @@ package com.github.krystianmuchla.home.note;
 
 import com.github.krystianmuchla.home.AppContext;
 import com.github.krystianmuchla.home.api.GsonHolder;
-import com.github.krystianmuchla.home.db.Sql;
+import com.github.krystianmuchla.home.db.Persistence;
 import com.github.krystianmuchla.home.db.Transaction;
-import com.github.krystianmuchla.home.id.accessdata.AccessData;
 import com.github.krystianmuchla.home.id.session.SessionId;
 import com.github.krystianmuchla.home.id.session.SessionService;
 import com.github.krystianmuchla.home.id.user.User;
 import com.github.krystianmuchla.home.id.user.UserService;
-import com.github.krystianmuchla.home.note.grave.NoteGrave;
-import com.github.krystianmuchla.home.note.grave.NoteGraveSql;
+import com.github.krystianmuchla.home.note.grave.NoteGravePersistence;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import org.junit.jupiter.api.AfterAll;
@@ -48,16 +46,16 @@ class NoteApiControllerTest {
     @AfterEach
     void afterEachTest() {
         Transaction.run(() -> {
-            Sql.executeUpdate("DELETE FROM %s".formatted(Note.NOTE));
-            Sql.executeUpdate("DELETE FROM %s".formatted(NoteGrave.NOTE_GRAVE));
+            Persistence.executeUpdate("DELETE FROM note");
+            Persistence.executeUpdate("DELETE FROM note_grave");
         });
     }
 
     @AfterAll
     static void afterAllTests() {
         Transaction.run(() -> {
-            Sql.executeUpdate("DELETE FROM %s".formatted(AccessData.ACCESS_DATA));
-            Sql.executeUpdate("DELETE FROM %s".formatted(User.USER));
+            Persistence.executeUpdate("DELETE FROM access_data");
+            Persistence.executeUpdate("DELETE FROM user");
         });
         SessionService.removeSession(sessionId);
     }
@@ -87,16 +85,16 @@ class NoteApiControllerTest {
         final var responseObject = gson.fromJson(response.body(), JsonObject.class);
         assertThat(responseObject.size()).isEqualTo(1);
         final var noteId = gson.fromJson(responseObject.get("id"), UUID.class);
-        final var notes = Sql.executeQuery("SELECT * FROM %s".formatted(Note.NOTE), NoteSql.mapper());
+        final var notes = Persistence.executeQuery("SELECT * FROM note", NotePersistence.mapper());
         assertThat(notes).hasSize(1);
         final var note = notes.getFirst();
-        assertThat(note.id()).isEqualTo(noteId);
-        assertThat(note.userId()).isEqualTo(user.id());
-        assertThat(note.title()).isEqualTo(noteTitle);
-        assertThat(note.content()).isEqualTo(noteContent);
-        assertThat(note.creationTime()).isNotNull();
-        assertThat(note.modificationTime()).isNotNull();
-        assertThat(note.creationTime()).isEqualTo(note.modificationTime());
+        assertThat(note.id).isEqualTo(noteId);
+        assertThat(note.userId).isEqualTo(user.id());
+        assertThat(note.title).isEqualTo(noteTitle);
+        assertThat(note.content).isEqualTo(noteContent);
+        assertThat(note.creationTime).isNotNull();
+        assertThat(note.modificationTime).isNotNull();
+        assertThat(note.creationTime).isEqualTo(note.modificationTime);
     }
 
     @Test
@@ -123,7 +121,7 @@ class NoteApiControllerTest {
         final var noteCreationTime = Instant.parse("2010-10-10T10:10:10.100Z");
         final var noteModificationTime = Instant.parse("2011-11-11T11:11:11.111Z");
         Transaction.run(() -> {
-            NoteSql.create(
+            NotePersistence.create(
                 new Note(
                     noteId,
                     user.id(),
@@ -133,7 +131,7 @@ class NoteApiControllerTest {
                     noteModificationTime
                 )
             );
-            NoteSql.create(
+            NotePersistence.create(
                 new Note(
                     UUID.fromString("32ad70b0-4e30-495a-b5c6-35c45b0243a7"),
                     user.id(),
@@ -177,7 +175,7 @@ class NoteApiControllerTest {
         final var noteCreationTime = Instant.parse("2010-10-10T10:10:10.100Z");
         final var noteModificationTime = Instant.parse("2011-11-11T11:11:11.111Z");
         Transaction.run(
-            () -> NoteSql.create(
+            () -> NotePersistence.create(
                 new Note(
                     noteId,
                     user.id(),
@@ -222,7 +220,7 @@ class NoteApiControllerTest {
         final var noteCreationTime = Instant.parse("2010-10-10T10:10:10.100Z");
         final var noteModificationTime = Instant.parse("2011-11-11T11:11:11.111Z");
         Transaction.run(
-            () -> NoteSql.create(
+            () -> NotePersistence.create(
                 new Note(
                     noteId,
                     userId,
@@ -273,7 +271,7 @@ class NoteApiControllerTest {
         final var noteCreationTime = Instant.parse("2010-10-10T10:10:10.100Z");
         final var noteModificationTime = Instant.parse("2011-11-11T11:11:11.111Z");
         Transaction.run(
-            () -> NoteSql.create(
+            () -> NotePersistence.create(
                 new Note(
                     noteId,
                     user.id(),
@@ -305,14 +303,14 @@ class NoteApiControllerTest {
 
         assertThat(response.statusCode()).isEqualTo(204);
         assertThat(response.body()).isEmpty();
-        final var notes = Sql.executeQuery("SELECT * FROM %s".formatted(Note.NOTE), NoteSql.mapper());
+        final var notes = Persistence.executeQuery("SELECT * FROM note", NotePersistence.mapper());
         assertThat(notes).hasSize(1);
         final var note = notes.getFirst();
-        assertThat(note.id()).isEqualTo(noteId);
-        assertThat(note.title()).isEqualTo(noteTitle);
-        assertThat(note.content()).isEqualTo(noteContent);
-        assertThat(note.creationTime()).isEqualTo(noteCreationTime);
-        assertThat(note.modificationTime()).isAfter(noteModificationTime);
+        assertThat(note.id).isEqualTo(noteId);
+        assertThat(note.title).isEqualTo(noteTitle);
+        assertThat(note.content).isEqualTo(noteContent);
+        assertThat(note.creationTime).isEqualTo(noteCreationTime);
+        assertThat(note.modificationTime).isAfter(noteModificationTime);
     }
 
     @Test
@@ -322,7 +320,7 @@ class NoteApiControllerTest {
         final var noteCreationTime = Instant.parse("2010-10-10T10:10:10.100Z");
         final var noteModificationTime = Instant.parse("2011-11-11T11:11:11.111Z");
         Transaction.run(
-            () -> NoteSql.create(
+            () -> NotePersistence.create(
                 new Note(
                     noteId,
                     userId,
@@ -377,7 +375,7 @@ class NoteApiControllerTest {
         final var noteId = UUID.fromString("946a95dd-8cb5-4d59-ae7e-101ac3ea715b");
         final var noteModificationTime = Instant.parse("2011-11-11T11:11:11Z");
         Transaction.run(
-            () -> NoteSql.create(
+            () -> NotePersistence.create(
                 new Note(
                     noteId,
                     user.id(),
@@ -400,9 +398,9 @@ class NoteApiControllerTest {
 
         assertThat(response.statusCode()).isEqualTo(204);
         assertThat(response.body()).isEmpty();
-        final var notes = Sql.executeQuery("SELECT * FROM %s".formatted(Note.NOTE), NoteSql.mapper());
+        final var notes = Persistence.executeQuery("SELECT * FROM note", NotePersistence.mapper());
         assertThat(notes).hasSize(0);
-        final var noteGraves = Sql.executeQuery("SELECT * FROM %s".formatted(NoteGrave.NOTE_GRAVE), NoteGraveSql.mapper());
+        final var noteGraves = Persistence.executeQuery("SELECT * FROM note_grave", NoteGravePersistence.mapper());
         assertThat(noteGraves).hasSize(1);
         final var noteGrave = noteGraves.getFirst();
         assertThat(noteGrave.id()).isEqualTo(noteId);
@@ -416,7 +414,7 @@ class NoteApiControllerTest {
         final var userId = UUID.fromString("36cfee27-1b49-4540-965a-533044f7dbfc");
         final var noteModificationTime = Instant.parse("2011-11-11T11:11:11Z");
         Transaction.run(
-            () -> NoteSql.create(
+            () -> NotePersistence.create(
                 new Note(
                     noteId,
                     userId,

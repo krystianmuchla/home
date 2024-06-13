@@ -18,7 +18,7 @@ public class NoteGraveCleaner implements Runnable {
         try {
             while (true) {
                 final var creationTimeThreshold = InstantFactory.create().minus(threshold.toMillis(), ChronoUnit.MILLIS);
-                Transaction.run(() -> NoteGraveSql.delete(creationTimeThreshold));
+                Transaction.run(() -> NoteGravePersistence.delete(creationTimeThreshold));
                 try {
                     Thread.sleep(rate);
                 } catch (final InterruptedException ignored) {
@@ -26,7 +26,7 @@ public class NoteGraveCleaner implements Runnable {
                 }
             }
         } catch (final Exception exception) {
-            LOG.error("{}", exception.getMessage(), exception);
+            LOG.warn("{}", exception.getMessage(), exception);
         }
     }
 }

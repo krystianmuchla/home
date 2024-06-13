@@ -1,6 +1,6 @@
 package com.github.krystianmuchla.home.db.changelog;
 
-import com.github.krystianmuchla.home.db.Sql;
+import com.github.krystianmuchla.home.db.Persistence;
 import com.github.krystianmuchla.home.db.Transaction;
 import com.github.krystianmuchla.home.exception.InternalException;
 import com.github.krystianmuchla.home.util.InstantFactory;
@@ -18,10 +18,10 @@ public class ChangelogService {
     private static final Logger LOG = LoggerFactory.getLogger(ChangelogService.class);
 
     public static void update() {
-        if (!ChangelogSql.exists()) {
-            Transaction.run(ChangelogSql::create);
+        if (!ChangelogPersistence.exists()) {
+            Transaction.run(ChangelogPersistence::create);
         }
-        final var lastChange = ChangelogSql.getLastChange();
+        final var lastChange = ChangelogPersistence.getLastChange();
         int changeId;
         if (lastChange == null) {
             changeId = 1;
@@ -43,8 +43,8 @@ public class ChangelogService {
             }
             final int finalChangeId = changeId;
             Transaction.run(() -> {
-                statements.forEach(statement -> Sql.executeUpdate(statement.trim()));
-                ChangelogSql.createChange(new Change(finalChangeId, InstantFactory.create()));
+                statements.forEach(statement -> Persistence.executeUpdate(statement.trim()));
+                ChangelogPersistence.createChange(new Change(finalChangeId, InstantFactory.create()));
             });
             LOG.info("Executed database change with id: {}", changeId);
             changeId++;

@@ -1,103 +1,202 @@
 package com.github.krystianmuchla.home.db;
 
-import com.github.krystianmuchla.home.exception.InternalException;
-import com.github.krystianmuchla.home.pagination.PaginatedResult;
-import com.github.krystianmuchla.home.pagination.Pagination;
-import com.github.krystianmuchla.home.pagination.PaginationResult;
+import com.github.krystianmuchla.home.util.CollectionService;
+import com.github.krystianmuchla.home.util.StreamService;
+import com.github.krystianmuchla.home.util.TimestampFactory;
 
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.time.Instant;
-import java.time.LocalDateTime;
-import java.time.ZoneOffset;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.function.Function;
-import java.util.stream.Collectors;
+import java.util.*;
 
 public class Sql {
-    public static <T> List<T> executeQuery(
-        final String sql,
-        final Function<ResultSet, T> mapper,
-        final Object... parameters
-    ) {
-        try (final var borrowedConnection = ConnectionManager.borrowConnection()) {
-            final var connection = borrowedConnection.connection();
-            try (final var preparedStatement = connection.prepareStatement(sql)) {
-                for (int index = 0; index < parameters.length; index++) {
-                    preparedStatement.setObject(index + 1, parameters[index]);
-                }
-                try (final var resultSet = preparedStatement.executeQuery()) {
-                    final var result = new ArrayList<T>();
-                    while (resultSet.next()) {
-                        result.add(mapper.apply(resultSet));
-                    }
-                    return result;
-                }
+    public final List<String> words = new ArrayList<>();
+    public final List<Object> parameters = new ArrayList<>();
+
+    public static Sql eq(final String field, final Object value) {
+        return new Builder().eq(field, value).build();
+    }
+
+    public static Sql lt(final String field, final Object value) {
+        return new Builder().lt(field, value).build();
+    }
+
+    public static Sql in(final String field, final Set<?> values) {
+        return new Builder().in(field, values).build();
+    }
+
+    public static Sql and() {
+        return new Builder().and().build();
+    }
+
+    public String template() {
+        return CollectionService.join(" ", words);
+    }
+
+    public Object[] parameters() {
+        return parameters.stream().map(this::parameter).toArray();
+    }
+
+    private Object parameter(final Object parameter) {
+        return switch (parameter) {
+            case UUID uuid -> uuid.toString();
+            case Timestamp timestamp -> timestamp.toString();
+            case Instant instant -> {
+                final var timestamp = TimestampFactory.create(instant);
+                yield parameter(timestamp);
             }
-        } catch (final SQLException exception) {
-            throw new InternalException(exception);
-        }
+            default -> parameter;
+        };
     }
 
-    public static int executeUpdate(final String sql, final Object... parameters) {
-        try (final var borrowedConnection = ConnectionManager.borrowConnection()) {
-            final var connection = borrowedConnection.connection();
-            try (final var preparedStatement = connection.prepareStatement(sql)) {
-                for (int index = 0; index < parameters.length; index++) {
-                    preparedStatement.setObject(index + 1, parameters[index]);
-                }
-                return preparedStatement.executeUpdate();
+    public static class Builder {
+        private final Sql sql = new Sql();
+
+        public Builder update(final String table) {
+            sql.words.add("UPDATE");
+            sql.words.add(table);
+            return this;
+        }
+
+        public Builder delete() {
+            sql.words.add("DELETE");
+            return this;
+        }
+
+        public Builder select(final String... fields) {
+            sql.words.add("SELECT");
+            if (fields.length > 0) {
+                sql.words.add(String.join(", ", fields));
+            } else {
+                sql.words.add("*");
             }
-        } catch (final SQLException exception) {
-            throw new InternalException(exception);
+            return this;
         }
-    }
 
-    protected static boolean boolResult(final int result) {
-        return result > 0;
-    }
-
-    protected static <T> T singleResult(final List<T> result) {
-        if (result.isEmpty()) {
-            return null;
+        public Builder insertInto(final String table) {
+            sql.words.add("INSERT INTO");
+            sql.words.add(table);
+            return this;
         }
-        if (result.size() == 1) {
-            return result.getFirst();
+
+        public Builder from(final String table) {
+            sql.words.add("FROM");
+            sql.words.add(table);
+            return this;
         }
-        throw new InternalException("Could not resolve single result");
-    }
 
-    protected static <T> PaginatedResult<T> paginatedResult(final Pagination pagination, final List<T> result) {
-        final var fetchedElements = result.size();
-        final var next = fetchedElements > pagination.pageSize();
-        if (next) {
-            result.removeLast();
+        public Builder set(final Sql... sqls) {
+            sql.words.add("SET");
+            final var words = Arrays.stream(sqls).flatMap(sql -> sql.words.stream());
+            sql.words.add(StreamService.join(", ", words));
+            for (final var s : sqls) {
+                sql.parameters.addAll(s.parameters);
+            }
+            return this;
         }
-        final var paginationResult = new PaginationResult(next, pagination.pageNumber() > 1);
-        return new PaginatedResult<>(result, paginationResult);
-    }
 
-    protected static int limit(final int pageSize) {
-        return pageSize + 1;
-    }
+        public Builder values(final Object... values) {
+            sql.words.add("VALUES");
+            for (var index = 0; index < values.length; index++) {
+                final var first = index == 0;
+                final var last = index == values.length - 1;
+                final var builder = new StringBuilder(3);
+                if (first) {
+                    builder.append("(");
+                }
+                builder.append("?");
+                if (last) {
+                    builder.append(")");
+                } else {
+                    builder.append(",");
+                }
+                sql.words.add(builder.toString());
+                sql.parameters.add(values[index]);
+            }
+            return this;
+        }
 
-    protected static int offset(final int pageNumber, final int pageSize) {
-        return (pageNumber - 1) * pageSize;
-    }
+        public Builder where(final Sql... sqls) {
+            sql.words.add("WHERE");
+            for (final var s : sqls) {
+                sql.words.addAll(s.words);
+                sql.parameters.addAll(s.parameters);
+            }
+            return this;
+        }
 
-    protected static Timestamp timestamp(final Instant instant) {
-        return Timestamp.valueOf(LocalDateTime.ofInstant(instant, ZoneOffset.UTC));
-    }
+        public Builder and() {
+            sql.words.add("AND");
+            return this;
+        }
 
-    protected static String setters(final LinkedHashMap<String, String> parameters) {
-        return parameters.keySet().stream().map(key -> key + " = ?").collect(Collectors.joining(", "));
-    }
+        public Builder eq(final String field, final Object value) {
+            sql.words.add(field + " = ?");
+            if (value == null) {
+                sql.parameters.add("NULL");
+            } else {
+                sql.parameters.add(value);
+            }
+            return this;
+        }
 
-    protected static String join(final Collection<?> collection, final String delimiter) {
-        return collection.stream().map(Object::toString).collect(Collectors.joining(delimiter));
+        public Builder lt(final String field, final Object value) {
+            sql.words.add(field + " < ?");
+            sql.parameters.add(value);
+            return this;
+        }
+
+        public Builder in(final String field, final Set<?> values) {
+            final var parameters = values.toArray();
+            sql.words.add(field + " IN");
+            for (var index = 0; index < parameters.length; index++) {
+                final var first = index == 0;
+                final var last = index == parameters.length - 1;
+                final var builder = new StringBuilder(3);
+                if (first) {
+                    builder.append("(");
+                }
+                builder.append("?");
+                if (last) {
+                    builder.append(")");
+                } else {
+                    builder.append(",");
+                }
+                sql.words.add(builder.toString());
+                sql.parameters.add(parameters[index]);
+            }
+            return this;
+        }
+
+        public Builder orderBy(final String field) {
+            sql.words.add("ORDER BY");
+            sql.words.add(field);
+            return this;
+        }
+
+        public Builder desc() {
+            sql.words.add("DESC");
+            return this;
+        }
+
+        public Builder limit(final int limit) {
+            sql.words.add("LIMIT ?");
+            sql.parameters.add(limit);
+            return this;
+        }
+
+        public Builder offset(final int offset) {
+            sql.words.add("OFFSET ?");
+            sql.parameters.add(offset);
+            return this;
+        }
+
+        public Builder forUpdate() {
+            sql.words.add("FOR UPDATE");
+            return this;
+        }
+
+        public Sql build() {
+            return sql;
+        }
     }
 }

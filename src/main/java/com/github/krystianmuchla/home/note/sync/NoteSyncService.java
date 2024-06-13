@@ -1,10 +1,10 @@
 package com.github.krystianmuchla.home.note.sync;
 
 import com.github.krystianmuchla.home.note.Note;
-import com.github.krystianmuchla.home.note.NoteSql;
+import com.github.krystianmuchla.home.note.NotePersistence;
 import com.github.krystianmuchla.home.note.NoteService;
 import com.github.krystianmuchla.home.note.grave.NoteGrave;
-import com.github.krystianmuchla.home.note.grave.NoteGraveSql;
+import com.github.krystianmuchla.home.note.grave.NoteGravePersistence;
 import com.github.krystianmuchla.home.note.grave.NoteGraveService;
 
 import java.util.ArrayList;
@@ -18,25 +18,25 @@ import java.util.stream.Stream;
 public class NoteSyncService {
     public static List<Note> sync(final UUID userId, final List<Note> externalNotes) {
         if (externalNotes == null || externalNotes.isEmpty()) {
-            return NoteSql.read(userId);
+            return NotePersistence.read(userId);
         }
-        final var notes = toMap(NoteSql.readForUpdate(userId), NoteGraveSql.readForUpdate(userId));
-        final var excludedNotes = sync(userId, notes, externalNotes);
+        final var notes = toMap(NotePersistence.readForUpdate(userId), NoteGravePersistence.readForUpdate(userId));
+        final var excludedNotes = sync(notes, externalNotes);
         excludedNotes.forEach(notes::remove);
         return List.copyOf(notes.values());
     }
 
-    private static List<UUID> sync(final UUID userId, final Map<UUID, Note> notes, final List<Note> externalNotes) {
+    private static List<UUID> sync(final Map<UUID, Note> notes, final List<Note> externalNotes) {
         final var excludedNotes = new ArrayList<UUID>();
         for (final var externalNote : externalNotes) {
-            final var id = externalNote.id();
+            final var id = externalNote.id;
             final var note = notes.get(id);
             if (note == null) {
                 if (externalNote.hasContent()) {
                     NoteService.create(externalNote);
                 }
             } else {
-                if (note.modificationTime().isBefore(externalNote.modificationTime())) {
+                if (note.modificationTime.isBefore(externalNote.modificationTime)) {
                     if (externalNote.hasContent()) {
                         if (note.hasContent()) {
                             NoteService.update(externalNote);
@@ -45,7 +45,7 @@ public class NoteSyncService {
                         }
                     } else {
                         if (note.hasContent()) {
-                            NoteService.delete(userId, externalNote);
+                            NoteService.delete(externalNote);
                         } else {
                             NoteGraveService.update(externalNote.asNoteGrave());
                         }
@@ -60,9 +60,7 @@ public class NoteSyncService {
     }
 
     private static Map<UUID, Note> toMap(final List<Note> notes, final List<NoteGrave> noteGraves) {
-        return Stream.concat(
-            notes.stream(),
-            noteGraves.stream().map(NoteGrave::asNote)).collect(Collectors.toMap(Note::id, Function.identity())
-        );
+        return Stream.concat(notes.stream(), noteGraves.stream().map(NoteGrave::asNote))
+            .collect(Collectors.toMap(note -> note.id, Function.identity()));
     }
 }

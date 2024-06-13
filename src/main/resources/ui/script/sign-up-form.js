@@ -1,12 +1,12 @@
 {
     const signUp = document.getElementById('sign-up');
-    document.onkeydown = function(event) {
+    document.onkeydown = (event) => {
         if (event.key === 'Enter') {
             event.preventDefault();
             signUp.click();
         }
     }
-    signUp.onclick = async function() {
+    signUp.onclick = async () => {
         signUp.disabled = true;
         let token;
         try {

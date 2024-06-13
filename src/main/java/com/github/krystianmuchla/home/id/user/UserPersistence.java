@@ -1,5 +1,6 @@
 package com.github.krystianmuchla.home.id.user;
 
+import com.github.krystianmuchla.home.db.Persistence;
 import com.github.krystianmuchla.home.db.Sql;
 import com.github.krystianmuchla.home.exception.InternalException;
 
@@ -8,20 +9,24 @@ import java.sql.SQLException;
 import java.util.UUID;
 import java.util.function.Function;
 
-public class UserSql extends Sql {
+public class UserPersistence extends Persistence {
     public static void create(final User user) {
-        executeUpdate(
-            "INSERT INTO %s VALUES (?)".formatted(User.USER),
-            user.id().toString()
-        );
+        final var sql = new Sql.Builder()
+            .insertInto(User.TABLE)
+            .values(
+                user.id()
+            );
+        executeUpdate(sql.build());
     }
 
     public static User read(final UUID id) {
-        final var result = executeQuery(
-            "SELECT * FROM %s WHERE %s = ?".formatted(User.USER, User.ID),
-            mapper(),
-            id.toString()
-        );
+        final var sql = new Sql.Builder()
+            .select()
+            .from(User.TABLE)
+            .where(
+                Sql.eq(User.ID, id)
+            );
+        final var result = executeQuery(sql.build(), mapper());
         return singleResult(result);
     }
 

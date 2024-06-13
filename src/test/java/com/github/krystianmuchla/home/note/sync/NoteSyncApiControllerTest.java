@@ -2,18 +2,17 @@ package com.github.krystianmuchla.home.note.sync;
 
 import com.github.krystianmuchla.home.AppContext;
 import com.github.krystianmuchla.home.api.GsonHolder;
-import com.github.krystianmuchla.home.db.Sql;
+import com.github.krystianmuchla.home.db.Persistence;
 import com.github.krystianmuchla.home.db.Transaction;
-import com.github.krystianmuchla.home.id.accessdata.AccessData;
 import com.github.krystianmuchla.home.id.session.SessionId;
 import com.github.krystianmuchla.home.id.session.SessionService;
 import com.github.krystianmuchla.home.id.user.User;
 import com.github.krystianmuchla.home.id.user.UserService;
 import com.github.krystianmuchla.home.note.Note;
 import com.github.krystianmuchla.home.note.NoteResponse;
-import com.github.krystianmuchla.home.note.NoteSql;
+import com.github.krystianmuchla.home.note.NotePersistence;
 import com.github.krystianmuchla.home.note.grave.NoteGrave;
-import com.github.krystianmuchla.home.note.grave.NoteGraveSql;
+import com.github.krystianmuchla.home.note.grave.NoteGravePersistence;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import org.junit.jupiter.api.AfterAll;
@@ -50,16 +49,16 @@ class NoteSyncApiControllerTest {
     @AfterEach
     void afterEachTest() {
         Transaction.run(() -> {
-            Sql.executeUpdate("DELETE FROM %s".formatted(Note.NOTE));
-            Sql.executeUpdate("DELETE FROM %s".formatted(NoteGrave.NOTE_GRAVE));
+            Persistence.executeUpdate("DELETE FROM note");
+            Persistence.executeUpdate("DELETE FROM note_grave");
         });
     }
 
     @AfterAll
     static void afterAllTests() {
         Transaction.run(() -> {
-            Sql.executeUpdate("DELETE FROM %s".formatted(AccessData.ACCESS_DATA));
-            Sql.executeUpdate("DELETE FROM %s".formatted(User.USER));
+            Persistence.executeUpdate("DELETE FROM access_data");
+            Persistence.executeUpdate("DELETE FROM user");
         });
         SessionService.removeSession(sessionId);
     }
@@ -102,23 +101,23 @@ class NoteSyncApiControllerTest {
         assertThat(responseObject.size()).isEqualTo(1);
         final var notesResponse = gson.fromJson(responseObject.get("notes"), NoteResponse[].class);
         assertThat(notesResponse).hasSize(0);
-        final var notesDb = Sql.executeQuery("SELECT * FROM %s".formatted(Note.NOTE), NoteSql.mapper());
+        final var notesDb = Persistence.executeQuery("SELECT * FROM note", NotePersistence.mapper());
         assertThat(notesDb).hasSize(1);
         final var noteDb = notesDb.getFirst();
-        assertThat(noteDb.id()).isEqualTo(UUID.fromString("4d8af443-bfa9-4d47-a886-b1ddc82a958d"));
-        assertThat(noteDb.userId()).isEqualTo(user.id());
-        assertThat(noteDb.title()).isEqualTo("External note title");
-        assertThat(noteDb.content()).isEqualTo("External note content");
-        assertThat(noteDb.creationTime()).isEqualTo(Instant.parse("2010-10-10T10:10:10Z"));
-        assertThat(noteDb.modificationTime()).isEqualTo(Instant.parse("2010-10-10T10:10:10Z"));
-        final var noteGravesDb = Sql.executeQuery("SELECT * FROM %s".formatted(NoteGrave.NOTE_GRAVE), NoteGraveSql.mapper());
+        assertThat(noteDb.id).isEqualTo(UUID.fromString("4d8af443-bfa9-4d47-a886-b1ddc82a958d"));
+        assertThat(noteDb.userId).isEqualTo(user.id());
+        assertThat(noteDb.title).isEqualTo("External note title");
+        assertThat(noteDb.content).isEqualTo("External note content");
+        assertThat(noteDb.creationTime).isEqualTo(Instant.parse("2010-10-10T10:10:10Z"));
+        assertThat(noteDb.modificationTime).isEqualTo(Instant.parse("2010-10-10T10:10:10Z"));
+        final var noteGravesDb = Persistence.executeQuery("SELECT * FROM note_grave", NoteGravePersistence.mapper());
         assertThat(noteGravesDb).hasSize(0);
     }
 
     @Test
     void shouldOverwriteInternalNotes() throws Exception {
         Transaction.run(() -> {
-            NoteSql.create(
+            NotePersistence.create(
                 new Note(
                     UUID.fromString("6765b952-1db7-40ae-938c-51b49cac69ed"),
                     user.id(),
@@ -134,7 +133,7 @@ class NoteSyncApiControllerTest {
                     Instant.parse("2010-10-10T10:10:10Z")
                 )
             );
-            NoteGraveSql.create(
+            NoteGravePersistence.create(
                 new NoteGrave(
                     UUID.fromString("292e3117-59f1-4374-afe8-d8b751e0b6e3"),
                     user.id(),
@@ -197,21 +196,21 @@ class NoteSyncApiControllerTest {
         assertThat(responseObject.size()).isEqualTo(1);
         final var notesResponse = gson.fromJson(responseObject.get("notes"), NoteResponse[].class);
         assertThat(notesResponse).hasSize(0);
-        final var notesDb = Sql.executeQuery("SELECT * FROM %s".formatted(Note.NOTE), NoteSql.mapper());
+        final var notesDb = Persistence.executeQuery("SELECT * FROM note", NotePersistence.mapper());
         assertThat(notesDb).hasSize(2);
-        assertThat(notesDb.get(0).id()).isEqualTo(UUID.fromString("65b276f5-417d-458b-ad2c-0c6ffa7f5488"));
-        assertThat(notesDb.get(0).userId()).isEqualTo(user.id());
-        assertThat(notesDb.get(0).title()).isEqualTo("External note title");
-        assertThat(notesDb.get(0).content()).isEqualTo("External note content");
-        assertThat(notesDb.get(0).creationTime()).isEqualTo(Instant.parse("2010-10-10T10:10:10Z"));
-        assertThat(notesDb.get(0).modificationTime()).isEqualTo(Instant.parse("2011-11-11T11:11:11Z"));
-        assertThat(notesDb.get(1).id()).isEqualTo(UUID.fromString("6765b952-1db7-40ae-938c-51b49cac69ed"));
-        assertThat(notesDb.get(1).userId()).isEqualTo(user.id());
-        assertThat(notesDb.get(1).title()).isEqualTo("External note title");
-        assertThat(notesDb.get(1).content()).isEqualTo("External note content");
-        assertThat(notesDb.get(1).creationTime()).isEqualTo(Instant.parse("2010-10-10T10:10:10Z"));
-        assertThat(notesDb.get(1).modificationTime()).isEqualTo(Instant.parse("2011-11-11T11:11:11Z"));
-        final var noteGravesDb = Sql.executeQuery("SELECT * FROM %s".formatted(NoteGrave.NOTE_GRAVE), NoteGraveSql.mapper());
+        assertThat(notesDb.get(0).id).isEqualTo(UUID.fromString("65b276f5-417d-458b-ad2c-0c6ffa7f5488"));
+        assertThat(notesDb.get(0).userId).isEqualTo(user.id());
+        assertThat(notesDb.get(0).title).isEqualTo("External note title");
+        assertThat(notesDb.get(0).content).isEqualTo("External note content");
+        assertThat(notesDb.get(0).creationTime).isEqualTo(Instant.parse("2010-10-10T10:10:10Z"));
+        assertThat(notesDb.get(0).modificationTime).isEqualTo(Instant.parse("2011-11-11T11:11:11Z"));
+        assertThat(notesDb.get(1).id).isEqualTo(UUID.fromString("6765b952-1db7-40ae-938c-51b49cac69ed"));
+        assertThat(notesDb.get(1).userId).isEqualTo(user.id());
+        assertThat(notesDb.get(1).title).isEqualTo("External note title");
+        assertThat(notesDb.get(1).content).isEqualTo("External note content");
+        assertThat(notesDb.get(1).creationTime).isEqualTo(Instant.parse("2010-10-10T10:10:10Z"));
+        assertThat(notesDb.get(1).modificationTime).isEqualTo(Instant.parse("2011-11-11T11:11:11Z"));
+        final var noteGravesDb = Persistence.executeQuery("SELECT * FROM note_grave", NoteGravePersistence.mapper());
         assertThat(noteGravesDb).hasSize(2);
         assertThat(noteGravesDb.get(0).id()).isEqualTo(UUID.fromString("292e3117-59f1-4374-afe8-d8b751e0b6e3"));
         assertThat(noteGravesDb.get(0).userId()).isEqualTo(user.id());
@@ -224,7 +223,7 @@ class NoteSyncApiControllerTest {
     @Test
     void shouldOutputInternalNotes() throws Exception {
         Transaction.run(() -> {
-            NoteSql.create(
+            NotePersistence.create(
                 new Note(
                     UUID.fromString("416b5888-4ee0-4460-8c4e-0531e62c029c"),
                     user.id(),
@@ -233,7 +232,7 @@ class NoteSyncApiControllerTest {
                     Instant.parse("2010-10-10T10:10:10Z")
                 )
             );
-            NoteGraveSql.create(
+            NoteGravePersistence.create(
                 new NoteGrave(
                     UUID.fromString("884f33f5-2b79-4f68-9118-73cabffc4f8a"),
                     user.id(),
@@ -268,16 +267,16 @@ class NoteSyncApiControllerTest {
         assertThat(noteResponse.content()).isEqualTo("Note content");
         assertThat(noteResponse.creationTime()).isEqualTo(Instant.parse("2010-10-10T10:10:10Z"));
         assertThat(noteResponse.modificationTime()).isEqualTo(Instant.parse("2010-10-10T10:10:10Z"));
-        final var notesDb = Sql.executeQuery("SELECT * FROM %s".formatted(Note.NOTE), NoteSql.mapper());
+        final var notesDb = Persistence.executeQuery("SELECT * FROM note", NotePersistence.mapper());
         assertThat(notesDb).hasSize(1);
         final var noteDb = notesDb.getFirst();
-        assertThat(noteDb.id()).isEqualTo(UUID.fromString("416b5888-4ee0-4460-8c4e-0531e62c029c"));
-        assertThat(noteDb.userId()).isEqualTo(user.id());
-        assertThat(noteDb.title()).isEqualTo("Note title");
-        assertThat(noteDb.content()).isEqualTo("Note content");
-        assertThat(noteDb.creationTime()).isEqualTo(Instant.parse("2010-10-10T10:10:10Z"));
-        assertThat(noteDb.modificationTime()).isEqualTo(Instant.parse("2010-10-10T10:10:10Z"));
-        final var noteGravesDb = Sql.executeQuery("SELECT * FROM %s".formatted(NoteGrave.NOTE_GRAVE), NoteGraveSql.mapper());
+        assertThat(noteDb.id).isEqualTo(UUID.fromString("416b5888-4ee0-4460-8c4e-0531e62c029c"));
+        assertThat(noteDb.userId).isEqualTo(user.id());
+        assertThat(noteDb.title).isEqualTo("Note title");
+        assertThat(noteDb.content).isEqualTo("Note content");
+        assertThat(noteDb.creationTime).isEqualTo(Instant.parse("2010-10-10T10:10:10Z"));
+        assertThat(noteDb.modificationTime).isEqualTo(Instant.parse("2010-10-10T10:10:10Z"));
+        final var noteGravesDb = Persistence.executeQuery("SELECT * FROM note_grave", NoteGravePersistence.mapper());
         assertThat(noteGravesDb).hasSize(1);
         final var noteGraveDb = noteGravesDb.getFirst();
         assertThat(noteGraveDb.id()).isEqualTo(UUID.fromString("884f33f5-2b79-4f68-9118-73cabffc4f8a"));
@@ -289,7 +288,7 @@ class NoteSyncApiControllerTest {
     void shouldNotOutputInternalNotesOfOtherUser() throws Exception {
         final UUID userId = UUID.fromString("2ad341c6-e59e-42f3-94d8-8c089addc9a0");
         Transaction.run(() -> {
-            NoteSql.create(
+            NotePersistence.create(
                 new Note(
                     UUID.fromString("8b4ae3f2-02b9-47e2-b1d1-fbb761e2dccf"),
                     userId,
@@ -298,7 +297,7 @@ class NoteSyncApiControllerTest {
                     Instant.parse("2010-10-10T10:10:10Z")
                 )
             );
-            NoteGraveSql.create(
+            NoteGravePersistence.create(
                 new NoteGrave(
                     UUID.fromString("dc5c2ee8-ba84-4019-b8f2-0a8d93e170cd"),
                     userId,
@@ -327,16 +326,16 @@ class NoteSyncApiControllerTest {
         assertThat(responseObject.size()).isEqualTo(1);
         final var notesResponse = gson.fromJson(responseObject.get("notes"), NoteResponse[].class);
         assertThat(notesResponse).hasSize(0);
-        final var notesDb = Sql.executeQuery("SELECT * FROM %s".formatted(Note.NOTE), NoteSql.mapper());
+        final var notesDb = Persistence.executeQuery("SELECT * FROM note", NotePersistence.mapper());
         assertThat(notesDb).hasSize(1);
         final var noteDb = notesDb.getFirst();
-        assertThat(noteDb.id()).isEqualTo(UUID.fromString("8b4ae3f2-02b9-47e2-b1d1-fbb761e2dccf"));
-        assertThat(noteDb.userId()).isEqualTo(userId);
-        assertThat(noteDb.title()).isEqualTo("Note title");
-        assertThat(noteDb.content()).isEqualTo("Note content");
-        assertThat(noteDb.creationTime()).isEqualTo(Instant.parse("2010-10-10T10:10:10Z"));
-        assertThat(noteDb.modificationTime()).isEqualTo(Instant.parse("2010-10-10T10:10:10Z"));
-        final var noteGravesDb = Sql.executeQuery("SELECT * FROM %s".formatted(NoteGrave.NOTE_GRAVE), NoteGraveSql.mapper());
+        assertThat(noteDb.id).isEqualTo(UUID.fromString("8b4ae3f2-02b9-47e2-b1d1-fbb761e2dccf"));
+        assertThat(noteDb.userId).isEqualTo(userId);
+        assertThat(noteDb.title).isEqualTo("Note title");
+        assertThat(noteDb.content).isEqualTo("Note content");
+        assertThat(noteDb.creationTime).isEqualTo(Instant.parse("2010-10-10T10:10:10Z"));
+        assertThat(noteDb.modificationTime).isEqualTo(Instant.parse("2010-10-10T10:10:10Z"));
+        final var noteGravesDb = Persistence.executeQuery("SELECT * FROM note_grave", NoteGravePersistence.mapper());
         assertThat(noteGravesDb).hasSize(1);
         final var noteGraveDb = noteGravesDb.getFirst();
         assertThat(noteGraveDb.id()).isEqualTo(UUID.fromString("dc5c2ee8-ba84-4019-b8f2-0a8d93e170cd"));
@@ -347,7 +346,7 @@ class NoteSyncApiControllerTest {
     @Test
     void shouldOverwriteExternalNotes() throws Exception {
         Transaction.run(() -> {
-            NoteSql.create(
+            NotePersistence.create(
                 new Note(
                     UUID.fromString("8b4ae3f2-02b9-47e2-b1d1-fbb761e2dccf"),
                     user.id(),
@@ -365,7 +364,7 @@ class NoteSyncApiControllerTest {
                     Instant.parse("2011-11-11T11:11:11Z")
                 )
             );
-            NoteGraveSql.create(
+            NoteGravePersistence.create(
                 new NoteGrave(
                     UUID.fromString("6d9e6e4d-be5e-4768-bd33-bc37f7b80284"),
                     user.id(),
@@ -443,21 +442,21 @@ class NoteSyncApiControllerTest {
         assertThat(notesResponse[2].content()).isNull();
         assertThat(notesResponse[2].creationTime()).isNull();
         assertThat(notesResponse[2].modificationTime()).isEqualTo(Instant.parse("2011-11-11T11:11:11Z"));
-        final var notesDb = Sql.executeQuery("SELECT * FROM %s".formatted(Note.NOTE), NoteSql.mapper());
+        final var notesDb = Persistence.executeQuery("SELECT * FROM note", NotePersistence.mapper());
         assertThat(notesDb).hasSize(2);
-        assertThat(notesDb.get(0).id()).isEqualTo(UUID.fromString("0c73c9f7-4af4-4fff-8b30-384636d12a00"));
-        assertThat(notesDb.get(0).userId()).isEqualTo(user.id());
-        assertThat(notesDb.get(0).title()).isEqualTo("Note title");
-        assertThat(notesDb.get(0).content()).isEqualTo("Note content");
-        assertThat(notesDb.get(0).creationTime()).isEqualTo(Instant.parse("2010-10-10T10:10:10Z"));
-        assertThat(notesDb.get(0).modificationTime()).isEqualTo(Instant.parse("2011-11-11T11:11:11Z"));
-        assertThat(notesDb.get(1).id()).isEqualTo(UUID.fromString("8b4ae3f2-02b9-47e2-b1d1-fbb761e2dccf"));
-        assertThat(notesDb.get(1).userId()).isEqualTo(user.id());
-        assertThat(notesDb.get(1).title()).isEqualTo("Note title");
-        assertThat(notesDb.get(1).content()).isEqualTo("Note content");
-        assertThat(notesDb.get(1).creationTime()).isEqualTo(Instant.parse("2010-10-10T10:10:10Z"));
-        assertThat(notesDb.get(1).modificationTime()).isEqualTo(Instant.parse("2011-11-11T11:11:11Z"));
-        final var noteGravesDb = Sql.executeQuery("SELECT * FROM %s".formatted(NoteGrave.NOTE_GRAVE), NoteGraveSql.mapper());
+        assertThat(notesDb.get(0).id).isEqualTo(UUID.fromString("0c73c9f7-4af4-4fff-8b30-384636d12a00"));
+        assertThat(notesDb.get(0).userId).isEqualTo(user.id());
+        assertThat(notesDb.get(0).title).isEqualTo("Note title");
+        assertThat(notesDb.get(0).content).isEqualTo("Note content");
+        assertThat(notesDb.get(0).creationTime).isEqualTo(Instant.parse("2010-10-10T10:10:10Z"));
+        assertThat(notesDb.get(0).modificationTime).isEqualTo(Instant.parse("2011-11-11T11:11:11Z"));
+        assertThat(notesDb.get(1).id).isEqualTo(UUID.fromString("8b4ae3f2-02b9-47e2-b1d1-fbb761e2dccf"));
+        assertThat(notesDb.get(1).userId).isEqualTo(user.id());
+        assertThat(notesDb.get(1).title).isEqualTo("Note title");
+        assertThat(notesDb.get(1).content).isEqualTo("Note content");
+        assertThat(notesDb.get(1).creationTime).isEqualTo(Instant.parse("2010-10-10T10:10:10Z"));
+        assertThat(notesDb.get(1).modificationTime).isEqualTo(Instant.parse("2011-11-11T11:11:11Z"));
+        final var noteGravesDb = Persistence.executeQuery("SELECT * FROM note_grave", NoteGravePersistence.mapper());
         assertThat(noteGravesDb).hasSize(2);
         assertThat(noteGravesDb.get(0).id()).isEqualTo(UUID.fromString("6d9e6e4d-be5e-4768-bd33-bc37f7b80284"));
         assertThat(noteGravesDb.get(0).userId()).isEqualTo(user.id());

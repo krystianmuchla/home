@@ -1,12 +1,12 @@
 {
     const signIn = document.getElementById('sign-in');
-    document.onkeydown = function(event) {
+    document.onkeydown = (event) => {
         if (event.key === 'Enter') {
             event.preventDefault();
             signIn.click();
         }
     }
-    signIn.onclick = async function() {
+    signIn.onclick = async () => {
         signIn.disabled = true;
         const login = document.getElementById('login');
         const password = document.getElementById('password');

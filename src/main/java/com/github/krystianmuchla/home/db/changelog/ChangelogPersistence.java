@@ -1,5 +1,6 @@
 package com.github.krystianmuchla.home.db.changelog;
 
+import com.github.krystianmuchla.home.db.Persistence;
 import com.github.krystianmuchla.home.db.Sql;
 import com.github.krystianmuchla.home.exception.InternalException;
 
@@ -7,7 +8,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.function.Function;
 
-public class ChangelogSql extends Sql {
+public class ChangelogPersistence extends Persistence {
     private static final String CHANGELOG = "changelog";
 
     public static boolean exists() {
@@ -27,19 +28,24 @@ public class ChangelogSql extends Sql {
 
     public static void createChange(final Change... changes) {
         for (final var change : changes) {
-            executeUpdate(
-                "INSERT INTO %s VALUES (?, ?)".formatted(CHANGELOG),
-                change.id(),
-                timestamp(change.executionTime()).toString()
-            );
+            final var sql = new Sql.Builder()
+                .insertInto(CHANGELOG)
+                .values(
+                    change.id(),
+                    change.executionTime()
+                );
+            executeUpdate(sql.build());
         }
     }
 
     public static Change getLastChange() {
-        final var result = executeQuery(
-            "SELECT * FROM %s ORDER BY %s DESC LIMIT 1".formatted(CHANGELOG, Change.ID),
-            mapper()
-        );
+        final var sql = new Sql.Builder()
+            .select()
+            .from(CHANGELOG)
+            .orderBy(Change.ID)
+            .desc()
+            .limit(1);
+        final var result = executeQuery(sql.build(), mapper());
         return singleResult(result);
     }
 
