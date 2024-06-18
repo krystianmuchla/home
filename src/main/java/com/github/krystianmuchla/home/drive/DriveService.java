@@ -1,8 +1,8 @@
 package com.github.krystianmuchla.home.drive;
 
+import com.github.krystianmuchla.home.exception.InternalException;
 import com.github.krystianmuchla.home.exception.http.BadRequestException;
 import com.github.krystianmuchla.home.exception.http.ForbiddenException;
-import com.github.krystianmuchla.home.exception.InternalException;
 import com.github.krystianmuchla.home.exception.http.NotFoundException;
 import com.github.krystianmuchla.home.util.StreamService;
 
@@ -13,9 +13,8 @@ import java.nio.file.Files;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.NotDirectoryException;
 import java.nio.file.Path;
-import java.util.Set;
+import java.util.List;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 public class DriveService {
     private static final Path DRIVE_PATH = Path.of(DriveConfig.LOCATION);
@@ -26,13 +25,10 @@ public class DriveService {
         }
     }
 
-    public static Set<String> listDirectory(final UUID userId, final String[] directories) {
+    public static List<File> listDirectory(final UUID userId, final List<String> directories) {
         final var path = path(userId, directories);
         try (final var paths = Files.list(path)) {
-            return paths
-                .map(Path::getFileName)
-                .map(Path::toString)
-                .collect(Collectors.toSet());
+            return paths.map(Path::toFile).toList();
         } catch (final NotDirectoryException exception) {
             throw new BadRequestException();
         } catch (final NoSuchFileException exception) {
@@ -42,7 +38,7 @@ public class DriveService {
         }
     }
 
-    public static void uploadFile(final UUID userId, final String[] directories, final FileUpload fileUpload) {
+    public static void uploadFile(final UUID userId, final List<String> directories, final FileUpload fileUpload) {
         final var path = path(userId, directories, fileUpload.fileName());
         try (final var outputStream = new FileOutputStream(path.toString())) {
             try (final var inputStream = fileUpload.inputStream()) {
@@ -53,7 +49,7 @@ public class DriveService {
         }
     }
 
-    public static File getFile(final UUID userId, final String[] directories, final String fileName) {
+    public static File getFile(final UUID userId, final List<String> directories, final String fileName) {
         final var path = path(userId, directories, fileName);
         final var file = path.toFile();
         if (!file.exists()) {
@@ -65,26 +61,26 @@ public class DriveService {
         return file;
     }
 
-    private static Path path(final UUID userId, final String[] directories) {
+    private static Path path(final UUID userId, final List<String> directories) {
         final var userDrivePath = userDrivePath(userId);
         final var path = dirPath(userDrivePath, directories).normalize();
         authorization(userDrivePath, path);
         return path;
     }
 
-    private static Path path(final UUID userId, final String[] directories, final String fileName) {
+    private static Path path(final UUID userId, final List<String> directories, final String fileName) {
         final var userDrivePath = userDrivePath(userId);
         final var path = filePath(userDrivePath, directories, fileName).normalize();
         authorization(userDrivePath, path);
         return path;
     }
 
-    private static Path filePath(final Path userDrivePath, final String[] directories, final String fileName) {
+    private static Path filePath(final Path userDrivePath, final List<String> directories, final String fileName) {
         return dirPath(userDrivePath, directories).resolve(fileName);
     }
 
-    private static Path dirPath(final Path userDrivePath, final String[] directories) {
-        return Path.of(userDrivePath.toString(), directories);
+    private static Path dirPath(final Path userDrivePath, final List<String> directories) {
+        return Path.of(userDrivePath.toString(), directories.toArray(String[]::new));
     }
 
     private static void authorization(final Path userDrivePath, final Path path) {

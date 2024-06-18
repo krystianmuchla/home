@@ -35,7 +35,7 @@
                     })
                 });
                 if (response.ok) {
-                    window.location.replace('/drive');
+                    location.replace('/drive');
                 } else if (response.status === 401) {
                     console.error('Invalid token.');
                 } else {

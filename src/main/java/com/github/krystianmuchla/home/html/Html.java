@@ -5,7 +5,7 @@ import com.github.krystianmuchla.home.html.element.Element;
 import java.util.Collection;
 import java.util.stream.Collectors;
 
-import static com.github.krystianmuchla.home.html.Attribute.attributes;
+import static com.github.krystianmuchla.home.html.Attribute.attrs;
 import static com.github.krystianmuchla.home.html.Group.group;
 import static com.github.krystianmuchla.home.html.Tag.*;
 
@@ -28,7 +28,7 @@ public class Html {
         return Tag.html(
             head(
                 title("Home"),
-                meta(attributes("name", "viewport", "content", "width=device-width, initial-scale=1.0")),
+                meta(attrs("name", "viewport", "content", "width=device-width, initial-scale=1.0")),
                 style(resolveStyle(styles, elements))
             ),
             body(

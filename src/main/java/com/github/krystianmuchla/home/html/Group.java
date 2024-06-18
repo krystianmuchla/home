@@ -11,8 +11,12 @@ public class Group {
         this.content = content;
     }
 
+    public static Group group(final Stream<Object> content) {
+        return new Group(content);
+    }
+
     public static Group group(final Object... content) {
-        return new Group(Arrays.stream(content));
+        return group(Arrays.stream(content));
     }
 
     @Override

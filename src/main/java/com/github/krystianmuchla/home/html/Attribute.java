@@ -4,7 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class Attribute {
-    public static Map<String, Object> attributes(final String... keysAndValues) {
+    public static Map<String, Object> attrs(final String... keysAndValues) {
         final var attributes = new HashMap<String, Object>();
         String key = null;
         for (int index = 0; index < keysAndValues.length; index++) {

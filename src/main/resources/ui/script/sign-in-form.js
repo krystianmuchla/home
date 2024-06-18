@@ -22,7 +22,7 @@
                 })
             });
             if (response.ok) {
-                window.location.replace('/drive');
+                location.replace('/drive');
             } else if (response.status === 401) {
                 console.error('Incorrect credentials given.');
             } else {

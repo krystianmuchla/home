@@ -15,7 +15,7 @@ public class FontController extends Controller {
     @Override
     protected void get(final HttpExchange exchange) throws IOException {
         try (final var inputStream = Resource.inputStream("ui/font/Rubik-Regular.ttf")) {
-            ResponseWriter.writeStream(exchange, 200, inputStream);
+            ResponseWriter.writeStream(exchange, 200, inputStream, null);
         }
     }
 }

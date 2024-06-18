@@ -5,6 +5,8 @@ import com.github.krystianmuchla.home.util.StreamService;
 import com.sun.net.httpserver.Headers;
 import com.sun.net.httpserver.HttpExchange;
 
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
@@ -27,8 +29,7 @@ public class ResponseWriter {
     public static void writeHtml(final HttpExchange exchange, final int status, final String html) throws IOException {
         headers(exchange).add("Content-Type", "text/html");
         final var bytes = html.getBytes();
-        exchange.sendResponseHeaders(status, bytes.length);
-        writeBytes(exchange, bytes);
+        writeBytes(exchange, status, bytes);
     }
 
     public static void writeJson(
@@ -47,23 +48,39 @@ public class ResponseWriter {
     ) throws IOException {
         headers(exchange).add("Content-Type", "application/json");
         final var bytes = string.getBytes();
-        exchange.sendResponseHeaders(status, bytes.length);
-        writeBytes(exchange, bytes);
+        writeBytes(exchange, status, bytes);
+    }
+
+    public static void writeFile(
+        final HttpExchange exchange,
+        final int status,
+        final File file
+    ) throws IOException {
+        headers(exchange).add("Content-Disposition", "attachment; filename=\"" + file.getName() + "\"");
+        try (final var inputStream = new FileInputStream(file)) {
+            writeStream(exchange, status, inputStream, file.length());
+        }
     }
 
     public static void writeStream(
         final HttpExchange exchange,
         final int status,
-        final InputStream inputStream
+        final InputStream inputStream,
+        final Long length
     ) throws IOException {
         headers(exchange).add("Content-Type", "application/octet-stream");
-        exchange.sendResponseHeaders(status, ResponseLength.CHUNKED);
+        exchange.sendResponseHeaders(status, length == null ? ResponseLength.CHUNKED : length);
         try (final var outputStream = exchange.getResponseBody()) {
             StreamService.copy(inputStream, outputStream);
         }
     }
 
-    private static void writeBytes(final HttpExchange exchange, final byte[] bytes) throws IOException {
+    private static void writeBytes(
+        final HttpExchange exchange,
+        final int status,
+        final byte[] bytes
+    ) throws IOException {
+        exchange.sendResponseHeaders(status, bytes.length);
         try (final var outputStream = exchange.getResponseBody()) {
             outputStream.write(bytes);
             outputStream.flush();
