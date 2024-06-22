@@ -9,6 +9,10 @@
     padding: 5px;
 }
 
+.main-button:hover {
+    background-color: #404040;
+}
+
 .main-button:disabled {
-    background-color: dimgray;
+    background-color: #404040;
 }

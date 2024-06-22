@@ -11,7 +11,7 @@ import com.sun.net.httpserver.HttpExchange;
 import java.io.IOException;
 import java.util.List;
 
-import static com.github.krystianmuchla.home.html.Attribute.attrs;
+import static com.github.krystianmuchla.home.html.Attribute.*;
 import static com.github.krystianmuchla.home.html.Html.document;
 import static com.github.krystianmuchla.home.html.Tag.*;
 
@@ -44,15 +44,15 @@ public class SignInController extends Controller {
             ),
             List.of(Script.SIGN_IN_FORM),
             List.of(login, password),
-            div(attrs("class", "background"),
-                div(attrs("class", "modal"),
-                    div(attrs("class", "box sign-in-form"),
+            div(attrs(clazz("background")),
+                div(attrs(clazz("modal")),
+                    div(attrs(clazz("box sign-in-form")),
                         login.tag(),
                         password.tag(),
-                        button(attrs("id", "sign-in", "class", "main-button"),
+                        button(attrs(id("sign-in"), clazz("main-button")),
                             "Sign in"
                         ),
-                        a(attrs("href", "sign_up"),
+                        a(attrs(href("sign_up")),
                             "No account?"
                         )
                     )

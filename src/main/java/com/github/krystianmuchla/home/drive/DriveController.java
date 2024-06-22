@@ -13,7 +13,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.List;
 
-import static com.github.krystianmuchla.home.html.Attribute.attrs;
+import static com.github.krystianmuchla.home.html.Attribute.*;
 import static com.github.krystianmuchla.home.html.Group.group;
 import static com.github.krystianmuchla.home.html.Html.document;
 import static com.github.krystianmuchla.home.html.Tag.div;
@@ -42,15 +42,28 @@ public class DriveController extends Controller {
         return document(
             List.of(
                 Style.BACKGROUND,
-                Style.LEFT_TOP
+                Style.COLUMN,
+                Style.LEFT_TOP,
+                Style.MAIN_BUTTON,
+                Style.ROW
             ),
             List.of(Script.DRIVE),
             List.of(),
-            div(attrs("class", "background"),
-                div(attrs("id", "list", "class", "left-top list"),
+            div(attrs(clazz("background"), style("grid-template-rows: auto 1fr;")),
+                div(attrs(clazz("left-top row"), style("padding: 10px; gap: 10px;")),
+                    div(attrs(id("upload-file"), clazz("main-button")),
+                        "Upload file"
+                    ),
+                    div(attrs(id("create-dir"), clazz("main-button")),
+                        "Create directory"
+                    )
+                ),
+                div(attrs(clazz("left-top column"), style("padding: 0px 10px;")),
                     group(list.stream().map(row -> {
                         final var clazz = row.isDirectory() ? "dir" : "file";
-                        return div(attrs("class", clazz), row.getName());
+                        return div(attrs(clazz(clazz)),
+                            row.getName()
+                        );
                     }))
                 )
             )

@@ -1,16 +1,21 @@
 {
+    /** @type {HTMLButtonElement} */
     const signIn = document.getElementById('sign-in');
+    /** @param {KeyboardEvent} event */
     document.onkeydown = (event) => {
         if (event.key === 'Enter') {
             event.preventDefault();
             signIn.click();
         }
-    }
-    signIn.onclick = async () => {
+    };
+    signIn.onmousedown = async () => {
         signIn.disabled = true;
+        /** @type {HTMLInputElement} */
         const login = document.getElementById('login');
+        /** @type {HTMLInputElement} */
         const password = document.getElementById('password');
         try {
+            /** @type {Response} */
             const response = await fetch('/api/id/sign_in', {
                 method: 'POST',
                 headers: {
@@ -33,5 +38,5 @@
         }
         password.value = '';
         signIn.disabled = false;
-    }
+    };
 }

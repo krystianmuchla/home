@@ -1,15 +1,19 @@
 {
+    /** @type {HTMLButtonElement} */
     const signUp = document.getElementById('sign-up');
+    /** @type {KeyboardEvent} */
     document.onkeydown = (event) => {
         if (event.key === 'Enter') {
             event.preventDefault();
             signUp.click();
         }
-    }
-    signUp.onclick = async () => {
+    };
+    signUp.onmousedown = async () => {
         signUp.disabled = true;
+        /** @type {string | null} */
         let token;
         try {
+            /** @type {Response} */
             const response = await fetch('/api/id/sign_up/init', { method: 'POST' });
             if (response.ok) {
                 token = prompt('Enter sing up token');
@@ -19,10 +23,13 @@
         } catch (error) {
             console.error(error.message);
         }
+        /** @type {HTMLInputElement} */
         const password = document.getElementById('password');
         if (token) {
+            /** @type {HTMLInputElement} */
             const login = document.getElementById('login');
             try {
+                /** @type {Response} */
                 const response = await fetch('/api/id/sign_up', {
                     method: 'POST',
                     headers: {
@@ -47,5 +54,5 @@
         }
         password.value = '';
         signUp.disabled = false;
-    }
+    };
 }

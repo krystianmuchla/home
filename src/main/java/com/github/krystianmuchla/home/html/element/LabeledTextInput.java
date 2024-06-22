@@ -5,7 +5,7 @@ import com.github.krystianmuchla.home.html.Tag;
 
 import java.util.Set;
 
-import static com.github.krystianmuchla.home.html.Attribute.attrs;
+import static com.github.krystianmuchla.home.html.Attribute.*;
 import static com.github.krystianmuchla.home.html.Tag.*;
 
 public record LabeledTextInput(String labelText, String inputId, String inputType) implements Element {
@@ -21,11 +21,11 @@ public record LabeledTextInput(String labelText, String inputId, String inputTyp
 
     @Override
     public Tag tag() {
-        return div(attrs("class", "labeled-text-input"),
-            label(attrs("for", inputId),
+        return div(attrs(clazz("labeled-text-input")),
+            label(attrs(fur(inputId)),
                 labelText
             ),
-            input(attrs("id", inputId, "class", "text-input", "type", inputType))
+            input(attrs(id(inputId), clazz("text-input"), type(inputType)))
         );
     }
 }
