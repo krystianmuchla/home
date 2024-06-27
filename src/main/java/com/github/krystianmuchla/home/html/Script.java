@@ -8,6 +8,7 @@ public class Script {
     public static final String DRIVE = sanitize(Resource.read("ui/script/drive.js"));
     public static final String SIGN_IN_FORM = sanitize(Resource.read("ui/script/sign-in-form.js"));
     public static final String SIGN_UP_FORM = sanitize(Resource.read("ui/script/sign-up-form.js"));
+    public static final String TOAST = sanitize(Resource.read("ui/script/toast.js"));
 
     private static String sanitize(final String script) {
         return removeMultiLineComments(script)

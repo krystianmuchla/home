@@ -3,7 +3,7 @@ package com.github.krystianmuchla.home.id.controller;
 import com.github.krystianmuchla.home.exception.http.UnauthorizedException;
 import com.github.krystianmuchla.home.html.Script;
 import com.github.krystianmuchla.home.html.Style;
-import com.github.krystianmuchla.home.html.element.LabeledTextInput;
+import com.github.krystianmuchla.home.html.component.Component;
 import com.github.krystianmuchla.home.http.Controller;
 import com.github.krystianmuchla.home.http.ResponseWriter;
 import com.sun.net.httpserver.HttpExchange;
@@ -14,6 +14,7 @@ import java.util.List;
 import static com.github.krystianmuchla.home.html.Attribute.*;
 import static com.github.krystianmuchla.home.html.Html.document;
 import static com.github.krystianmuchla.home.html.Tag.*;
+import static com.github.krystianmuchla.home.html.component.LabeledTextInput.labeledTextInput;
 
 public class SignInController extends Controller {
     public SignInController() {
@@ -32,8 +33,6 @@ public class SignInController extends Controller {
     }
 
     private String html() {
-        final var login = new LabeledTextInput("Login", "login", "text");
-        final var password = new LabeledTextInput("Password", "password", "password");
         return document(
             List.of(
                 Style.BACKGROUND,
@@ -43,12 +42,12 @@ public class SignInController extends Controller {
                 Style.SIGN_IN_FORM
             ),
             List.of(Script.SIGN_IN_FORM),
-            List.of(login, password),
+            List.of(Component.LABELED_TEXT_INPUT, Component.TOAST),
             div(attrs(clazz("background")),
                 div(attrs(clazz("modal")),
                     div(attrs(clazz("box sign-in-form")),
-                        login.tag(),
-                        password.tag(),
+                        labeledTextInput("Login", "login", "text"),
+                        labeledTextInput("Password", "password", "password"),
                         button(attrs(id("sign-in"), clazz("main-button")),
                             "Sign in"
                         ),

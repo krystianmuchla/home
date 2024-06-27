@@ -15,4 +15,6 @@ public class Style {
     public static final String SIGN_IN_FORM = Resource.read("ui/style/sign-in-form.css");
     public static final String SIGN_UP_FORM = Resource.read("ui/style/sign-up-form.css");
     public static final String TEXT_INPUT = Resource.read("ui/style/text-input.css");
+    public static final String TOAST = Resource.read("ui/style/toast.css");
+    public static final String TOASTS_CONTAINER = Resource.read("ui/style/toasts-container.css");
 }

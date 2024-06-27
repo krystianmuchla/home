@@ -38,16 +38,22 @@
     fileInput.onchange = async () => {
         /** @type {FileList} */
         const newFiles = fileInput.files;
-        [...newFiles].forEach(async (newFile) => {
+        /** @type {number} */
+        let uploadCount = 0;
+        /** @type {HTMLDivElement} */
+        const toastId = queueToast(ToastLevel.INFO, uploadingText(0, newFiles.length));
+        for (let fileI = 0; fileI < newFiles.length; fileI++) {
+            /** @type {File} */
+            const file = newFiles[fileI];
             /** @type {string} */
-            let fileName = newFile.name;
+            let fileName = file.name;
             /** @type {number} */
-            const i = fileName.lastIndexOf('.');
-            if (i >= 0) {
-                fileName = fileName.slice(0, i);
+            const dotI = fileName.lastIndexOf('.');
+            if (dotI >= 0) {
+                fileName = fileName.slice(0, dotI);
             }
             if ([...files].find((file) => file.textContent === fileName)) {
-                const overwrite = confirm('Are you sure you want do overwrite existing file?');
+                const overwrite = confirm(`Are you sure you want do overwrite the existing ${fileName} file?`);
                 if (!overwrite) {
                     return;
                 }
@@ -55,22 +61,44 @@
             /** @type {URLSearchParams} */
             const query = new URLSearchParams(location.search);
             query.append('file', fileName);
-            // todo info for user
-            /** @type {Response} */
-            const response = await fetch(
-                '/api/drive?' + query.toString(),
-                {
-                    method: 'PUT',
-                    headers: {
-                        'Content-Type': 'application/octet-stream'
-                    },
-                    body: newFile
+            setToastText(toastId, uploadingText(fileI + 1, newFiles.length));
+            try {
+                /** @type {Response} */
+                const response = await fetch(
+                    '/api/drive?' + query.toString(),
+                    {
+                        method: 'PUT',
+                        headers: {
+                            'Content-Type': 'application/octet-stream'
+                        },
+                        body: file
+                    }
+                );
+                if (response.ok) {
+                    uploadCount++;
+                } else {
+                    setToastLevel(toastId, ToastLevel.WARN);
                 }
-            );
-            // todo info for user
-        });
+            } catch (error) {
+                console.error(error.message);
+                setToastLevel(toastId, ToastLevel.WARN);
+            }
+        }
+        setToastText(toastId, `Uploaded ${uploadCount} of ${newFiles.length} files.`);
+        if (uploadCount === newFiles.length) {
+            setToastLevel(toastId, ToastLevel.SUCCESS);
+        }
     };
     uploadFile.onmousedown = () => {
         fileInput.click();
     };
+
+    /**
+     * @param {number} i
+     * @param {number} of
+     * @returns {string}
+     */
+    function uploadingText(i, of) {
+        return `Uploading ${i} of ${of} files...`;
+    }
 }

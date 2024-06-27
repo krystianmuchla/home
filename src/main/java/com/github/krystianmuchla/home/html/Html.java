@@ -1,9 +1,10 @@
 package com.github.krystianmuchla.home.html;
 
-import com.github.krystianmuchla.home.html.element.Element;
+import com.github.krystianmuchla.home.html.component.Component;
 
 import java.util.Collection;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static com.github.krystianmuchla.home.html.Attribute.*;
 import static com.github.krystianmuchla.home.html.Group.group;
@@ -13,44 +14,38 @@ public class Html {
     public static String document(
         final Collection<String> styles,
         final Collection<String> scripts,
-        final Collection<Element> elements,
+        final Collection<Component> components,
         final Object... content
     ) {
-        return "<!DOCTYPE html>" + html(styles, scripts, elements, content);
+        return "<!DOCTYPE html>" + html(styles, scripts, components, content);
     }
 
     private static String html(
         final Collection<String> styles,
         final Collection<String> scripts,
-        final Collection<Element> elements,
+        final Collection<Component> components,
         final Object... content
     ) {
         return Tag.html(
             head(
                 title("Home"),
                 meta(attrs(name("viewport"), content("width=device-width, initial-scale=1.0"))),
-                Tag.style(resolveStyle(styles, elements))
+                Tag.style(resolveStyle(styles, components))
             ),
             body(
                 group(content),
-                script(resolveScript(scripts, elements))
+                script(resolveScript(scripts, components))
             )
         ).toString();
     }
 
-    private static String resolveStyle(final Collection<String> styles, final Collection<Element> elements) {
-        final var elementStyles = elements.stream()
-            .map(Element::styles)
-            .flatMap(Collection::stream)
-            .collect(Collectors.toSet());
-        return Style.BODY + String.join("", styles) + String.join("", elementStyles);
+    private static String resolveStyle(final Collection<String> styles, final Collection<Component> elements) {
+        final var stylesStream = Stream.concat(styles.stream(), elements.stream().flatMap(Component::styles));
+        return Style.BODY + String.join("", stylesStream.collect(Collectors.toSet()));
     }
 
-    private static String resolveScript(final Collection<String> scripts, final Collection<Element> elements) {
-        final var elementScripts = elements.stream()
-            .map(Element::scripts)
-            .flatMap(Collection::stream)
-            .collect(Collectors.toSet());
-        return String.join("", scripts) + String.join("", elementScripts);
+    private static String resolveScript(final Collection<String> scripts, final Collection<Component> elements) {
+        final var scriptsStream = Stream.concat(scripts.stream(), elements.stream().flatMap(Component::scripts));
+        return String.join("", scriptsStream.collect(Collectors.toSet()));
     }
 }

@@ -3,6 +3,7 @@ package com.github.krystianmuchla.home.drive;
 import com.github.krystianmuchla.home.exception.http.UnauthorizedException;
 import com.github.krystianmuchla.home.html.Script;
 import com.github.krystianmuchla.home.html.Style;
+import com.github.krystianmuchla.home.html.component.Component;
 import com.github.krystianmuchla.home.http.Controller;
 import com.github.krystianmuchla.home.http.RequestReader;
 import com.github.krystianmuchla.home.http.ResponseWriter;
@@ -48,7 +49,7 @@ public class DriveController extends Controller {
                 Style.ROW
             ),
             List.of(Script.DRIVE),
-            List.of(),
+            List.of(Component.TOAST),
             div(attrs(clazz("background"), style("grid-template-rows: auto 1fr;")),
                 div(attrs(clazz("left-top row"), style("padding: 10px; gap: 10px;")),
                     div(attrs(id("upload-file"), clazz("main-button")),

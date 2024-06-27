@@ -5,7 +5,7 @@
     document.onkeydown = (event) => {
         if (event.key === 'Enter') {
             event.preventDefault();
-            signUp.click();
+            signUp.dispatchEvent(new MouseEvent('mousedown'));
         }
     };
     signUp.onmousedown = async () => {
@@ -17,11 +17,14 @@
             const response = await fetch('/api/id/sign_up/init', { method: 'POST' });
             if (response.ok) {
                 token = prompt('Enter sing up token');
+            } else if (response.status === 409) {
+                queueToast(ToastLevel.WARN, 'Cannot initialize sign up. Try again later.');
             } else {
-                console.error('Cannot initialize sign up. Try again later.');
+                queueToast(ToastLevel.ERROR, 'Something went wrong when initializing sing up.');
             }
         } catch (error) {
             console.error(error.message);
+            queueToast(ToastLevel.ERROR, 'Something went wrong.');
         }
         /** @type {HTMLInputElement} */
         const password = document.getElementById('password');
@@ -43,13 +46,21 @@
                 });
                 if (response.ok) {
                     location.replace('/drive');
-                } else if (response.status === 401) {
-                    console.error('Invalid token.');
-                } else {
-                    console.error('Something went wrong when signing up. Try again later.');
+                    return;
+                }
+                switch (response.status) {
+                    case 401:
+                        queueToast(ToastLevel.WARN, 'Invalid token.');
+                        break;
+                    case 409:
+                        queueToast(ToastLevel.WARN, 'User already exists.');
+                        break;
+                    default:
+                        queueToast(ToastLevel.ERROR, 'Something went wrong when signing up.');
                 }
             } catch (error) {
                 console.error(error.message);
+                queueToast(ToastLevel.ERROR, 'Something went wrong.');
             }
         }
         password.value = '';

@@ -5,7 +5,7 @@
     document.onkeydown = (event) => {
         if (event.key === 'Enter') {
             event.preventDefault();
-            signIn.click();
+            signIn.dispatchEvent(new MouseEvent('mousedown'));
         }
     };
     signIn.onmousedown = async () => {
@@ -28,13 +28,21 @@
             });
             if (response.ok) {
                 location.replace('/drive');
-            } else if (response.status === 401) {
-                console.error('Incorrect credentials given.');
-            } else {
-                console.error('Cannot sign in. Try again later.');
+                return;
+            }
+            switch (response.status) {
+                case 401:
+                    queueToast(ToastLevel.WARN, 'Incorrect credentials given.');
+                    break;
+                case 429:
+                    queueToast(ToastLevel.WARN, 'Cannot sign in. Try again later.');
+                    break;
+                default:
+                    queueToast(ToastLevel.ERROR, 'Something went wrong when signing in.');
             }
         } catch (error) {
             console.error(error.message);
+            queueToast(ToastLevel.ERROR, 'Something went wrong.');
         }
         password.value = '';
         signIn.disabled = false;
