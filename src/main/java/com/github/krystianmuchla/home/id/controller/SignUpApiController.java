@@ -29,7 +29,6 @@ public class SignUpApiController extends Controller {
             () -> UserService.createUser(signUpRequest.login(), signUpRequest.password())
         );
         final var sessionId = SessionService.createSession(signUpRequest.login(), userId);
-        ResponseWriter.writeCookies(exchange, sessionId.asCookies());
-        ResponseWriter.write(exchange, 201);
+        ResponseWriter.writeCookies(exchange, 201, sessionId.asCookies());
     }
 }

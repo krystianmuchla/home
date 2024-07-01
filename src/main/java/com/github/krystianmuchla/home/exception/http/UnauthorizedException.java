@@ -7,7 +7,7 @@ import com.sun.net.httpserver.HttpExchange;
 import java.io.IOException;
 import java.util.UUID;
 
-public class UnauthorizedException extends RuntimeException implements HttpException {
+public class UnauthorizedException extends HttpException {
     private final UUID userId;
 
     public UnauthorizedException() {
@@ -19,10 +19,18 @@ public class UnauthorizedException extends RuntimeException implements HttpExcep
     }
 
     @Override
-    public void handle(final HttpExchange exchange) throws IOException {
+    public void handleApi(final HttpExchange exchange) throws IOException {
         if (userId != null) {
             UserGuardService.incrementAuthFailures(userId);
         }
         ResponseWriter.write(exchange, 401);
+    }
+
+    @Override
+    public void handleWeb(final HttpExchange exchange) throws IOException {
+        if (userId != null) {
+            UserGuardService.incrementAuthFailures(userId);
+        }
+        ResponseWriter.writeLocation(exchange, 302, "/id/sign_in");
     }
 }

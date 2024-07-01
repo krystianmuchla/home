@@ -20,7 +20,6 @@ public class SignInApiController extends Controller {
         final var signInRequest = RequestReader.readJson(exchange, SignInRequest.class);
         final var user = UserService.getUser(signInRequest.login(), signInRequest.password());
         final var sessionId = SessionService.createSession(signInRequest.login(), user);
-        ResponseWriter.writeCookies(exchange, sessionId.asCookies());
-        ResponseWriter.write(exchange, 204);
+        ResponseWriter.writeCookies(exchange, 204, sessionId.asCookies());
     }
 }

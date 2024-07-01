@@ -1,4 +1,4 @@
-package com.github.krystianmuchla.home;
+package com.github.krystianmuchla.home.controller;
 
 import com.github.krystianmuchla.home.http.Controller;
 import com.github.krystianmuchla.home.http.ResponseWriter;
@@ -6,13 +6,13 @@ import com.sun.net.httpserver.HttpExchange;
 
 import java.io.IOException;
 
-public class FaviconController extends Controller {
-    public FaviconController() {
-        super("/favicon.ico");
+public class HealthApiController extends Controller {
+    public HealthApiController() {
+        super("/api/health");
     }
 
     @Override
     protected void get(final HttpExchange exchange) throws IOException {
-        ResponseWriter.write(exchange, 200);
+        ResponseWriter.writeJson(exchange, 200, "{}");
     }
 }

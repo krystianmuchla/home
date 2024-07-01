@@ -1,9 +1,9 @@
 package com.github.krystianmuchla.home.http;
 
 import com.github.krystianmuchla.home.Config;
-import com.github.krystianmuchla.home.FaviconController;
-import com.github.krystianmuchla.home.FontController;
-import com.github.krystianmuchla.home.HealthApiController;
+import com.github.krystianmuchla.home.controller.FaviconController;
+import com.github.krystianmuchla.home.controller.FontController;
+import com.github.krystianmuchla.home.controller.HealthApiController;
 import com.github.krystianmuchla.home.drive.DriveApiController;
 import com.github.krystianmuchla.home.drive.DriveController;
 import com.github.krystianmuchla.home.id.controller.*;

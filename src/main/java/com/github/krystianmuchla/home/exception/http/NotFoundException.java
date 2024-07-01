@@ -4,10 +4,24 @@ import com.github.krystianmuchla.home.http.ResponseWriter;
 import com.sun.net.httpserver.HttpExchange;
 
 import java.io.IOException;
+import java.util.Set;
 
-public class NotFoundException extends RuntimeException implements HttpException {
+import static com.github.krystianmuchla.home.html.Html.document;
+
+public class NotFoundException extends HttpException {
     @Override
-    public void handle(final HttpExchange exchange) throws IOException {
+    public void handleApi(final HttpExchange exchange) throws IOException {
         ResponseWriter.write(exchange, 404);
+    }
+
+    @Override
+    public void handleWeb(final HttpExchange exchange) throws IOException {
+        final var html = document(
+            Set.of(),
+            Set.of(),
+            Set.of(),
+            "Selected page doesn't exist."
+        );
+        ResponseWriter.writeHtml(exchange, 404, html);
     }
 }

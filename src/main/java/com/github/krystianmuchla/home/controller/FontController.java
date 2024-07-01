@@ -1,4 +1,4 @@
-package com.github.krystianmuchla.home;
+package com.github.krystianmuchla.home.controller;
 
 import com.github.krystianmuchla.home.http.Controller;
 import com.github.krystianmuchla.home.http.ResponseWriter;

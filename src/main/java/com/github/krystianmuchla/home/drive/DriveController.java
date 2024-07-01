@@ -1,6 +1,5 @@
 package com.github.krystianmuchla.home.drive;
 
-import com.github.krystianmuchla.home.exception.http.UnauthorizedException;
 import com.github.krystianmuchla.home.html.Script;
 import com.github.krystianmuchla.home.html.Style;
 import com.github.krystianmuchla.home.html.component.Component;
@@ -13,6 +12,7 @@ import com.sun.net.httpserver.HttpExchange;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
+import java.util.Set;
 
 import static com.github.krystianmuchla.home.html.Attribute.*;
 import static com.github.krystianmuchla.home.html.Group.group;
@@ -26,14 +26,7 @@ public class DriveController extends Controller {
 
     @Override
     protected void get(final HttpExchange exchange) throws IOException {
-        final User user;
-        try {
-            user = session(exchange).user();
-        } catch (final UnauthorizedException exception) {
-            ResponseWriter.writeLocation(exchange, "/id/sign_in");
-            ResponseWriter.write(exchange, 302);
-            return;
-        }
+        final User user = session(exchange).user();
         final var filter = RequestReader.readQuery(exchange, DriveFilterRequest::new);
         final var list = DriveService.listDirectory(user.id(), filter.dir());
         ResponseWriter.writeHtml(exchange, 200, html(list));
@@ -41,15 +34,15 @@ public class DriveController extends Controller {
 
     private String html(final List<File> list) {
         return document(
-            List.of(
+            Set.of(
                 Style.BACKGROUND,
                 Style.COLUMN,
                 Style.LEFT_TOP,
                 Style.MAIN_BUTTON,
                 Style.ROW
             ),
-            List.of(Script.DRIVE),
-            List.of(Component.TOAST),
+            Set.of(Script.DRIVE),
+            Set.of(Component.TOAST),
             div(attrs(clazz("background"), style("grid-template-rows: auto 1fr;")),
                 div(attrs(clazz("left-top row"), style("padding: 10px; gap: 10px;")),
                     div(attrs(id("upload-file"), clazz("main-button")),

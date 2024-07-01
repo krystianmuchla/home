@@ -3,6 +3,7 @@ package com.github.krystianmuchla.home.http;
 import com.github.krystianmuchla.home.exception.InternalException;
 import com.github.krystianmuchla.home.exception.TransactionException;
 import com.github.krystianmuchla.home.exception.http.HttpException;
+import com.github.krystianmuchla.home.exception.http.NotFoundException;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import com.sun.net.httpserver.HttpServer;
@@ -36,12 +37,12 @@ public class Http implements HttpHandler {
     public void handle(final HttpExchange exchange) throws IOException {
         final var uri = exchange.getRequestURI();
         final var controller = Controller.find(routes, uri.getPath());
-        if (controller == null) {
-            ResponseWriter.write(exchange, 404);
-            return;
-        }
         try {
-            controller.handle(exchange);
+            if (controller == null) {
+                throw new NotFoundException();
+            } else {
+                controller.handle(exchange);
+            }
         } catch (final Exception exception) {
             handle(exchange, exception);
             LOG.warn("{}", exception.getMessage(), exception);

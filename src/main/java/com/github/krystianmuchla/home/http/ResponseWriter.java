@@ -17,13 +17,14 @@ public class ResponseWriter {
         exchange.getResponseBody().close();
     }
 
-    public static void writeCookies(final HttpExchange exchange, final List<String> cookies) {
-        final var headers = headers(exchange);
-        cookies.forEach(cookie -> headers.add("Set-Cookie", cookie));
+    public static void writeCookies(final HttpExchange exchange, final int status, final List<String> cookies) throws IOException {
+        cookies.forEach(cookie -> headers(exchange).add("Set-Cookie", cookie));
+        write(exchange, status);
     }
 
-    public static void writeLocation(final HttpExchange exchange, final String location) {
+    public static void writeLocation(final HttpExchange exchange, final int status, final String location) throws IOException {
         headers(exchange).add("Location", location);
+        write(exchange, status);
     }
 
     public static void writeHtml(final HttpExchange exchange, final int status, final String html) throws IOException {
@@ -37,8 +38,8 @@ public class ResponseWriter {
         final int status,
         final Object object
     ) throws IOException {
-        final var json = GsonHolder.INSTANCE.toJson(object);
-        writeJson(exchange, status, json);
+        final var string = GsonHolder.INSTANCE.toJson(object);
+        writeJson(exchange, status, string);
     }
 
     public static void writeJson(
@@ -47,6 +48,17 @@ public class ResponseWriter {
         final String string
     ) throws IOException {
         headers(exchange).add("Content-Type", "application/json");
+        final var bytes = string.getBytes();
+        writeBytes(exchange, status, bytes);
+    }
+
+    public static void writeProblemJson(
+        final HttpExchange exchange,
+        final int status,
+        final Object object
+    ) throws IOException {
+        headers(exchange).add("Content-Type", "application/problem+json");
+        final var string = GsonHolder.INSTANCE.toJson(object);
         final var bytes = string.getBytes();
         writeBytes(exchange, status, bytes);
     }
