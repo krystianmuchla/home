@@ -7,7 +7,6 @@ import com.sun.net.httpserver.HttpExchange;
 
 import java.io.IOException;
 import java.util.List;
-import java.util.Map;
 
 public abstract class Controller {
     public final List<String> segments;
@@ -45,23 +44,5 @@ public abstract class Controller {
     protected Session session(final HttpExchange exchange) {
         final var sessionId = RequestReader.readSessionId(exchange);
         return SessionService.getSession(sessionId);
-    }
-
-    public static Controller find(Map<String, Route> routes, final String path) {
-        final var segments = Segment.segments(path);
-        for (var index = 0; index < segments.size(); index++) {
-            final var last = index == segments.size() - 1;
-            final var segment = segments.get(index);
-            final var route = routes.get(segment);
-            if (route == null) {
-                return null;
-            }
-            if (last) {
-                return route.controller;
-            } else {
-                routes = route.children;
-            }
-        }
-        return null;
     }
 }

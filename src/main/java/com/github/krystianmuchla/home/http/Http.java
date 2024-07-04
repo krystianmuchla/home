@@ -12,12 +12,11 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
-import java.util.Map;
 import java.util.concurrent.Executors;
 
 public class Http implements HttpHandler {
     private static final Logger LOG = LoggerFactory.getLogger(Http.class);
-    private final Map<String, Route> routes = Route.routes(HttpConfig.CONTROLLERS);
+    private final Routes routes = new Routes(HttpConfig.CONTROLLERS);
 
     public static void startServer(final int port) {
         final HttpServer server;
@@ -36,7 +35,7 @@ public class Http implements HttpHandler {
     @Override
     public void handle(final HttpExchange exchange) throws IOException {
         final var uri = exchange.getRequestURI();
-        final var controller = Controller.find(routes, uri.getPath());
+        final var controller = routes.findController(uri.getPath());
         try {
             if (controller == null) {
                 throw new NotFoundException();

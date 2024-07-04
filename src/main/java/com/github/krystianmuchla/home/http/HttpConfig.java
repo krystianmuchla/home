@@ -4,6 +4,7 @@ import com.github.krystianmuchla.home.Config;
 import com.github.krystianmuchla.home.controller.FaviconController;
 import com.github.krystianmuchla.home.controller.FontController;
 import com.github.krystianmuchla.home.controller.HealthApiController;
+import com.github.krystianmuchla.home.controller.RootController;
 import com.github.krystianmuchla.home.drive.DriveApiController;
 import com.github.krystianmuchla.home.drive.DriveController;
 import com.github.krystianmuchla.home.id.controller.*;
@@ -23,6 +24,7 @@ public class HttpConfig extends Config {
         new InitSignUpApiController(),
         new NoteApiController(),
         new NoteSyncApiController(),
+        new RootController(),
         new SignInApiController(),
         new SignInController(),
         new SignOutApiController(),
