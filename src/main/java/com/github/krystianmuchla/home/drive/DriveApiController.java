@@ -29,12 +29,20 @@ public class DriveApiController extends Controller {
     }
 
     @Override
+    protected void post(final HttpExchange exchange) throws IOException {
+        final var user = session(exchange).user();
+        final var request = RequestReader.readQuery(exchange, DriveFilterRequest::new);
+        DriveService.createDirectory(user.id(), request.dir());
+        ResponseWriter.write(exchange, 201);
+    }
+
+    @Override
     protected void put(final HttpExchange exchange) throws IOException {
         final var user = session(exchange).user();
         final var request = RequestReader.readQuery(exchange, DriveFilterRequest::new);
         final var file = request.file();
-        if (file == null || file.isBlank()) {
-            throw new BadRequestException("file", ValidationError.emptyValue());
+        if (file == null) {
+            throw new BadRequestException("file", ValidationError.nullValue());
         }
         DriveService.uploadFile(user.id(), request.dir(), new FileUpload(file, RequestReader.readStream(exchange)));
         ResponseWriter.write(exchange, 204);

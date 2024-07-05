@@ -2,6 +2,7 @@ package com.github.krystianmuchla.home.drive;
 
 import com.github.krystianmuchla.home.exception.InternalException;
 import com.github.krystianmuchla.home.exception.http.BadRequestException;
+import com.github.krystianmuchla.home.exception.http.ConflictException;
 import com.github.krystianmuchla.home.exception.http.ForbiddenException;
 import com.github.krystianmuchla.home.exception.http.NotFoundException;
 import com.github.krystianmuchla.home.util.StreamService;
@@ -38,6 +39,14 @@ public class DriveService {
         }
     }
 
+    public static void createDirectory(final UUID userId, final List<String> directories) {
+        final var path = path(userId, directories);
+        if (Files.exists(path)) {
+            throw new ConflictException("DIRECTORY_ALREADY_EXISTS");
+        }
+        createDirectory(path);
+    }
+
     public static void uploadFile(final UUID userId, final List<String> directories, final FileUpload fileUpload) {
         final var path = path(userId, directories, fileUpload.fileName());
         try (final var outputStream = new FileOutputStream(path.toString())) {
@@ -64,14 +73,14 @@ public class DriveService {
     private static Path path(final UUID userId, final List<String> directories) {
         final var userDrivePath = userDrivePath(userId);
         final var path = dirPath(userDrivePath, directories).normalize();
-        authorization(userDrivePath, path);
+        checkAccess(userDrivePath, path);
         return path;
     }
 
     private static Path path(final UUID userId, final List<String> directories, final String fileName) {
         final var userDrivePath = userDrivePath(userId);
         final var path = filePath(userDrivePath, directories, fileName).normalize();
-        authorization(userDrivePath, path);
+        checkAccess(userDrivePath, path);
         return path;
     }
 
@@ -83,7 +92,7 @@ public class DriveService {
         return Path.of(userDrivePath.toString(), directories.toArray(String[]::new));
     }
 
-    private static void authorization(final Path userDrivePath, final Path path) {
+    private static void checkAccess(final Path userDrivePath, final Path path) {
         if (!path.startsWith(userDrivePath)) {
             throw new ForbiddenException();
         }
@@ -92,12 +101,16 @@ public class DriveService {
     private static Path userDrivePath(final UUID userId) {
         final var userDrivePath = DRIVE_PATH.resolve(userId.toString());
         if (Files.notExists(userDrivePath)) {
-            try {
-                Files.createDirectory(userDrivePath);
-            } catch (final IOException exception) {
-                throw new InternalException(exception);
-            }
+            createDirectory(userDrivePath);
         }
         return userDrivePath;
+    }
+
+    private static void createDirectory(final Path path) {
+        try {
+            Files.createDirectory(path);
+        } catch (final IOException exception) {
+            throw new InternalException(exception);
+        }
     }
 }

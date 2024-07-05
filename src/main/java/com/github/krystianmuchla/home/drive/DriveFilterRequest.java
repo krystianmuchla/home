@@ -1,6 +1,8 @@
 package com.github.krystianmuchla.home.drive;
 
 import com.github.krystianmuchla.home.api.RequestQuery;
+import com.github.krystianmuchla.home.exception.ValidationError;
+import com.github.krystianmuchla.home.exception.http.BadRequestException;
 import com.github.krystianmuchla.home.util.MultiValueMap;
 
 import java.util.ArrayList;
@@ -16,10 +18,20 @@ public record DriveFilterRequest(List<String> dir, String file) implements Reque
         if (dir == null) {
             return new ArrayList<>();
         }
+        for (final var segment : dir) {
+            if (segment.isBlank()) {
+                throw new BadRequestException("dir", ValidationError.emptyValue());
+            }
+        }
         return dir;
     }
 
     private static String resolveFile(final MultiValueMap<String, String> query) {
-        return query.getFirst("file").orElse(null);
+        return query.getFirst("file").filter(file -> {
+            if (file.isBlank()) {
+                throw new BadRequestException("file", ValidationError.emptyValue());
+            }
+            return true;
+        }).orElse(null);
     }
 }

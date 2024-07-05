@@ -7,6 +7,7 @@ import com.github.krystianmuchla.home.controller.HealthApiController;
 import com.github.krystianmuchla.home.controller.RootController;
 import com.github.krystianmuchla.home.drive.DriveApiController;
 import com.github.krystianmuchla.home.drive.DriveController;
+import com.github.krystianmuchla.home.exception.InternalException;
 import com.github.krystianmuchla.home.id.controller.*;
 import com.github.krystianmuchla.home.note.NoteApiController;
 import com.github.krystianmuchla.home.note.sync.NoteSyncApiController;
@@ -14,7 +15,7 @@ import com.github.krystianmuchla.home.note.sync.NoteSyncApiController;
 import java.util.List;
 
 public class HttpConfig extends Config {
-    public static final int PORT;
+    public static final Integer PORT;
     public static final List<Controller> CONTROLLERS = List.of(
         new DriveApiController(),
         new DriveController(),
@@ -34,6 +35,9 @@ public class HttpConfig extends Config {
 
     static {
         final var port = resolve("http.port", "HOME_HTTP_PORT");
-        PORT = Integer.parseInt(port);
+        if (port == null) {
+            throw new InternalException("Http port is not specified");
+        }
+        PORT = Integer.valueOf(port);
     }
 }
