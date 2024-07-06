@@ -7,6 +7,7 @@ import com.github.krystianmuchla.home.controller.HealthApiController;
 import com.github.krystianmuchla.home.controller.RootController;
 import com.github.krystianmuchla.home.drive.DriveApiController;
 import com.github.krystianmuchla.home.drive.DriveController;
+import com.github.krystianmuchla.home.drive.DriveUiController;
 import com.github.krystianmuchla.home.exception.InternalException;
 import com.github.krystianmuchla.home.id.controller.*;
 import com.github.krystianmuchla.home.note.NoteApiController;
@@ -19,6 +20,7 @@ public class HttpConfig extends Config {
     public static final List<Controller> CONTROLLERS = List.of(
         new DriveApiController(),
         new DriveController(),
+        new DriveUiController(),
         new FaviconController(),
         new FontController(),
         new HealthApiController(),

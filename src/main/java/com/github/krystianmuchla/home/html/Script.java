@@ -6,6 +6,7 @@ import java.util.stream.Collectors;
 
 public class Script {
     public static final String DRIVE = sanitize(Resource.read("ui/script/drive.js"));
+    public static final String HTTP = sanitize(Resource.read("ui/script/http.js"));
     public static final String SIGN_IN_FORM = sanitize(Resource.read("ui/script/sign-in-form.js"));
     public static final String SIGN_UP_FORM = sanitize(Resource.read("ui/script/sign-up-form.js"));
     public static final String TOAST = sanitize(Resource.read("ui/script/toast.js"));
@@ -27,8 +28,7 @@ public class Script {
                 final var index = remaining.indexOf("*/");
                 if (index < 0) {
                     break;
-                }
-                else {
+                } else {
                     remaining = remaining.substring(index + 2);
                     open = false;
                 }

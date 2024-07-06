@@ -41,7 +41,11 @@ public class SignUpController extends Controller {
                 Style.SIGN_UP_FORM
             ),
             Set.of(Script.SIGN_UP_FORM),
-            Set.of(Component.LABELED_TEXT_INPUT),
+            Set.of(
+                Component.HTTP,
+                Component.LABELED_TEXT_INPUT,
+                Component.TOAST
+            ),
             div(attrs(clazz("background")),
                 div(attrs(clazz("modal")),
                     div(attrs(clazz("box sign-up-form")),

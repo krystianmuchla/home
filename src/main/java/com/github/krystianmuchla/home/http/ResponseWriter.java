@@ -27,9 +27,14 @@ public class ResponseWriter {
         write(exchange, status);
     }
 
-    public static void writeHtml(final HttpExchange exchange, final int status, final String html) throws IOException {
+    public static void writeHtml(final HttpExchange exchange, final int status, final Object object) throws IOException {
+        final var string = object.toString();
+        writeHtml(exchange, status, string);
+    }
+
+    public static void writeHtml(final HttpExchange exchange, final int status, final String string) throws IOException {
         headers(exchange).add("Content-Type", "text/html");
-        final var bytes = html.getBytes();
+        final var bytes = string.getBytes();
         writeBytes(exchange, status, bytes);
     }
 
