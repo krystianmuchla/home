@@ -1,8 +1,8 @@
 /** @type {number} */
-let toastId = 0;
+let _toastId = 0;
 
 /** @type {HTMLDivElement[]} */
-const pendingToasts = [];
+const _pendingToasts = [];
 
 /** 
  * @param {string} id
@@ -16,7 +16,7 @@ function closeToast(id) {
     }
     toast.remove();
     /** @type {HTMLDivElement | undefined} */
-    const pendingToast = pendingToasts.shift();
+    const pendingToast = _pendingToasts.shift();
     if (pendingToast) {
         const container = document.getElementById('toasts-container');
         container.appendChild(pendingToast);
@@ -31,13 +31,13 @@ function closeToast(id) {
 function queueToast(level, text) {
     /** @type {HTMLDivElement} */
     const toast = document.createElement('div');
-    toast.id = ++toastId;
+    toast.id = ++_toastId;
     toast.className = `toast toast-${level}`;
     toast.innerHTML = `<span class="toast-text">${text}</span><div class="toast-close" onmousedown="closeToast(${toast.id})">close</div>`;
     /** @type {HTMLCollectionOf<HTMLDivElement>} */
     const toasts = document.getElementsByClassName('toast');
     if (toasts.length > 1) {
-        pendingToasts.push(toast);
+        _pendingToasts.push(toast);
     } else {
         /** @type {HTMLDivElement} */
         const container = document.getElementById('toasts-container');
@@ -78,13 +78,6 @@ function setToastLevel(id, level) {
     }
     toast.className = `toast toast-${level}`;
 }
-
-const ToastLevel = {
-    INFO: 'info',
-    SUCCESS: 'success',
-    WARN: 'warn',
-    ERROR: 'error'
-};
 
 {
     /** @type {HTMLDivElement} */

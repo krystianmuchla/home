@@ -16,7 +16,7 @@
             /** @type {number} */
             let uploadCount = 0;
             /** @type {HTMLDivElement} */
-            const toastId = queueToast(ToastLevel.INFO, uploadingText(0, files.length));
+            const toastId = queueToast('info', uploadingText(0, files.length));
             for (let fileI = 0; fileI < files.length; fileI++) {
                 /** @type {File} */
                 const file = files[fileI];
@@ -27,7 +27,9 @@
                 if (dotI >= 0) {
                     fileName = fileName.slice(0, dotI);
                 }
-                if ([...files].find((file) => file.textContent === fileName)) {
+                /** @type {HTMLDivElement} */
+                const container = document.getElementById('ls-container');
+                if ([...container.children].find((row) => row.textContent === fileName)) {
                     const confirmed = confirm(`Are you sure you want do overwrite the existing ${fileName} file?`);
                     if (!confirmed) {
                         return;
@@ -37,26 +39,25 @@
                 const query = new URLSearchParams(location.search);
                 query.set('file', fileName);
                 setToastText(toastId, uploadingText(fileI + 1, files.length));
-                try {
-                    /** @type {Response} */
-                    const response = await fetch(
-                        '/api/drive?' + query.toString(),
-                        {
-                            method: 'PUT',
-                            headers: {
-                                'Content-Type': 'application/octet-stream'
-                            },
-                            body: file
-                        }
-                    );
-                    if (response.ok) {
-                        uploadCount++;
-                    } else {
-                        setToastLevel(toastId, ToastLevel.WARN);
+                /** @type {Response} */
+                const response = await fetch(
+                    '/api/drive?' + query.toString(),
+                    {
+                        method: 'PUT',
+                        headers: {
+                            'Content-Type': 'application/octet-stream'
+                        },
+                        body: file
+                    },
+                    (error) => {
+                        console.error(error.message);
+                        setToastLevel(toastId, 'warn');
                     }
-                } catch (error) {
-                    console.error(error.message);
-                    setToastLevel(toastId, ToastLevel.WARN);
+                );
+                if (response.ok) {
+                    uploadCount++;
+                } else {
+                    setToastLevel(toastId, 'warn');
                 }
             }
             setToastText(toastId, `Uploaded ${uploadCount} of ${files.length} files.`);
@@ -64,7 +65,7 @@
                 ls();
             }
             if (uploadCount === files.length) {
-                setToastLevel(toastId, ToastLevel.SUCCESS);
+                setToastLevel(toastId, 'success');
             }
         };
         btn.onmousedown = () => {
@@ -90,13 +91,10 @@
                 /** @type {URLSearchParams} */
                 const query = new URLSearchParams(location.search);
                 query.append('dir', name);
-                /** @type {Response | null} */
-                const response = await makeRequest('/api/drive?' + query.toString(), { method: 'POST' });
-                if (!response) {
-                    return;
-                }
+                /** @type {Response} */
+                const response = await fetch('/api/drive?' + query.toString(), { method: 'POST' });
                 if (response.ok) {
-                    queueToast(ToastLevel.SUCCESS, 'Directory created.');
+                    queueToast('success', 'Directory created.');
                     ls();
                     return;
                 }
@@ -105,10 +103,10 @@
                         location.replace('/id/sign_in');
                         break;
                     case 409:
-                        queueToast(ToastLevel.WARN, 'Directory already exists.');
+                        queueToast('warn', 'Directory already exists.');
                         break;
                     default:
-                        queueToast(ToastLevel.ERROR, 'Something went wrong when creating directory.');
+                        queueToast('error', 'Something went wrong when creating directory.');
                 }
             }
         };
@@ -119,7 +117,7 @@
         /** @param {PopStateEvent} event */
         onpopstate = (event) => {
             /** @type {string[]} */
-            const dirs = event.state?.dirs ?? [];
+            const dirs = event.state.dirs;
             query.delete('dir');
             for (const dir of dirs) {
                 query.append('dir', dir);
@@ -130,18 +128,15 @@
 
     /** @returns {Promise<void>} */
     async function ls() {
-        /** @type {Response | null} */
-        const response = await makeRequest('/ui/drive?' + query.toString());
-        if (!response) {
-            return;
-        }
+        /** @type {Response} */
+        const response = await fetch('/ui/drive?' + query.toString());
         if (!response.ok) {
             switch (response.status) {
                 case 401:
                     location.replace('/id/sign_in');
                     break;
                 default:
-                    queueToast(ToastLevel.ERROR, 'Something went wrong when .');
+                    queueToast('error', 'Something went wrong when listing directory.');
             }
             return;
         }

@@ -14,8 +14,8 @@
         const login = document.getElementById('login');
         /** @type {HTMLInputElement} */
         const password = document.getElementById('password');
-        /** @type {Response | null} */
-        const response = await makeRequest('/api/id/sign_in', {
+        /** @type {Response} */
+        const response = await fetch('/api/id/sign_in', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -25,22 +25,19 @@
                 'password': password.value
             })
         });
-        if (!response) {
-            return;
-        }
         if (response.ok) {
             location.replace('/drive');
             return;
         }
         switch (response.status) {
             case 401:
-                queueToast(ToastLevel.WARN, 'Incorrect credentials given.');
+                queueToast('warn', 'Incorrect credentials given.');
                 break;
             case 429:
-                queueToast(ToastLevel.WARN, 'Cannot sign in. Try again later.');
+                queueToast('warn', 'Cannot sign in. Try again later.');
                 break;
             default:
-                queueToast(ToastLevel.ERROR, 'Something went wrong when signing in.');
+                queueToast('error', 'Something went wrong when signing in.');
         }
         password.value = '';
         signIn.disabled = false;

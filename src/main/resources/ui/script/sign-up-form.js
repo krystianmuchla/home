@@ -12,25 +12,22 @@
         signUp.disabled = true;
         /** @type {string | null} */
         let token;
-        /** @type {Response | null} */
-        const response = await makeRequest('/api/id/sign_up/init', { method: 'POST' });
-        if (!response) {
-            return;
-        }
+        /** @type {Response} */
+        const response = await fetch('/api/id/sign_up/init', { method: 'POST' });
         if (response.ok) {
             token = prompt('Enter sing up token');
         } else if (response.status === 409) {
-            queueToast(ToastLevel.WARN, 'Cannot initialize sign up. Try again later.');
+            queueToast('warn', 'Cannot initialize sign up. Try again later.');
         } else {
-            queueToast(ToastLevel.ERROR, 'Something went wrong when initializing sing up.');
+            queueToast('error', 'Something went wrong when initializing sing up.');
         }
         /** @type {HTMLInputElement} */
         const password = document.getElementById('password');
         if (token) {
             /** @type {HTMLInputElement} */
             const login = document.getElementById('login');
-            /** @type {Response | null} */
-            const response = await makeRequest('/api/id/sign_up', {
+            /** @type {Response} */
+            const response = await fetch('/api/id/sign_up', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
@@ -41,22 +38,19 @@
                     'token': token
                 })
             });
-            if (!response) {
-                return;
-            }
             if (response.ok) {
                 location.replace('/drive');
                 return;
             }
             switch (response.status) {
                 case 401:
-                    queueToast(ToastLevel.WARN, 'Invalid token.');
+                    queueToast('warn', 'Invalid token.');
                     break;
                 case 409:
-                    queueToast(ToastLevel.WARN, 'User already exists.');
+                    queueToast('warn', 'User already exists.');
                     break;
                 default:
-                    queueToast(ToastLevel.ERROR, 'Something went wrong when signing up.');
+                    queueToast('error', 'Something went wrong when signing up.');
             }
         }
         password.value = '';

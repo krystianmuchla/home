@@ -41,11 +41,7 @@ public class SignInController extends Controller {
                 Style.SIGN_IN_FORM
             ),
             Set.of(Script.SIGN_IN_FORM),
-            Set.of(
-                Component.HTTP,
-                Component.LABELED_TEXT_INPUT,
-                Component.TOAST
-            ),
+            Set.of(Component.LABELED_TEXT_INPUT, Component.TOAST),
             div(attrs(clazz("background")),
                 div(attrs(clazz("modal")),
                     div(attrs(clazz("box sign-in-form")),
