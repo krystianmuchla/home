@@ -7,6 +7,9 @@ import java.time.ZoneOffset;
 
 public class TimestampFactory {
     public static Timestamp create(final Instant instant) {
+        if (instant == null) {
+            return null;
+        }
         return Timestamp.valueOf(LocalDateTime.ofInstant(instant, ZoneOffset.UTC));
     }
 }

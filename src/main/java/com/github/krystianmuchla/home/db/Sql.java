@@ -4,6 +4,7 @@ import com.github.krystianmuchla.home.util.CollectionService;
 import com.github.krystianmuchla.home.util.StreamService;
 import com.github.krystianmuchla.home.util.TimestampFactory;
 
+import java.net.URI;
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.*;
@@ -37,8 +38,12 @@ public class Sql {
     }
 
     private Object parameter(final Object parameter) {
+        if (parameter == null) {
+            return null;
+        }
         return switch (parameter) {
             case UUID uuid -> uuid.toString();
+            case URI uri -> uri.toString();
             case Timestamp timestamp -> timestamp.toString();
             case Instant instant -> {
                 final var timestamp = TimestampFactory.create(instant);
@@ -72,9 +77,25 @@ public class Sql {
             return this;
         }
 
-        public Builder insertInto(final String table) {
+        public Builder insertInto(final String table, final String... fields) {
             sql.words.add("INSERT INTO");
             sql.words.add(table);
+            for (var index = 0; index < fields.length; index++) {
+                final var first = index == 0;
+                final var last = index == fields.length - 1;
+                final var builder = new StringBuilder(3);
+                if (first) {
+                    builder.append("(");
+                }
+                builder.append("?");
+                if (last) {
+                    builder.append(")");
+                } else {
+                    builder.append(",");
+                }
+                sql.words.add(builder.toString());
+                sql.parameters.add(fields[index]);
+            }
             return this;
         }
 
@@ -147,7 +168,8 @@ public class Sql {
 
         public Builder in(final String field, final Set<?> values) {
             final var parameters = values.toArray();
-            sql.words.add(field + " IN");
+            sql.words.add(field);
+            sql.words.add("IN");
             for (var index = 0; index < parameters.length; index++) {
                 final var first = index == 0;
                 final var last = index == parameters.length - 1;
@@ -164,6 +186,12 @@ public class Sql {
                 sql.words.add(builder.toString());
                 sql.parameters.add(parameters[index]);
             }
+            return this;
+        }
+
+        public Builder isNull(final String field) {
+            sql.words.add(field);
+            sql.words.add("IS NULL");
             return this;
         }
 

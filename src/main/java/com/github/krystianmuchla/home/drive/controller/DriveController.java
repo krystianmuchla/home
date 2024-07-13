@@ -1,4 +1,4 @@
-package com.github.krystianmuchla.home.drive;
+package com.github.krystianmuchla.home.drive.controller;
 
 import com.github.krystianmuchla.home.html.Script;
 import com.github.krystianmuchla.home.html.Style;

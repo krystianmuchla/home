@@ -1,16 +1,17 @@
-package com.github.krystianmuchla.home.drive;
+package com.github.krystianmuchla.home.drive.controller;
 
+import com.github.krystianmuchla.home.drive.DriveService;
+import com.github.krystianmuchla.home.drive.Entry;
+import com.github.krystianmuchla.home.drive.api.DriveFilterRequest;
 import com.github.krystianmuchla.home.http.Controller;
 import com.github.krystianmuchla.home.http.RequestReader;
 import com.github.krystianmuchla.home.http.ResponseWriter;
 import com.sun.net.httpserver.HttpExchange;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.List;
 
-import static com.github.krystianmuchla.home.html.Attribute.attrs;
-import static com.github.krystianmuchla.home.html.Attribute.clazz;
+import static com.github.krystianmuchla.home.html.Attribute.*;
 import static com.github.krystianmuchla.home.html.Group.group;
 import static com.github.krystianmuchla.home.html.Tag.div;
 
@@ -27,12 +28,13 @@ public class DriveUiController extends Controller {
         ResponseWriter.writeHtml(exchange, 200, html(list));
     }
 
-    private Object html(final List<File> list) {
-        return group(list.stream().map(row -> {
-            final var clazz = row.isDirectory() ? "dir" : "file";
-            return div(attrs(clazz(clazz)),
-                row.getName()
-            );
-        }));
+    private Object html(final List<Entry> list) {
+        return group(
+            list.stream().map(
+                entry -> div(attrs(id(entry.id()), clazz(entry.type().asClass())),
+                    entry.name()
+                )
+            )
+        );
     }
 }

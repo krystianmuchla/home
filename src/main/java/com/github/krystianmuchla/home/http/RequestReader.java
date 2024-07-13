@@ -2,6 +2,7 @@ package com.github.krystianmuchla.home.http;
 
 import com.github.krystianmuchla.home.api.GsonHolder;
 import com.github.krystianmuchla.home.api.RequestBody;
+import com.github.krystianmuchla.home.api.RequestHeaders;
 import com.github.krystianmuchla.home.api.RequestQuery;
 import com.github.krystianmuchla.home.exception.http.BadRequestException;
 import com.github.krystianmuchla.home.exception.http.UnsupportedMediaTypeException;
@@ -53,7 +54,21 @@ public class RequestReader {
     }
 
     public static String readHeader(final HttpExchange exchange, final String name) {
-        return headers(exchange).getFirst(name);
+        return readHeaders(exchange).getFirst(name);
+    }
+
+    public static <T extends RequestHeaders> T readHeaders(
+        final HttpExchange exchange,
+        final Function<Headers, T> mapper
+    ) {
+        final var headers = readHeaders(exchange);
+        final var object = mapper.apply(headers);
+        object.validate();
+        return object;
+    }
+
+    public static Headers readHeaders(final HttpExchange exchange) {
+        return exchange.getRequestHeaders();
     }
 
     public static <T extends RequestBody> T readJson(
@@ -87,9 +102,5 @@ public class RequestReader {
         try (final var inputStream = exchange.getRequestBody()) {
             return new String(inputStream.readAllBytes());
         }
-    }
-
-    private static Headers headers(final HttpExchange exchange) {
-        return exchange.getRequestHeaders();
     }
 }

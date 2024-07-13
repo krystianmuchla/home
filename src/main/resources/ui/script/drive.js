@@ -5,7 +5,7 @@
     const query = url.searchParams;
     {
         /** @type {HTMLButtonElement} */
-        const btn = document.getElementById('upload-file');
+        const button = document.getElementById('upload-file');
         /** @type {HTMLInputElement} */
         const input = document.createElement('input');
         input.type = 'file';
@@ -14,113 +14,101 @@
             /** @type {FileList} */
             const files = input.files;
             /** @type {number} */
-            let uploadCount = 0;
+            let count = 0;
             /** @type {HTMLDivElement} */
-            const toastId = queueToast('info', uploadingText(0, files.length));
-            for (let fileI = 0; fileI < files.length; fileI++) {
+            const toastId = queueToast('info', `Uploading 0 of ${files.length} files...`);
+            for (let index = 0; index < files.length; index++) {
                 /** @type {File} */
-                const file = files[fileI];
-                /** @type {string} */
-                let fileName = file.name;
-                /** @type {number} */
-                const dotI = fileName.lastIndexOf('.');
-                if (dotI >= 0) {
-                    fileName = fileName.slice(0, dotI);
-                }
+                const file = files[index];
                 /** @type {HTMLDivElement} */
                 const container = document.getElementById('ls-container');
-                if ([...container.children].find((row) => row.textContent === fileName)) {
-                    const confirmed = confirm(`Are you sure you want do overwrite the existing ${fileName} file?`);
+                if ([...container.children].find((element) => element.textContent === file.name)) {
+                    const confirmed = confirm(`Are you sure you want do overwrite the existing ${file.name} file?`);
                     if (!confirmed) {
                         return;
                     }
                 }
-                /** @type {URLSearchParams} */
-                const query = new URLSearchParams(location.search);
-                query.set('file', fileName);
-                setToastText(toastId, uploadingText(fileI + 1, files.length));
+                setToastText(toastId, `Uploading ${index + 1} of ${files.length} files...`);
                 /** @type {Response} */
                 const response = await fetch(
                     '/api/drive?' + query.toString(),
                     {
                         method: 'PUT',
                         headers: {
-                            'Content-Type': 'application/octet-stream'
+                            'Content-Type': 'application/octet-stream',
+                            'File-Name': file.name
                         },
                         body: file
-                    },
-                    (error) => {
-                        console.error(error.message);
-                        setToastLevel(toastId, 'warn');
                     }
                 );
                 if (response.ok) {
-                    uploadCount++;
+                    count++;
                 } else {
                     setToastLevel(toastId, 'warn');
                 }
             }
-            setToastText(toastId, `Uploaded ${uploadCount} of ${files.length} files.`);
-            if (uploadCount > 0) {
+            setToastText(toastId, `Uploaded ${count} of ${files.length} files.`);
+            if (count > 0) {
                 ls();
             }
-            if (uploadCount === files.length) {
+            if (count === files.length) {
                 setToastLevel(toastId, 'success');
             }
         };
-        btn.onmousedown = () => {
+        button.onmousedown = () => {
             input.click();
         };
-
-        /**
-         * @param {number} i
-         * @param {number} of
-         * @returns {string}
-         */
-        function uploadingText(i, of) {
-            return `Uploading ${i} of ${of} files...`;
-        }
     }
     {
         /** @type {HTMLButtonElement} */
-        const btn = document.getElementById('create-dir');
-        btn.onmousedown = async () => {
+        const button = document.getElementById('create-dir');
+        button.onmousedown = async () => {
             /** @type {string | null} */
             const name = prompt('Enter new directory name');
-            if (name) {
-                /** @type {URLSearchParams} */
-                const query = new URLSearchParams(location.search);
-                query.append('dir', name);
-                /** @type {Response} */
-                const response = await fetch('/api/drive?' + query.toString(), { method: 'POST' });
-                if (response.ok) {
-                    queueToast('success', 'Directory created.');
-                    ls();
-                    return;
+            if (!name) {
+                return;
+            }
+            /** @type {Response} */
+            const response = await fetch(
+                '/api/drive',
+                {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        'dir': query.get('dir'),
+                        'name': name
+                    })
                 }
-                switch (response.status) {
-                    case 401:
-                        location.replace('/id/sign_in');
-                        break;
-                    case 409:
-                        queueToast('warn', 'Directory already exists.');
-                        break;
-                    default:
-                        queueToast('error', 'Something went wrong when creating directory.');
-                }
+            );
+            if (response.ok) {
+                queueToast('success', 'Directory created.');
+                ls();
+                return;
+            }
+            switch (response.status) {
+                case 401:
+                    location.replace('/id/sign_in');
+                    break;
+                case 409:
+                    queueToast('warn', 'Directory already exists.');
+                    break;
+                default:
+                    queueToast('error', 'Something went wrong when creating directory.');
             }
         };
     }
     {
         ls();
-        history.replaceState({ dirs: query.getAll('dir') }, '', url);
+        history.replaceState({ dir: query.get('dir') }, '', url);
         /** @param {PopStateEvent} event */
         onpopstate = (event) => {
-            /** @type {string[]} */
-            const dirs = event.state.dirs;
+            /** @type {string | null} */
+            const dir = event.state.dir;
             query.delete('dir');
-            for (const dir of dirs) {
-                query.append('dir', dir);
+            if (dir) {
+                query.set('dir', dir);
             }
             ls();
         };
@@ -140,39 +128,33 @@
             }
             return;
         }
-        if (response.ok) {
-            /** @type {HTMLDivElement} */
-            const container = document.getElementById('ls-container');
-            /** @type {string} */
-            const html = await response.text();
-            container.innerHTML = html;
-            /** @type {HTMLCollectionOf<HTMLDivElement>} */
-            const dirs = document.getElementsByClassName('dir');
-            for (const dir of dirs) {
-                dir.onmousedown = () => {
-                    /** @type {string} */
-                    const name = dir.textContent;
-                    query.append('dir', name);
-                    ls();
-                    history.pushState({ dirs: query.getAll('dir') }, '', url);
-                };
-            }
-            /** @type {HTMLCollectionOf<HTMLDivElement>} */
-            const files = document.getElementsByClassName('file');
-            for (const file of files) {
-                file.onmousedown = () => {
-                    /** @type {string} */
-                    const name = file.textContent;
-                    /** @type {URLSearchParams} */
-                    const query = new URLSearchParams(location.search);
-                    query.set('file', name);
-                    /** @type {HTMLAnchorElement} */
-                    const a = document.createElement('a');
-                    a.href = '/api/drive?' + query.toString();
-                    a.download = name;
-                    a.click();
-                };
-            }
+        /** @type {HTMLDivElement} */
+        const container = document.getElementById('ls-container');
+        /** @type {string} */
+        const html = await response.text();
+        container.innerHTML = html;
+        /** @type {HTMLCollectionOf<HTMLDivElement>} */
+        const dirs = document.getElementsByClassName('dir');
+        for (const dir of dirs) {
+            dir.onmousedown = () => {
+                query.set('dir', dir.id);
+                ls();
+                history.pushState({ dir: query.get('dir') }, '', url);
+            };
+        }
+        /** @type {HTMLCollectionOf<HTMLDivElement>} */
+        const files = document.getElementsByClassName('file');
+        for (const file of files) {
+            file.onmousedown = async () => {
+                /** @type {URLSearchParams} */
+                const query = new URLSearchParams(location.search);
+                query.set('file', file.id);
+                /** @type {HTMLAnchorElement} */
+                const a = document.createElement('a');
+                a.href = '/api/drive?' + query.toString();
+                a.download = file.textContent;
+                a.click();
+            };
         }
     }
 }

@@ -1,6 +1,7 @@
 package com.github.krystianmuchla.home.note;
 
 import com.github.krystianmuchla.home.api.RequestQuery;
+import com.github.krystianmuchla.home.exception.ValidationError;
 import com.github.krystianmuchla.home.exception.http.BadRequestException;
 import com.github.krystianmuchla.home.util.MultiValueMap;
 
@@ -25,7 +26,7 @@ public record NoteFilterRequest(Set<UUID> ids) implements RequestQuery {
         try {
             return id.stream().map(UUID::fromString).collect(Collectors.toSet());
         } catch (final IllegalArgumentException exception) {
-            throw new BadRequestException(exception);
+            throw new BadRequestException("id", ValidationError.wrongFormat());
         }
     }
 }
