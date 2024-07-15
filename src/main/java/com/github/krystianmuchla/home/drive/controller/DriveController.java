@@ -30,6 +30,7 @@ public class DriveController extends Controller {
             Set.of(
                 Style.BACKGROUND,
                 Style.COLUMN,
+                Style.DRIVE,
                 Style.LEFT_TOP,
                 Style.MAIN_BUTTON,
                 Style.ROW
@@ -45,7 +46,7 @@ public class DriveController extends Controller {
                         "Create directory"
                     )
                 ),
-                div(attrs(id("ls-container"), clazz("left-top column"), style("padding: 0px 10px;")))
+                div(attrs(id("main"), clazz("left-top")))
             )
         );
     }

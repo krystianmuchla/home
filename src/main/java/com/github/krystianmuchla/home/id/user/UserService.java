@@ -1,8 +1,8 @@
 package com.github.krystianmuchla.home.id.user;
 
-import com.github.krystianmuchla.home.exception.http.UnauthorizedException;
-import com.github.krystianmuchla.home.exception.http.ConflictException;
 import com.github.krystianmuchla.home.exception.InternalException;
+import com.github.krystianmuchla.home.exception.http.ConflictException;
+import com.github.krystianmuchla.home.exception.http.UnauthorizedException;
 import com.github.krystianmuchla.home.id.SecureRandomFactory;
 import com.github.krystianmuchla.home.id.accessdata.AccessData;
 import com.github.krystianmuchla.home.id.accessdata.AccessDataPersistence;
@@ -28,12 +28,12 @@ public class UserService {
         }
     }
 
-    public static User createUser(final String login, final String password) {
+    public static User createUser(final String name, final String login, final String password) {
         var accessData = AccessDataPersistence.read(login);
         if (accessData != null) {
             throw new ConflictException("USER_ALREADY_EXISTS");
         }
-        final var user = new User(UUID.randomUUID());
+        final var user = new User(UUID.randomUUID(), name);
         UserPersistence.create(user);
         final var salt = SecureRandomFactory.createBytes(SALT_BYTES);
         final var secret = secret(salt, password);

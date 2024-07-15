@@ -10,5 +10,5 @@
 }
 
 .main-button:disabled {
-    background-color: #404040;
+    background-color: dimgray;
 }

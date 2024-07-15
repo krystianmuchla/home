@@ -8,7 +8,7 @@ import java.util.stream.Stream;
 
 public class Tag {
     private final String tag;
-    private final Map<String, Object> attributes;
+    public final Map<String, Object> attributes;
     private final Stream<Object> content;
 
     private Tag(final String tag, final Map<String, Object> attributes, final Stream<Object> content) {
@@ -57,6 +57,10 @@ public class Tag {
         return new Tag("script", new HashMap<>(), Arrays.stream(content));
     }
 
+    public static Tag span(final Map<String, Object> attributes, final Object... content) {
+        return new Tag("span", attributes, Arrays.stream(content));
+    }
+
     public static Tag style(final Object... content) {
         return new Tag("style", new HashMap<>(), Arrays.stream(content));
     }
@@ -65,7 +69,7 @@ public class Tag {
         return new Tag("title", new HashMap<>(), Arrays.stream(content));
     }
 
-    public Tag appendClasses(final String... classes) {
+    public Tag appendClass(final String... classes) {
         final var appendage = String.join(" ", classes);
         attributes.merge("class", appendage, (a, b) -> a + " " + b);
         return this;

@@ -45,6 +45,7 @@ public class SignUpController extends Controller {
             div(attrs(clazz("background")),
                 div(attrs(clazz("modal")),
                     div(attrs(clazz("box sign-up-form")),
+                        labeledTextInput("Name", "name", "text"),
                         labeledTextInput("Login", "login", "text"),
                         labeledTextInput("Password", "password", "password"),
                         button(attrs(id("sign-up"), clazz("main-button")),

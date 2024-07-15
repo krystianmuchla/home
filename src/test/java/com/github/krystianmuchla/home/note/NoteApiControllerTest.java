@@ -38,7 +38,7 @@ class NoteApiControllerTest {
         AppContext.init();
         gson = GsonHolder.INSTANCE;
         final var login = "note_controller_user";
-        user = Transaction.run(() -> UserService.createUser(login, "zaq1@WSX"));
+        user = Transaction.run(() -> UserService.createUser("User name", login, "zaq1@WSX"));
         sessionId = SessionService.createSession(login, user);
         cookie = "login=%s; token=%s".formatted(sessionId.login(), sessionId.token());
     }

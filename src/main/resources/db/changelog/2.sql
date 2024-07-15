@@ -11,3 +11,5 @@ CREATE TABLE file (
     directory_id CHAR(36),
     path TEXT NOT NULL
 );
+
+ALTER TABLE user ADD COLUMN name VARCHAR(100) NOT NULL;

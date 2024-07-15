@@ -2,6 +2,8 @@ package com.github.krystianmuchla.home.drive.directory;
 
 import com.github.krystianmuchla.home.exception.http.NotFoundException;
 
+import java.util.LinkedList;
+import java.util.List;
 import java.util.UUID;
 
 public class DirectoryService {
@@ -18,5 +20,15 @@ public class DirectoryService {
             throw new NotFoundException();
         }
         return directory;
+    }
+
+    public static List<Directory> getPath(final UUID userId, UUID directoryId) {
+        final var path = new LinkedList<Directory>();
+        while (directoryId != null) {
+            final var directory = get(userId, directoryId);
+            path.addFirst(directory);
+            directoryId = directory.parentId();
+        }
+        return path;
     }
 }

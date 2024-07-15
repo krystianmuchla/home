@@ -43,14 +43,18 @@ public class DriveService {
         if (Files.exists(path)) {
             throw new ConflictException("DIRECTORY_ALREADY_EXISTS");
         }
-        createDirectory(path);
         final var relativeUri = userPath.toUri().relativize(path.toUri());
         DirectoryService.create(userId, directoryId, relativeUri.getPath());
+        createDirectory(path);
     }
 
     public static void uploadFile(final UUID userId, final UUID directoryId, final FileUpload fileUpload) {
         final var userPath = path(userId);
         final var path = entryPath(userPath, userId, directoryId, fileUpload.fileName());
+        if (Files.notExists(path)) {
+            final var relativeUri = userPath.toUri().relativize(path.toUri());
+            FileService.create(userId, directoryId, relativeUri.getPath());
+        }
         try (final var outputStream = new FileOutputStream(path.toString())) {
             try (final var inputStream = fileUpload.inputStream()) {
                 StreamService.copy(inputStream, outputStream);
@@ -58,8 +62,6 @@ public class DriveService {
         } catch (final IOException exception) {
             throw new InternalException(exception);
         }
-        final var relativeUri = userPath.toUri().relativize(path.toUri());
-        FileService.create(userId, directoryId, relativeUri.getPath());
     }
 
     public static File getFile(final UUID userId, final UUID fileId) {

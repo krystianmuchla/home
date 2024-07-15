@@ -30,6 +30,9 @@
             return;
         }
         switch (response.status) {
+            case 400:
+                queueToast('warn', 'Invalid data provided.');
+                break;
             case 401:
                 queueToast('warn', 'Incorrect credentials given.');
                 break;

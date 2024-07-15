@@ -25,6 +25,8 @@
         const password = document.getElementById('password');
         if (token) {
             /** @type {HTMLInputElement} */
+            const name = document.getElementById('name');
+            /** @type {HTMLInputElement} */
             const login = document.getElementById('login');
             /** @type {Response} */
             const response = await fetch('/api/id/sign_up', {
@@ -33,6 +35,7 @@
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({
+                    'name': name.value,
                     'login': login.value,
                     'password': password.value,
                     'token': token
@@ -43,6 +46,9 @@
                 return;
             }
             switch (response.status) {
+                case 400:
+                    queueToast('warn', 'Invalid data provided.');
+                    break;
                 case 401:
                     queueToast('warn', 'Invalid token.');
                     break;

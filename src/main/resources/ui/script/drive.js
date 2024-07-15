@@ -21,8 +21,8 @@
                 /** @type {File} */
                 const file = files[index];
                 /** @type {HTMLDivElement} */
-                const container = document.getElementById('ls-container');
-                if ([...container.children].find((element) => element.textContent === file.name)) {
+                const list = document.getElementById('list');
+                if ([...list.children].find((element) => element.textContent === file.name)) {
                     const confirmed = confirm(`Are you sure you want do overwrite the existing ${file.name} file?`);
                     if (!confirmed) {
                         return;
@@ -49,7 +49,7 @@
             }
             setToastText(toastId, `Uploaded ${count} of ${files.length} files.`);
             if (count > 0) {
-                ls();
+                refreshMain();
             }
             if (count === files.length) {
                 setToastLevel(toastId, 'success');
@@ -84,7 +84,7 @@
             );
             if (response.ok) {
                 queueToast('success', 'Directory created.');
-                ls();
+                refreshMain();
                 return;
             }
             switch (response.status) {
@@ -100,7 +100,7 @@
         };
     }
     {
-        ls();
+        refreshMain();
         history.replaceState({ dir: query.get('dir') }, '', url);
         /** @param {PopStateEvent} event */
         onpopstate = (event) => {
@@ -110,14 +110,14 @@
             if (dir) {
                 query.set('dir', dir);
             }
-            ls();
+            refreshMain();
         };
     }
 
     /** @returns {Promise<void>} */
-    async function ls() {
+    async function refreshMain() {
         /** @type {Response} */
-        const response = await fetch('/ui/drive?' + query.toString());
+        const response = await fetch('/ui/drive/main?' + query.toString());
         if (!response.ok) {
             switch (response.status) {
                 case 401:
@@ -128,17 +128,32 @@
             }
             return;
         }
-        /** @type {HTMLDivElement} */
-        const container = document.getElementById('ls-container');
+        const main = document.getElementById('main');
         /** @type {string} */
         const html = await response.text();
-        container.innerHTML = html;
+        main.innerHTML = html;
+        /** @type {HTMLCollectionOf<HTMLSpanElement>} */
+        const segments = document.getElementsByClassName('segment');
+        for (const segment of segments) {
+            if (segment.id !== (query.get('dir') ?? '')) {
+                segment.classList.add('path-nav');
+                segment.onmousedown = () => {
+                    if (segment.id) {
+                        query.set('dir', segment.id);
+                    } else {
+                        query.delete('dir');
+                    }
+                    refreshMain();
+                    history.pushState({ dir: query.get('dir') }, '', url);
+                };
+            }
+        }
         /** @type {HTMLCollectionOf<HTMLDivElement>} */
         const dirs = document.getElementsByClassName('dir');
         for (const dir of dirs) {
             dir.onmousedown = () => {
                 query.set('dir', dir.id);
-                ls();
+                refreshMain();
                 history.pushState({ dir: query.get('dir') }, '', url);
             };
         }

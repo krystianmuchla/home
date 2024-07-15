@@ -26,7 +26,7 @@ public class SignUpApiController extends Controller {
             throw new UnauthorizedException();
         }
         final var userId = Transaction.run(
-            () -> UserService.createUser(signUpRequest.login(), signUpRequest.password())
+            () -> UserService.createUser(signUpRequest.name(), signUpRequest.login(), signUpRequest.password())
         );
         final var sessionId = SessionService.createSession(signUpRequest.login(), userId);
         ResponseWriter.writeCookies(exchange, 201, sessionId.asCookies());

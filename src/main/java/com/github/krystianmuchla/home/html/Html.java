@@ -20,7 +20,7 @@ public class Html {
         return "<!DOCTYPE html>" + html(styles, scripts, components, content);
     }
 
-    private static String html(
+    private static Tag html(
         final Collection<String> styles,
         final Collection<String> scripts,
         final Collection<Component> components,
@@ -36,7 +36,7 @@ public class Html {
                 group(content),
                 script(resolveScript(scripts, components))
             )
-        ).toString();
+        );
     }
 
     private static String resolveStyle(final Collection<String> styles, final Collection<Component> elements) {

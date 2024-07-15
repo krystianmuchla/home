@@ -1,0 +1,12 @@
+#path {
+    padding: 0 10px 10px;
+}
+
+.path-nav {
+    cursor: pointer;
+    text-decoration: underline;
+}
+
+#list {
+    padding: 0 10px;
+}
