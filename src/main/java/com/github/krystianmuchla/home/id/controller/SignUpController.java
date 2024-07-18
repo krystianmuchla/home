@@ -1,6 +1,5 @@
 package com.github.krystianmuchla.home.id.controller;
 
-import com.github.krystianmuchla.home.exception.http.UnauthorizedException;
 import com.github.krystianmuchla.home.html.Script;
 import com.github.krystianmuchla.home.html.Style;
 import com.github.krystianmuchla.home.html.component.Component;
@@ -17,18 +16,15 @@ import static com.github.krystianmuchla.home.html.Tag.*;
 import static com.github.krystianmuchla.home.html.component.LabeledTextInput.labeledTextInput;
 
 public class SignUpController extends Controller {
+    public static final String PATH = "/id/sign_up";
+
     public SignUpController() {
-        super("/id/sign_up");
+        super(PATH);
     }
 
     @Override
     protected void get(final HttpExchange exchange) throws IOException {
-        try {
-            session(exchange);
-            ResponseWriter.writeLocation(exchange, 302, "/drive");
-        } catch (final UnauthorizedException exception) {
-            ResponseWriter.writeHtml(exchange, 200, html());
-        }
+        ResponseWriter.writeHtml(exchange, 200, html());
     }
 
     private String html() {

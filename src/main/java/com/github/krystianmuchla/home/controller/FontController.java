@@ -8,8 +8,10 @@ import com.sun.net.httpserver.HttpExchange;
 import java.io.IOException;
 
 public class FontController extends Controller {
+    public static final String PATH = "/font";
+
     public FontController() {
-        super("/font");
+        super(PATH);
     }
 
     @Override

@@ -14,9 +14,23 @@ import com.github.krystianmuchla.home.note.NoteApiController;
 import com.github.krystianmuchla.home.note.sync.NoteSyncApiController;
 
 import java.util.List;
+import java.util.Set;
 
 public class HttpConfig extends Config {
     public static final Integer PORT;
+    public static final String DEFAULT_PATH = DriveController.PATH;
+    public static final Set<String> ANONYMOUS_PATHS = Set.of(
+        FaviconController.PATH,
+        FontController.PATH,
+        HealthApiController.PATH
+    );
+    public static final Set<String> NO_USER_PATHS = Set.of(
+        InitSignUpApiController.PATH,
+        SignInApiController.PATH,
+        SignInController.PATH,
+        SignUpApiController.PATH,
+        SignUpController.PATH
+    );
     public static final List<Controller> CONTROLLERS = List.of(
         new DriveApiController(),
         new DriveController(),

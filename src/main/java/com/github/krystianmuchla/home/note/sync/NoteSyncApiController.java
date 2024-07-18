@@ -19,7 +19,7 @@ public class NoteSyncApiController extends Controller {
 
     @Override
     protected void put(final HttpExchange exchange) throws IOException {
-        final var user = session(exchange).user();
+        final var user = RequestReader.readUser(exchange);
         final var syncNotesRequest = RequestReader.readJson(exchange, SyncNotesRequest.class);
         final var notes = Transaction.run(
             () -> NoteSyncService.sync(user.id(), map(user.id(), syncNotesRequest.notes()))

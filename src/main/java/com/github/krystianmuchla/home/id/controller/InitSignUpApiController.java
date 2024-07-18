@@ -8,8 +8,10 @@ import com.sun.net.httpserver.HttpExchange;
 import java.io.IOException;
 
 public class InitSignUpApiController extends Controller {
+    public static final String PATH = "/api/id/sign_up/init";
+
     public InitSignUpApiController() {
-        super("/api/id/sign_up/init");
+        super(PATH);
     }
 
     @Override

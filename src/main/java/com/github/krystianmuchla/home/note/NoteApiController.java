@@ -19,7 +19,7 @@ public class NoteApiController extends Controller {
 
     @Override
     protected void delete(final HttpExchange exchange) throws IOException {
-        final var user = session(exchange).user();
+        final var user = RequestReader.readUser(exchange);
         final var request = RequestReader.readQuery(exchange, NoteFilterRequest::new);
         Transaction.run(() -> NoteService.delete(user.id(), request));
         ResponseWriter.write(exchange, 204);
@@ -27,7 +27,7 @@ public class NoteApiController extends Controller {
 
     @Override
     protected void get(final HttpExchange exchange) throws IOException {
-        final var user = session(exchange).user();
+        final var user = RequestReader.readUser(exchange);
         final var request = RequestReader.readQuery(exchange, NoteFilterRequest::new);
         final var pagination = RequestReader.readQuery(exchange, PaginationRequest::new);
         final var result = NotePersistence.read(user.id(), request.ids(), new Pagination(pagination));
@@ -36,7 +36,7 @@ public class NoteApiController extends Controller {
 
     @Override
     protected void post(final HttpExchange exchange) throws IOException {
-        final var user = session(exchange).user();
+        final var user = RequestReader.readUser(exchange);
         final var request = RequestReader.readJson(exchange, CreateNoteRequest.class);
         final var noteId = Transaction.run(() -> NoteService.create(user.id(), request));
         ResponseWriter.writeJson(exchange, 201, new IdResponse<>(noteId));
@@ -44,7 +44,7 @@ public class NoteApiController extends Controller {
 
     @Override
     protected void put(final HttpExchange exchange) throws IOException {
-        final var user = session(exchange).user();
+        final var user = RequestReader.readUser(exchange);
         final var request = RequestReader.readJson(exchange, UpdateNoteRequest.class);
         Transaction.run(() -> NoteService.update(user.id(), request));
         ResponseWriter.write(exchange, 204);

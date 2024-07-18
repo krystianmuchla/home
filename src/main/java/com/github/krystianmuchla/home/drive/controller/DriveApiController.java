@@ -21,7 +21,7 @@ public class DriveApiController extends Controller {
 
     @Override
     protected void get(final HttpExchange exchange) throws IOException {
-        final var user = session(exchange).user();
+        final var user = RequestReader.readUser(exchange);
         final var request = RequestReader.readQuery(exchange, DriveFilterRequest::new);
         if (request.file() == null) {
             final var list = DriveService.listDirectory(user.id(), request.dir());
@@ -34,7 +34,7 @@ public class DriveApiController extends Controller {
 
     @Override
     protected void post(final HttpExchange exchange) throws IOException {
-        final var user = session(exchange).user();
+        final var user = RequestReader.readUser(exchange);
         final var request = RequestReader.readJson(exchange, CreateDirectoryRequest.class);
         Transaction.run(() -> DriveService.createDirectory(user.id(), request.dir(), request.name()));
         ResponseWriter.write(exchange, 201);
@@ -42,7 +42,7 @@ public class DriveApiController extends Controller {
 
     @Override
     protected void put(final HttpExchange exchange) throws IOException {
-        final var user = session(exchange).user();
+        final var user = RequestReader.readUser(exchange);
         final var filter = RequestReader.readQuery(exchange, DriveFilterRequest::new);
         final var request = RequestReader.readHeaders(exchange, UploadFileRequest::new);
         Transaction.run(

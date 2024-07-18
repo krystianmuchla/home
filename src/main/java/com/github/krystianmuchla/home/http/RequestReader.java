@@ -4,16 +4,14 @@ import com.github.krystianmuchla.home.api.GsonHolder;
 import com.github.krystianmuchla.home.api.RequestBody;
 import com.github.krystianmuchla.home.api.RequestHeaders;
 import com.github.krystianmuchla.home.api.RequestQuery;
+import com.github.krystianmuchla.home.exception.InternalException;
 import com.github.krystianmuchla.home.exception.http.BadRequestException;
 import com.github.krystianmuchla.home.exception.http.UnsupportedMediaTypeException;
-import com.github.krystianmuchla.home.id.session.SessionId;
-import com.github.krystianmuchla.home.util.MultiValueHashMap;
+import com.github.krystianmuchla.home.id.user.User;
 import com.github.krystianmuchla.home.util.MultiValueMap;
 import com.google.gson.JsonSyntaxException;
 import com.sun.net.httpserver.Headers;
 import com.sun.net.httpserver.HttpExchange;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -21,7 +19,13 @@ import java.util.Map;
 import java.util.function.Function;
 
 public class RequestReader {
-    private static final Logger LOG = LoggerFactory.getLogger(RequestReader.class);
+    public static User readUser(final HttpExchange exchange) {
+        final var user = exchange.getAttribute(Attribute.USER);
+        if (user == null) {
+            throw new InternalException("Could not find user attribute");
+        }
+        return (User) user;
+    }
 
     public static <T extends RequestQuery> T readQuery(
         final HttpExchange exchange,
@@ -35,17 +39,11 @@ public class RequestReader {
 
     @SuppressWarnings("unchecked")
     public static MultiValueMap<String, String> readQuery(final HttpExchange exchange) {
-        final var query = exchange.getAttribute("query");
+        final var query = exchange.getAttribute(Attribute.QUERY);
         if (query == null) {
-            LOG.warn("Could not find query attribute");
-            return new MultiValueHashMap<>();
+            throw new InternalException("Could not find query attribute");
         }
         return (MultiValueMap<String, String>) query;
-    }
-
-    public static SessionId readSessionId(final HttpExchange exchange) {
-        final var cookies = readCookies(exchange);
-        return new SessionId(cookies.get("login"), cookies.get("token"));
     }
 
     public static Map<String, String> readCookies(final HttpExchange exchange) {

@@ -1,22 +1,20 @@
 package com.github.krystianmuchla.home.http;
 
 import com.github.krystianmuchla.home.exception.InternalException;
-import com.github.krystianmuchla.home.exception.TransactionException;
-import com.github.krystianmuchla.home.exception.http.HttpException;
-import com.github.krystianmuchla.home.exception.http.NotFoundException;
-import com.sun.net.httpserver.HttpExchange;
-import com.sun.net.httpserver.HttpHandler;
+import com.github.krystianmuchla.home.http.filter.AuthFilter;
+import com.github.krystianmuchla.home.http.filter.QueryFilter;
+import com.sun.net.httpserver.Filter;
 import com.sun.net.httpserver.HttpServer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
+import java.util.List;
 import java.util.concurrent.Executors;
 
-public class Http implements HttpHandler {
+public class Http {
     private static final Logger LOG = LoggerFactory.getLogger(Http.class);
-    private final Routes routes = new Routes(HttpConfig.CONTROLLERS);
 
     public static void startServer(final int port) {
         final HttpServer server;
@@ -25,41 +23,14 @@ public class Http implements HttpHandler {
         } catch (final IOException exception) {
             throw new InternalException(exception);
         }
-        final var context = server.createContext("/", new Http());
-        context.getFilters().add(new QueryFilter());
+        final var context = server.createContext("/", new HttpHandlerImpl());
+        context.getFilters().addAll(filters());
         server.setExecutor(Executors.newVirtualThreadPerTaskExecutor());
         server.start();
         LOG.info("Http server started at port {}", port);
     }
 
-    @Override
-    public void handle(final HttpExchange exchange) throws IOException {
-        final var uri = exchange.getRequestURI();
-        final var controller = routes.findController(uri.getPath());
-        try {
-            if (controller == null) {
-                throw new NotFoundException();
-            } else {
-                controller.handle(exchange);
-            }
-        } catch (final Exception exception) {
-            handle(exchange, exception);
-            LOG.warn("{}", exception.getMessage(), exception);
-        }
-    }
-
-    private void handle(final HttpExchange exchange, final Throwable throwable) throws IOException {
-        switch (throwable) {
-            case HttpException httpException -> httpException.handle(exchange);
-            case TransactionException transactionException -> {
-                final var cause = transactionException.getCause();
-                if (cause == null) {
-                    ResponseWriter.write(exchange, 500);
-                } else {
-                    handle(exchange, cause);
-                }
-            }
-            default -> ResponseWriter.write(exchange, 500);
-        }
+    private static List<Filter> filters() {
+        return List.of(new AuthFilter(), new QueryFilter());
     }
 }

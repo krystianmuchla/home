@@ -7,8 +7,10 @@ import com.sun.net.httpserver.HttpExchange;
 import java.io.IOException;
 
 public class FaviconController extends Controller {
+    public static final String PATH = "/favicon.ico";
+
     public FaviconController() {
-        super("/favicon.ico");
+        super(PATH);
     }
 
     @Override

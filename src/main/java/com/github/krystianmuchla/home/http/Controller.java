@@ -1,8 +1,6 @@
 package com.github.krystianmuchla.home.http;
 
 import com.github.krystianmuchla.home.exception.http.MethodNotAllowedException;
-import com.github.krystianmuchla.home.id.session.Session;
-import com.github.krystianmuchla.home.id.session.SessionService;
 import com.sun.net.httpserver.HttpExchange;
 
 import java.io.IOException;
@@ -39,10 +37,5 @@ public abstract class Controller {
 
     protected void put(final HttpExchange exchange) throws IOException {
         throw new MethodNotAllowedException();
-    }
-
-    protected Session session(final HttpExchange exchange) {
-        final var sessionId = RequestReader.readSessionId(exchange);
-        return SessionService.getSession(sessionId);
     }
 }

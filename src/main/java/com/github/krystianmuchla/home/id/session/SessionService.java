@@ -39,8 +39,9 @@ public class SessionService {
         return session;
     }
 
-    public static void removeSession(final SessionId sessionId) {
-        SESSIONS.remove(sessionId);
+    public static boolean removeSession(final SessionId sessionId) {
+        final var session = SESSIONS.remove(sessionId);
+        return session != null;
     }
 
     private static String generateToken() {

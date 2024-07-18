@@ -15,13 +15,14 @@ import static com.github.krystianmuchla.home.html.Html.document;
 import static com.github.krystianmuchla.home.html.Tag.div;
 
 public class DriveController extends Controller {
+    public static final String PATH = "/drive";
+
     public DriveController() {
-        super("/drive");
+        super(PATH);
     }
 
     @Override
     protected void get(final HttpExchange exchange) throws IOException {
-        session(exchange);
         ResponseWriter.writeHtml(exchange, 200, html());
     }
 

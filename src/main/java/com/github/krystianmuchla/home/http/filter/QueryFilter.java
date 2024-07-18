@@ -1,5 +1,6 @@
-package com.github.krystianmuchla.home.http;
+package com.github.krystianmuchla.home.http.filter;
 
+import com.github.krystianmuchla.home.http.Attribute;
 import com.github.krystianmuchla.home.util.MultiValueHashMap;
 import com.github.krystianmuchla.home.util.MultiValueMap;
 import com.sun.net.httpserver.Filter;
@@ -12,7 +13,7 @@ public class QueryFilter extends Filter {
     public void doFilter(final HttpExchange exchange, final Chain chain) throws IOException {
         final var uri = exchange.getRequestURI();
         final var query = parse(uri.getQuery());
-        exchange.setAttribute("query", query);
+        exchange.setAttribute(Attribute.QUERY, query);
         chain.doFilter(exchange);
     }
 

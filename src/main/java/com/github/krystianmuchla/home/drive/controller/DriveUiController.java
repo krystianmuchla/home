@@ -28,7 +28,7 @@ public class DriveUiController extends Controller {
 
     @Override
     protected void get(final HttpExchange exchange) throws IOException {
-        final var user = session(exchange).user();
+        final var user = RequestReader.readUser(exchange);
         final var request = RequestReader.readQuery(exchange, DriveFilterRequest::new);
         final var path = DirectoryService.getPath(user.id(), request.dir());
         final var list = DriveService.listDirectory(user.id(), request.dir());

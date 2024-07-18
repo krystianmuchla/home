@@ -11,8 +11,10 @@ import com.sun.net.httpserver.HttpExchange;
 import java.io.IOException;
 
 public class SignInApiController extends Controller {
+    public static final String PATH = "/api/id/sign_in";
+
     public SignInApiController() {
-        super("/api/id/sign_in");
+        super(PATH);
     }
 
     @Override
