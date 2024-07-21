@@ -32,6 +32,10 @@ public class Attribute {
         return Map.entry("id", id);
     }
 
+    public static Map.Entry<String, Object> lang(final Object lang) {
+        return Map.entry("lang", lang);
+    }
+
     public static Map.Entry<String, Object> name(final Object name) {
         return Map.entry("name", name);
     }

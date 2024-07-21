@@ -37,8 +37,8 @@ public class Tag {
         return new Tag("head", new HashMap<>(), Arrays.stream(content));
     }
 
-    public static Tag html(final Object... content) {
-        return new Tag("html", new HashMap<>(), Arrays.stream(content));
+    public static Tag html(final Map<String, Object> attributes, final Object... content) {
+        return new Tag("html", attributes, Arrays.stream(content));
     }
 
     public static Tag input(final Map<String, Object> attributes) {

@@ -5,6 +5,7 @@ import com.github.krystianmuchla.home.drive.Entry;
 import com.github.krystianmuchla.home.drive.api.DriveFilterRequest;
 import com.github.krystianmuchla.home.drive.directory.Directory;
 import com.github.krystianmuchla.home.drive.directory.DirectoryService;
+import com.github.krystianmuchla.home.html.Group;
 import com.github.krystianmuchla.home.html.Tag;
 import com.github.krystianmuchla.home.http.Controller;
 import com.github.krystianmuchla.home.http.RequestReader;
@@ -35,7 +36,7 @@ public class DriveUiController extends Controller {
         ResponseWriter.writeHtml(exchange, 200, html(user.name(), path, list));
     }
 
-    private Object html(final String userName, final List<Directory> path, final List<Entry> list) {
+    private Group html(final String userName, final List<Directory> path, final List<Entry> list) {
         return group(
             div(attrs(id("path")), path(userName, path)),
             div(attrs(id("list"), clazz("column")),
@@ -50,7 +51,7 @@ public class DriveUiController extends Controller {
         );
     }
 
-    private Object path(final String userName, final List<Directory> path) {
+    private String path(final String userName, final List<Directory> path) {
         final var segments = new ArrayList<Tag>();
         final var rootSegment = span(attrs(clazz("segment")),
             userName

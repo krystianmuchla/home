@@ -104,9 +104,9 @@
         history.replaceState({ dir: query.get('dir') }, '', url);
         /** @param {PopStateEvent} event */
         onpopstate = (event) => {
+            query.delete('dir');
             /** @type {string | null} */
             const dir = event.state.dir;
-            query.delete('dir');
             if (dir) {
                 query.set('dir', dir);
             }

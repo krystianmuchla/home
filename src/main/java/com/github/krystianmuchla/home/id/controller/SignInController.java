@@ -31,16 +31,16 @@ public class SignInController extends Controller {
         return document(
             Set.of(
                 Style.BACKGROUND,
-                Style.BOX,
                 Style.MAIN_BUTTON,
                 Style.MODAL,
+                Style.ON_TOP,
                 Style.SIGN_IN_FORM
             ),
             Set.of(Script.SIGN_IN_FORM),
             Set.of(Component.LABELED_TEXT_INPUT, Component.TOAST),
             div(attrs(clazz("background")),
                 div(attrs(clazz("modal")),
-                    div(attrs(clazz("box sign-in-form")),
+                    div(attrs(clazz("on-top sign-in-form")),
                         labeledTextInput("Login", "login", "text"),
                         labeledTextInput("Password", "password", "password"),
                         button(attrs(id("sign-in"), clazz("main-button")),

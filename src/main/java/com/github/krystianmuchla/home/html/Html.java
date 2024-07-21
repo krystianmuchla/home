@@ -26,7 +26,7 @@ public class Html {
         final Collection<Component> components,
         final Object... content
     ) {
-        return Tag.html(
+        return Tag.html(attrs(lang("en")),
             head(
                 title("Home"),
                 meta(attrs(name("viewport"), content("width=device-width, initial-scale=1.0"))),

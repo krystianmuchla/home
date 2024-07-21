@@ -31,16 +31,16 @@ public class SignUpController extends Controller {
         return document(
             Set.of(
                 Style.BACKGROUND,
-                Style.BOX,
                 Style.MAIN_BUTTON,
                 Style.MODAL,
+                Style.ON_TOP,
                 Style.SIGN_UP_FORM
             ),
             Set.of(Script.SIGN_UP_FORM),
             Set.of(Component.LABELED_TEXT_INPUT, Component.TOAST),
             div(attrs(clazz("background")),
                 div(attrs(clazz("modal")),
-                    div(attrs(clazz("box sign-up-form")),
+                    div(attrs(clazz("on-top sign-up-form")),
                         labeledTextInput("Name", "name", "text"),
                         labeledTextInput("Login", "login", "text"),
                         labeledTextInput("Password", "password", "password"),
