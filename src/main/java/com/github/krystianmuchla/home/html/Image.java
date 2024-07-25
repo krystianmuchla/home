@@ -8,10 +8,6 @@ public class Image {
     public static final String CONTEXT_MENU = sanitize(Resource.read("ui/image/context-menu.svg"));
 
     private static String sanitize(final String image) {
-        return image.lines().map(Image::removeMultipleWhitespaces).collect(Collectors.joining());
-    }
-
-    private static String removeMultipleWhitespaces(final String image) {
-        return image.replaceAll("\\s{2,}", "");
+        return image.lines().map(Sanitizer::removeMultipleWhitespaces).collect(Collectors.joining());
     }
 }
