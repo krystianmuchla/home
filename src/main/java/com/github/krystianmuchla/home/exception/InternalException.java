@@ -1,11 +1,11 @@
 package com.github.krystianmuchla.home.exception;
 
 public class InternalException extends RuntimeException {
-    public InternalException(final String message) {
+    public InternalException(String message) {
         super(message);
     }
 
-    public InternalException(final Throwable cause) {
+    public InternalException(Throwable cause) {
         super(cause);
     }
 }

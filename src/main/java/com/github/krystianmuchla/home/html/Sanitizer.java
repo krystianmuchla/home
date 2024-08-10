@@ -1,13 +1,13 @@
 package com.github.krystianmuchla.home.html;
 
 public class Sanitizer {
-    public static String removeMultiLineComments(final String text) {
-        final var builder = new StringBuilder(text.length());
+    public static String removeMultiLineComments(String text) {
+        var builder = new StringBuilder(text.length());
         var remaining = text;
         var open = false;
         while (true) {
             if (open) {
-                final var index = remaining.indexOf("*/");
+                var index = remaining.indexOf("*/");
                 if (index < 0) {
                     break;
                 } else {
@@ -15,7 +15,7 @@ public class Sanitizer {
                     open = false;
                 }
             } else {
-                final var index = remaining.indexOf("/*");
+                var index = remaining.indexOf("/*");
                 if (index < 0) {
                     builder.append(remaining);
                     break;
@@ -29,7 +29,7 @@ public class Sanitizer {
         return builder.toString();
     }
 
-    public static String removeMultipleWhitespaces(final String text) {
+    public static String removeMultipleWhitespaces(String text) {
         return text.replaceAll("\\s{2,}", "");
     }
 }

@@ -2,14 +2,10 @@ package com.github.krystianmuchla.home.note.grave;
 
 import com.github.krystianmuchla.home.db.Persistence;
 import com.github.krystianmuchla.home.db.Sql;
-import com.github.krystianmuchla.home.exception.InternalException;
 
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
-import java.util.function.Function;
 
 import static com.github.krystianmuchla.home.db.Sql.eq;
 import static com.github.krystianmuchla.home.db.Sql.lt;
@@ -36,7 +32,7 @@ public class NoteGravePersistence extends Persistence {
                 eq(NoteGrave.USER_ID, userId)
             )
             .forUpdate();
-        return executeQuery(sql.build(), mapper());
+        return executeQuery(sql.build(), NoteGrave::fromResultSet);
     }
 
     public static boolean update(final NoteGrave noteGrave) {
@@ -70,15 +66,5 @@ public class NoteGravePersistence extends Persistence {
                 lt(NoteGrave.CREATION_TIME, creationTime)
             );
         executeUpdate(sql.build());
-    }
-
-    public static Function<ResultSet, NoteGrave> mapper() {
-        return resultSet -> {
-            try {
-                return new NoteGrave(resultSet);
-            } catch (final SQLException exception) {
-                throw new InternalException(exception);
-            }
-        };
     }
 }

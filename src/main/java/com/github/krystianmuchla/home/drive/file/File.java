@@ -34,16 +34,16 @@ public record File(UUID id, UUID userId, UUID directoryId, String path) {
         return Path.of(path).getFileName().toString();
     }
 
-    public static File fromResultSet(final ResultSet resultSet) {
+    public static File fromResultSet(ResultSet resultSet) {
         try {
-            final var directoryId = resultSet.getString(DIRECTORY_ID);
+            var directoryId = resultSet.getString(DIRECTORY_ID);
             return new File(
                 UUID.fromString(resultSet.getString(ID)),
                 UUID.fromString(resultSet.getString(USER_ID)),
                 directoryId == null ? null : UUID.fromString(directoryId),
                 resultSet.getString(PATH)
             );
-        } catch (final SQLException exception) {
+        } catch (SQLException exception) {
             throw new InternalException(exception);
         }
     }

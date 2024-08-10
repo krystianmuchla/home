@@ -7,7 +7,7 @@ public class Login {
         private static final int MIN_LENGTH = 1;
         private static final int MAX_LENGTH = 50;
 
-        public static ValidationError validate(final String login) {
+        public static ValidationError validate(String login) {
             if (login == null) {
                 return ValidationError.nullValue();
             }

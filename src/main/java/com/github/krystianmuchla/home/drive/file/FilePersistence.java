@@ -10,8 +10,8 @@ import static com.github.krystianmuchla.home.db.Sql.and;
 import static com.github.krystianmuchla.home.db.Sql.eq;
 
 public class FilePersistence extends Persistence {
-    public static void create(final File file) {
-        final var sql = new Sql.Builder()
+    public static void create(File file) {
+        var sql = new Sql.Builder()
             .insertInto(File.TABLE)
             .values(
                 file.id(),
@@ -22,8 +22,8 @@ public class FilePersistence extends Persistence {
         executeUpdate(sql.build());
     }
 
-    public static File readById(final UUID userId, final UUID id) {
-        final var sql = new Sql.Builder()
+    public static File readById(UUID userId, UUID id) {
+        var sql = new Sql.Builder()
             .select()
             .from(File.TABLE)
             .where(
@@ -31,12 +31,12 @@ public class FilePersistence extends Persistence {
                 and(),
                 eq(File.USER_ID, userId)
             );
-        final var result = executeQuery(sql.build(), File::fromResultSet);
+        var result = executeQuery(sql.build(), File::fromResultSet);
         return singleResult(result);
     }
 
-    public static List<File> readByDirectoryId(final UUID userId, final UUID directoryId) {
-        final var sql = new Sql.Builder()
+    public static List<File> readByDirectoryId(UUID userId, UUID directoryId) {
+        var sql = new Sql.Builder()
             .select()
             .from(File.TABLE)
             .where(eq(File.USER_ID, userId))

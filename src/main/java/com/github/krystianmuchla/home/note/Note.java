@@ -29,12 +29,12 @@ public class Note {
     public Instant modificationTime;
 
     public Note(
-        final UUID id,
-        final UUID userId,
-        final String title,
-        final String content,
-        final Instant creationTime,
-        final Instant modificationTime
+        UUID id,
+        UUID userId,
+        String title,
+        String content,
+        Instant creationTime,
+        Instant modificationTime
     ) {
         if (id == null) {
             throw new InternalException("Id cannot be null");
@@ -59,11 +59,11 @@ public class Note {
         this.modificationTime = modificationTime;
     }
 
-    public Note(final UUID id, final UUID userId, final Instant modificationTime) {
+    public Note(UUID id, UUID userId, Instant modificationTime) {
         this(id, userId, null, null, null, modificationTime);
     }
 
-    public Note(final UUID userId, final NoteRequest request) {
+    public Note(UUID userId, NoteRequest request) {
         this(
             request.id(),
             userId,
@@ -74,23 +74,12 @@ public class Note {
         );
     }
 
-    public Note(final ResultSet resultSet) throws SQLException {
-        this(
-            UUID.fromString(resultSet.getString(ID)),
-            UUID.fromString(resultSet.getString(USER_ID)),
-            resultSet.getString(TITLE),
-            resultSet.getString(CONTENT),
-            InstantFactory.create(resultSet.getTimestamp(CREATION_TIME)),
-            InstantFactory.create(resultSet.getTimestamp(MODIFICATION_TIME))
-        );
-    }
-
     public Note(
-        final UUID id,
-        final UUID userId,
-        final String title,
-        final String content,
-        final Instant creationTime
+        UUID id,
+        UUID userId,
+        String title,
+        String content,
+        Instant creationTime
     ) {
         this(id, userId, title, content, creationTime, creationTime);
     }
@@ -101,5 +90,20 @@ public class Note {
 
     public boolean hasContent() {
         return content != null;
+    }
+
+    public static Note fromResultSet(ResultSet resultSet) {
+        try {
+            return new Note(
+                UUID.fromString(resultSet.getString(ID)),
+                UUID.fromString(resultSet.getString(USER_ID)),
+                resultSet.getString(TITLE),
+                resultSet.getString(CONTENT),
+                InstantFactory.create(resultSet.getTimestamp(CREATION_TIME)),
+                InstantFactory.create(resultSet.getTimestamp(MODIFICATION_TIME))
+            );
+        } catch (SQLException exception) {
+            throw new InternalException(exception);
+        }
     }
 }

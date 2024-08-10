@@ -1,6 +1,7 @@
 package com.github.krystianmuchla.home;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 import java.net.URI;
@@ -10,8 +11,7 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.util.Optional;
 
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Test;
+import static org.assertj.core.api.Assertions.assertThat;
 
 class HealthApiControllerTest {
 
@@ -22,13 +22,13 @@ class HealthApiControllerTest {
 
     @Test
     void shouldGetHealth() throws URISyntaxException, IOException, InterruptedException {
-        final var client = HttpClient.newHttpClient();
-        final var request = HttpRequest.newBuilder()
+        var client = HttpClient.newHttpClient();
+        var request = HttpRequest.newBuilder()
             .uri(new URI(AppContext.HOST + "/api/health"))
             .GET()
             .build();
 
-        final var response = client.send(request, HttpResponse.BodyHandlers.ofString());
+        var response = client.send(request, HttpResponse.BodyHandlers.ofString());
         client.close();
 
         assertThat(response.statusCode()).isEqualTo(200);

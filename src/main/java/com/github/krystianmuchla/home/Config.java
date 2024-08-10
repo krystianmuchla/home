@@ -1,8 +1,8 @@
 package com.github.krystianmuchla.home;
 
 public class Config {
-    protected static String resolve(final String systemProperty, final String environmentVariable) {
-        final var configuration = System.getProperty(systemProperty);
+    protected static String resolve(String systemProperty, String environmentVariable) {
+        var configuration = System.getProperty(systemProperty);
         if (configuration != null) {
             return configuration;
         }

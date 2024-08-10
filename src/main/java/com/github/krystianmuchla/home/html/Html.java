@@ -12,19 +12,19 @@ import static com.github.krystianmuchla.home.html.Tag.*;
 
 public class Html {
     public static String document(
-        final Collection<String> styles,
-        final Collection<String> scripts,
-        final Collection<Component> components,
-        final Object... content
+        Collection<String> styles,
+        Collection<String> scripts,
+        Collection<Component> components,
+        Object... content
     ) {
         return "<!DOCTYPE html>" + html(styles, scripts, components, content);
     }
 
     private static Tag html(
-        final Collection<String> styles,
-        final Collection<String> scripts,
-        final Collection<Component> components,
-        final Object... content
+        Collection<String> styles,
+        Collection<String> scripts,
+        Collection<Component> components,
+        Object... content
     ) {
         return Tag.html(attrs(lang("en")),
             head(
@@ -39,13 +39,13 @@ public class Html {
         );
     }
 
-    private static String resolveStyle(final Collection<String> styles, final Collection<Component> elements) {
-        final var stylesStream = Stream.concat(styles.stream(), elements.stream().flatMap(Component::styles));
+    private static String resolveStyle(Collection<String> styles, Collection<Component> elements) {
+        var stylesStream = Stream.concat(styles.stream(), elements.stream().flatMap(Component::styles));
         return Style.BODY + String.join("", stylesStream.collect(Collectors.toSet()));
     }
 
-    private static String resolveScript(final Collection<String> scripts, final Collection<Component> elements) {
-        final var scriptsStream = Stream.concat(scripts.stream(), elements.stream().flatMap(Component::scripts));
+    private static String resolveScript(Collection<String> scripts, Collection<Component> elements) {
+        var scriptsStream = Stream.concat(scripts.stream(), elements.stream().flatMap(Component::scripts));
         return String.join("", scriptsStream.collect(Collectors.toSet()));
     }
 }

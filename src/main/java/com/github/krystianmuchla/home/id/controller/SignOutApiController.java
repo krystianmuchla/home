@@ -17,13 +17,13 @@ public class SignOutApiController extends Controller {
     }
 
     @Override
-    protected void delete(final HttpExchange exchange) throws IOException {
-        final var cookies = RequestReader.readCookies(exchange);
-        final var sessionId = SessionId.fromCookies(cookies);
+    protected void delete(HttpExchange exchange) throws IOException {
+        var cookies = RequestReader.readCookies(exchange);
+        var sessionId = SessionId.fromCookies(cookies);
         if (sessionId.isEmpty()) {
             throw new BadRequestException("Cookie", ValidationError.wrongFormat());
         }
-        final var result = SessionService.removeSession(sessionId.get());
+        var result = SessionService.removeSession(sessionId.get());
         if (result) {
             ResponseWriter.write(exchange, 204);
         } else {

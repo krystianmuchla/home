@@ -29,44 +29,44 @@ public class DriveService {
         }
     }
 
-    public static List<Entry> listDirectory(final UUID userId, final UUID directoryId) {
-        final var directories = DirectoryPersistence.readByParentId(userId, directoryId).stream()
+    public static List<Entry> listDirectory(UUID userId, UUID directoryId) {
+        var directories = DirectoryPersistence.readByParentId(userId, directoryId).stream()
             .map(directory -> new Entry(directory.id(), EntryType.DIR, directory.getName()));
-        final var files = FilePersistence.readByDirectoryId(userId, directoryId).stream()
+        var files = FilePersistence.readByDirectoryId(userId, directoryId).stream()
             .map(file -> new Entry(file.id(), EntryType.FILE, file.getName()));
         return Stream.concat(directories, files).toList();
     }
 
-    public static void createDirectory(final UUID userId, final UUID directoryId, final String name) {
-        final var userPath = path(userId);
-        final var path = entryPath(userPath, userId, directoryId, name);
+    public static void createDirectory(UUID userId, UUID directoryId, String name) {
+        var userPath = path(userId);
+        var path = entryPath(userPath, userId, directoryId, name);
         if (Files.exists(path)) {
             throw new ConflictException("DIRECTORY_ALREADY_EXISTS");
         }
-        final var relativeUri = userPath.toUri().relativize(path.toUri());
+        var relativeUri = userPath.toUri().relativize(path.toUri());
         DirectoryService.create(userId, directoryId, relativeUri.getPath());
         createDirectory(path);
     }
 
-    public static void uploadFile(final UUID userId, final UUID directoryId, final FileUpload fileUpload) {
-        final var userPath = path(userId);
-        final var path = entryPath(userPath, userId, directoryId, fileUpload.fileName());
+    public static void uploadFile(UUID userId, UUID directoryId, FileUpload fileUpload) {
+        var userPath = path(userId);
+        var path = entryPath(userPath, userId, directoryId, fileUpload.fileName());
         if (Files.notExists(path)) {
-            final var relativeUri = userPath.toUri().relativize(path.toUri());
+            var relativeUri = userPath.toUri().relativize(path.toUri());
             FileService.create(userId, directoryId, relativeUri.getPath());
         }
-        try (final var outputStream = new FileOutputStream(path.toString())) {
-            try (final var inputStream = fileUpload.inputStream()) {
+        try (var outputStream = new FileOutputStream(path.toString())) {
+            try (var inputStream = fileUpload.inputStream()) {
                 StreamService.copy(inputStream, outputStream);
             }
-        } catch (final IOException exception) {
+        } catch (IOException exception) {
             throw new InternalException(exception);
         }
     }
 
-    public static File getFile(final UUID userId, final UUID fileId) {
-        final var path = filePath(userId, fileId);
-        final var file = path.toFile();
+    public static File getFile(UUID userId, UUID fileId) {
+        var path = filePath(userId, fileId);
+        var file = path.toFile();
         if (!file.exists()) {
             throw new NotFoundException();
         }
@@ -76,56 +76,56 @@ public class DriveService {
         return file;
     }
 
-    private static Path entryPath(final Path userPath, final UUID userId, final UUID directoryId, final String entry) {
+    private static Path entryPath(Path userPath, UUID userId, UUID directoryId, String entry) {
         if (directoryId == null) {
             return path(userPath, entry);
         }
-        final var directory = DirectoryService.get(userId, directoryId);
+        var directory = DirectoryService.get(userId, directoryId);
         return path(userPath, Path.of(directory.path()), entry);
     }
 
-    private static Path filePath(final UUID userId, final UUID fileId) {
-        final var file = FileService.get(userId, fileId);
+    private static Path filePath(UUID userId, UUID fileId) {
+        var file = FileService.get(userId, fileId);
         return path(userId, Path.of(file.path()));
     }
 
-    private static Path path(final Path userPath, final Path relativePath, final String entry) {
-        final var path = userPath.resolve(relativePath).resolve(entry).normalize();
+    private static Path path(Path userPath, Path relativePath, String entry) {
+        var path = userPath.resolve(relativePath).resolve(entry).normalize();
         checkAccess(userPath, path);
         return path;
     }
 
-    private static Path path(final Path userPath, final String entry) {
-        final var path = userPath.resolve(entry).normalize();
+    private static Path path(Path userPath, String entry) {
+        var path = userPath.resolve(entry).normalize();
         checkAccess(userPath, path);
         return path;
     }
 
-    private static Path path(final UUID userId, final Path relativePath) {
-        final var userPath = path(userId);
-        final var path = userPath.resolve(relativePath).normalize();
+    private static Path path(UUID userId, Path relativePath) {
+        var userPath = path(userId);
+        var path = userPath.resolve(relativePath).normalize();
         checkAccess(userPath, path);
         return path;
     }
 
-    private static void checkAccess(final Path userPath, final Path path) {
+    private static void checkAccess(Path userPath, Path path) {
         if (!path.startsWith(userPath)) {
             throw new ForbiddenException();
         }
     }
 
-    private static Path path(final UUID userId) {
-        final var userDrivePath = DRIVE_PATH.resolve(userId.toString());
+    private static Path path(UUID userId) {
+        var userDrivePath = DRIVE_PATH.resolve(userId.toString());
         if (Files.notExists(userDrivePath)) {
             createDirectory(userDrivePath);
         }
         return userDrivePath;
     }
 
-    private static void createDirectory(final Path path) {
+    private static void createDirectory(Path path) {
         try {
             Files.createDirectory(path);
-        } catch (final IOException exception) {
+        } catch (IOException exception) {
             throw new InternalException(exception);
         }
     }

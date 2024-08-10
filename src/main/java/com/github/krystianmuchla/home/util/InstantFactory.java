@@ -10,14 +10,14 @@ public class InstantFactory {
         return create(Instant.now());
     }
 
-    public static Instant create(final Instant instant) {
+    public static Instant create(Instant instant) {
         if (instant == null) {
             return null;
         }
         return instant.truncatedTo(ChronoUnit.MILLIS);
     }
 
-    public static Instant create(final Timestamp timestamp) {
+    public static Instant create(Timestamp timestamp) {
         if (timestamp == null) {
             return null;
         }

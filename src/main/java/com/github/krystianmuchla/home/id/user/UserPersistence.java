@@ -6,8 +6,8 @@ import com.github.krystianmuchla.home.db.Sql;
 import java.util.UUID;
 
 public class UserPersistence extends Persistence {
-    public static void create(final User user) {
-        final var sql = new Sql.Builder()
+    public static void create(User user) {
+        var sql = new Sql.Builder()
             .insertInto(User.TABLE)
             .values(
                 user.id(),
@@ -16,14 +16,14 @@ public class UserPersistence extends Persistence {
         executeUpdate(sql.build());
     }
 
-    public static User read(final UUID id) {
-        final var sql = new Sql.Builder()
+    public static User read(UUID id) {
+        var sql = new Sql.Builder()
             .select()
             .from(User.TABLE)
             .where(
                 Sql.eq(User.ID, id)
             );
-        final var result = executeQuery(sql.build(), User::fromResultSet);
+        var result = executeQuery(sql.build(), User::fromResultSet);
         return singleResult(result);
     }
 }

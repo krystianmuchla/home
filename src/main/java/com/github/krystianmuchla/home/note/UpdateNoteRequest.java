@@ -10,7 +10,7 @@ import java.util.UUID;
 public record UpdateNoteRequest(UUID id, String title, String content) implements RequestBody {
     @Override
     public void validate() {
-        final var errors = new MultiValueHashMap<String, ValidationError>();
+        var errors = new MultiValueHashMap<String, ValidationError>();
         if (id == null) {
             errors.add("id", ValidationError.nullValue());
         }

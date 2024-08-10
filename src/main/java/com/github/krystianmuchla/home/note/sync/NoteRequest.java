@@ -1,8 +1,8 @@
 package com.github.krystianmuchla.home.note.sync;
 
 import com.github.krystianmuchla.home.api.RequestBody;
-import com.github.krystianmuchla.home.exception.http.BadRequestException;
 import com.github.krystianmuchla.home.exception.ValidationError;
+import com.github.krystianmuchla.home.exception.http.BadRequestException;
 import com.github.krystianmuchla.home.note.Note;
 import com.github.krystianmuchla.home.util.InstantFactory;
 import com.github.krystianmuchla.home.util.MultiValueHashMap;
@@ -19,7 +19,7 @@ public record NoteRequest(
 ) implements RequestBody {
     @Override
     public void validate() {
-        final var errors = new MultiValueHashMap<String, ValidationError>();
+        var errors = new MultiValueHashMap<String, ValidationError>();
         if (id == null) {
             errors.add("id", ValidationError.nullValue());
         }

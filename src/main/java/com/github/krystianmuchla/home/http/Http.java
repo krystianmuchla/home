@@ -16,14 +16,14 @@ import java.util.concurrent.Executors;
 public class Http {
     private static final Logger LOG = LoggerFactory.getLogger(Http.class);
 
-    public static void startServer(final int port) {
-        final HttpServer server;
+    public static void startServer(int port) {
+        HttpServer server;
         try {
             server = HttpServer.create(new InetSocketAddress(port), 0);
-        } catch (final IOException exception) {
+        } catch (IOException exception) {
             throw new InternalException(exception);
         }
-        final var context = server.createContext("/", new HttpHandlerImpl());
+        var context = server.createContext("/", new HttpHandlerImpl());
         context.getFilters().addAll(filters());
         server.setExecutor(Executors.newVirtualThreadPerTaskExecutor());
         server.start();

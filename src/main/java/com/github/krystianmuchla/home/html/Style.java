@@ -22,7 +22,7 @@ public class Style {
     public static final String TOAST = sanitize(Resource.read("ui/style/toast.css"));
     public static final String TOASTS_CONTAINER = sanitize(Resource.read("ui/style/toasts-container.css"));
 
-    private static String sanitize(final String style) {
+    private static String sanitize(String style) {
         return Sanitizer.removeMultiLineComments(style)
             .lines()
             .map(Sanitizer::removeMultipleWhitespaces)

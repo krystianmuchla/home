@@ -14,16 +14,16 @@ public class HttpHandlerImpl implements HttpHandler {
     private final Routes routes = new Routes(HttpConfig.CONTROLLERS);
 
     @Override
-    public void handle(final HttpExchange exchange) throws IOException {
-        final var uri = exchange.getRequestURI();
-        final var controller = routes.findController(uri.getPath());
+    public void handle(HttpExchange exchange) throws IOException {
+        var uri = exchange.getRequestURI();
+        var controller = routes.findController(uri.getPath());
         try {
             if (controller == null) {
                 throw new NotFoundException();
             } else {
                 controller.handle(exchange);
             }
-        } catch (final Exception exception) {
+        } catch (Exception exception) {
             LOG.warn("{}", exception.getMessage(), exception);
             HttpErrorHandler.handle(exchange, exception);
         }

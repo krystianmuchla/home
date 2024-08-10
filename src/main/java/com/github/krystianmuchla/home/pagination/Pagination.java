@@ -19,7 +19,7 @@ public record Pagination(int pageNumber, int pageSize) {
         }
     }
 
-    public Pagination(final PaginationRequest request) {
+    public Pagination(PaginationRequest request) {
         this(request.pageNumber(), request.pageSize());
     }
 }

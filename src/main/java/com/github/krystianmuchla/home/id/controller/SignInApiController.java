@@ -18,10 +18,10 @@ public class SignInApiController extends Controller {
     }
 
     @Override
-    protected void post(final HttpExchange exchange) throws IOException {
-        final var signInRequest = RequestReader.readJson(exchange, SignInRequest.class);
-        final var user = UserService.getUser(signInRequest.login(), signInRequest.password());
-        final var sessionId = SessionService.createSession(signInRequest.login(), user);
+    protected void post(HttpExchange exchange) throws IOException {
+        var signInRequest = RequestReader.readJson(exchange, SignInRequest.class);
+        var user = UserService.getUser(signInRequest.login(), signInRequest.password());
+        var sessionId = SessionService.createSession(signInRequest.login(), user);
         ResponseWriter.writeCookies(exchange, 204, sessionId.asCookies());
     }
 }

@@ -1,14 +1,14 @@
 package com.github.krystianmuchla.home.note;
 
 import com.github.krystianmuchla.home.api.RequestBody;
-import com.github.krystianmuchla.home.exception.http.BadRequestException;
 import com.github.krystianmuchla.home.exception.ValidationError;
+import com.github.krystianmuchla.home.exception.http.BadRequestException;
 import com.github.krystianmuchla.home.util.MultiValueHashMap;
 
 public record CreateNoteRequest(String title, String content) implements RequestBody {
     @Override
     public void validate() {
-        final var errors = new MultiValueHashMap<String, ValidationError>();
+        var errors = new MultiValueHashMap<String, ValidationError>();
         if (title == null) {
             errors.add("title", ValidationError.nullValue());
         } else if (title.length() > Note.TITLE_MAX_LENGTH) {

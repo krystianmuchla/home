@@ -12,7 +12,7 @@ public class ChangelogPersistence extends Persistence {
     private static final String CHANGELOG = "changelog";
 
     public static boolean exists() {
-        final var result = executeQuery("SHOW TABLES LIKE ?", stringMapper(), CHANGELOG);
+        var result = executeQuery("SHOW TABLES LIKE ?", stringMapper(), CHANGELOG);
         return boolResult(result.size());
     }
 
@@ -26,9 +26,9 @@ public class ChangelogPersistence extends Persistence {
         );
     }
 
-    public static void createChange(final Change... changes) {
-        for (final var change : changes) {
-            final var sql = new Sql.Builder()
+    public static void createChange(Change... changes) {
+        for (var change : changes) {
+            var sql = new Sql.Builder()
                 .insertInto(CHANGELOG)
                 .values(
                     change.id(),
@@ -39,13 +39,13 @@ public class ChangelogPersistence extends Persistence {
     }
 
     public static Change getLastChange() {
-        final var sql = new Sql.Builder()
+        var sql = new Sql.Builder()
             .select()
             .from(CHANGELOG)
             .orderBy(Change.ID)
             .desc()
             .limit(1);
-        final var result = executeQuery(sql.build(), mapper());
+        var result = executeQuery(sql.build(), mapper());
         return singleResult(result);
     }
 
@@ -53,7 +53,7 @@ public class ChangelogPersistence extends Persistence {
         return resultSet -> {
             try {
                 return new Change(resultSet);
-            } catch (final SQLException exception) {
+            } catch (SQLException exception) {
                 throw new InternalException(exception);
             }
         };
@@ -63,7 +63,7 @@ public class ChangelogPersistence extends Persistence {
         return resultSet -> {
             try {
                 return resultSet.getString(1);
-            } catch (final SQLException exception) {
+            } catch (SQLException exception) {
                 throw new InternalException(exception);
             }
         };

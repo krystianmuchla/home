@@ -2,16 +2,12 @@ package com.github.krystianmuchla.home.note;
 
 import com.github.krystianmuchla.home.db.Persistence;
 import com.github.krystianmuchla.home.db.Sql;
-import com.github.krystianmuchla.home.exception.InternalException;
 import com.github.krystianmuchla.home.pagination.PaginatedResult;
 import com.github.krystianmuchla.home.pagination.Pagination;
 
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
-import java.util.function.Function;
 
 import static com.github.krystianmuchla.home.db.Sql.*;
 
@@ -39,7 +35,7 @@ public class NotePersistence extends Persistence {
             .where(
                 eq(Note.USER_ID, userId)
             );
-        return executeQuery(sql.build(), mapper());
+        return executeQuery(sql.build(), Note::fromResultSet);
     }
 
     public static PaginatedResult<Note> read(final UUID userId, final Set<UUID> ids, final Pagination pagination) {
@@ -54,7 +50,7 @@ public class NotePersistence extends Persistence {
         sql.eq(Note.USER_ID, userId)
             .limit(limit(pagination.pageSize()))
             .offset(offset(pagination.pageNumber(), pagination.pageSize()));
-        final var result = executeQuery(sql.build(), mapper());
+        final var result = executeQuery(sql.build(), Note::fromResultSet);
         return paginatedResult(pagination, result);
     }
 
@@ -66,7 +62,7 @@ public class NotePersistence extends Persistence {
                 eq(Note.USER_ID, userId)
             )
             .forUpdate();
-        return executeQuery(sql.build(), mapper());
+        return executeQuery(sql.build(), Note::fromResultSet);
     }
 
     public static Note readForUpdate(final UUID userId, final UUID id) {
@@ -79,7 +75,7 @@ public class NotePersistence extends Persistence {
                 eq(Note.USER_ID, userId)
             )
             .forUpdate();
-        final var result = executeQuery(sql.build(), mapper());
+        final var result = executeQuery(sql.build(), Note::fromResultSet);
         return singleResult(result);
     }
 
@@ -93,7 +89,7 @@ public class NotePersistence extends Persistence {
                 in(Note.ID, ids)
             )
             .forUpdate();
-        return executeQuery(sql.build(), mapper());
+        return executeQuery(sql.build(), Note::fromResultSet);
     }
 
     public static boolean update(final Note note) {
@@ -120,15 +116,5 @@ public class NotePersistence extends Persistence {
             );
         final var result = executeUpdate(sql.build());
         return boolResult(result);
-    }
-
-    public static Function<ResultSet, Note> mapper() {
-        return resultSet -> {
-            try {
-                return new Note(resultSet);
-            } catch (final SQLException exception) {
-                throw new InternalException(exception);
-            }
-        };
     }
 }

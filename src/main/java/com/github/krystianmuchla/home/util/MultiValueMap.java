@@ -5,9 +5,9 @@ import java.util.Map;
 import java.util.Optional;
 
 public interface MultiValueMap<K, V> extends Map<K, List<V>> {
-    void add(final K key, final V value);
+    void add(K key, V value);
 
-    void addAll(final K key, final List<V> values);
+    void addAll(K key, List<V> values);
 
-    Optional<V> getFirst(final K key);
+    Optional<V> getFirst(K key);
 }

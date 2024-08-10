@@ -7,7 +7,7 @@ public class DriveConfig extends Config {
     public static final String LOCATION;
 
     static {
-        final var location = resolve("drive.location", "HOME_DRIVE_LOCATION");
+        var location = resolve("drive.location", "HOME_DRIVE_LOCATION");
         if (location == null) {
             throw new InternalException("Drive location is not specified");
         }

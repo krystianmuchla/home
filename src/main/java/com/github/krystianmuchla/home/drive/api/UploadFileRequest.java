@@ -7,7 +7,7 @@ import com.github.krystianmuchla.home.exception.http.BadRequestException;
 import com.sun.net.httpserver.Headers;
 
 public record UploadFileRequest(String fileName) implements RequestHeaders {
-    public UploadFileRequest(final Headers headers) {
+    public UploadFileRequest(Headers headers) {
         this(resolveFileName(headers));
     }
 
@@ -21,7 +21,7 @@ public record UploadFileRequest(String fileName) implements RequestHeaders {
         }
     }
 
-    private static String resolveFileName(final Headers headers) {
+    private static String resolveFileName(Headers headers) {
         return headers.getFirst(Header.FILE_NAME);
     }
 }

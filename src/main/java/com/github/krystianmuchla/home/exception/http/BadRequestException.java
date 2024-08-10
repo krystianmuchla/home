@@ -20,33 +20,33 @@ public class BadRequestException extends HttpException {
         this.errors = null;
     }
 
-    public BadRequestException(final Throwable cause) {
+    public BadRequestException(Throwable cause) {
         super(cause);
         this.errors = null;
     }
 
-    public BadRequestException(final String parameter, final ValidationError error) {
+    public BadRequestException(String parameter, ValidationError error) {
         this(MultiValueHashMap.of(parameter, error));
     }
 
-    public BadRequestException(final MultiValueMap<String, ValidationError> errors) {
+    public BadRequestException(MultiValueMap<String, ValidationError> errors) {
         super("Error keys: " + String.join(",", errors.keySet()));
         this.errors = errors;
     }
 
     @Override
-    public void handleApi(final HttpExchange exchange) throws IOException {
+    public void handleApi(HttpExchange exchange) throws IOException {
         if (errors.isEmpty()) {
             ResponseWriter.write(exchange, 400);
         } else {
-            final var response = ProblemResponseFactory.create(Map.of("errors", errors));
+            var response = ProblemResponseFactory.create(Map.of("errors", errors));
             ResponseWriter.writeJson(exchange, 400, response);
         }
     }
 
     @Override
-    public void handleWeb(final HttpExchange exchange) throws IOException {
-        final var html = document(
+    public void handleWeb(HttpExchange exchange) throws IOException {
+        var html = document(
             Set.of(),
             Set.of(),
             Set.of(),

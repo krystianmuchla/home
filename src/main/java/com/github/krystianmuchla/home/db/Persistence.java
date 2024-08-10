@@ -12,57 +12,53 @@ import java.util.List;
 import java.util.function.Function;
 
 public class Persistence {
-    public static <T> List<T> executeQuery(final Sql sql, final Function<ResultSet, T> mapper) {
+    public static <T> List<T> executeQuery(Sql sql, Function<ResultSet, T> mapper) {
         return executeQuery(sql.template(), mapper, sql.parameters());
     }
 
-    public static <T> List<T> executeQuery(
-        final String sql,
-        final Function<ResultSet, T> mapper,
-        final Object... parameters
-    ) {
-        try (final var borrowedConnection = ConnectionManager.borrowConnection()) {
-            final var connection = borrowedConnection.connection();
-            try (final var preparedStatement = connection.prepareStatement(sql)) {
+    public static <T> List<T> executeQuery(String sql, Function<ResultSet, T> mapper, Object... parameters) {
+        try (var borrowedConnection = ConnectionManager.borrowConnection()) {
+            var connection = borrowedConnection.connection();
+            try (var preparedStatement = connection.prepareStatement(sql)) {
                 for (int index = 0; index < parameters.length; index++) {
                     preparedStatement.setObject(index + 1, parameters[index]);
                 }
-                try (final var resultSet = preparedStatement.executeQuery()) {
-                    final var result = new ArrayList<T>();
+                try (var resultSet = preparedStatement.executeQuery()) {
+                    var result = new ArrayList<T>();
                     while (resultSet.next()) {
                         result.add(mapper.apply(resultSet));
                     }
                     return result;
                 }
             }
-        } catch (final SQLException exception) {
+        } catch (SQLException exception) {
             throw new InternalException(exception);
         }
     }
 
-    public static int executeUpdate(final Sql sql) {
+    public static int executeUpdate(Sql sql) {
         return executeUpdate(sql.template(), sql.parameters());
     }
 
-    public static int executeUpdate(final String sql, final Object... parameters) {
-        try (final var borrowedConnection = ConnectionManager.borrowConnection()) {
-            final var connection = borrowedConnection.connection();
-            try (final var preparedStatement = connection.prepareStatement(sql)) {
+    public static int executeUpdate(String sql, Object... parameters) {
+        try (var borrowedConnection = ConnectionManager.borrowConnection()) {
+            var connection = borrowedConnection.connection();
+            try (var preparedStatement = connection.prepareStatement(sql)) {
                 for (int index = 0; index < parameters.length; index++) {
                     preparedStatement.setObject(index + 1, parameters[index]);
                 }
                 return preparedStatement.executeUpdate();
             }
-        } catch (final SQLException exception) {
+        } catch (SQLException exception) {
             throw new InternalException(exception);
         }
     }
 
-    protected static boolean boolResult(final int result) {
+    protected static boolean boolResult(int result) {
         return result > 0;
     }
 
-    protected static <T> T singleResult(final List<T> result) {
+    protected static <T> T singleResult(List<T> result) {
         if (result.isEmpty()) {
             return null;
         }
@@ -72,21 +68,21 @@ public class Persistence {
         throw new InternalException("Could not resolve single result");
     }
 
-    protected static <T> PaginatedResult<T> paginatedResult(final Pagination pagination, final List<T> result) {
-        final var fetchedElements = result.size();
-        final var next = fetchedElements > pagination.pageSize();
+    protected static <T> PaginatedResult<T> paginatedResult(Pagination pagination, List<T> result) {
+        var fetchedElements = result.size();
+        var next = fetchedElements > pagination.pageSize();
         if (next) {
             result.removeLast();
         }
-        final var paginationResult = new PaginationResult(next, pagination.pageNumber() > 1);
+        var paginationResult = new PaginationResult(next, pagination.pageNumber() > 1);
         return new PaginatedResult<>(result, paginationResult);
     }
 
-    protected static int limit(final int pageSize) {
+    protected static int limit(int pageSize) {
         return pageSize + 1;
     }
 
-    protected static int offset(final int pageNumber, final int pageSize) {
+    protected static int offset(int pageNumber, int pageSize) {
         return (pageNumber - 1) * pageSize;
     }
 }

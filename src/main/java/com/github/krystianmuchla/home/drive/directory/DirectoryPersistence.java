@@ -10,8 +10,8 @@ import static com.github.krystianmuchla.home.db.Sql.and;
 import static com.github.krystianmuchla.home.db.Sql.eq;
 
 public class DirectoryPersistence extends Persistence {
-    public static void create(final Directory directory) {
-        final var sql = new Sql.Builder()
+    public static void create(Directory directory) {
+        var sql = new Sql.Builder()
             .insertInto(Directory.TABLE)
             .values(
                 directory.id(),
@@ -22,8 +22,8 @@ public class DirectoryPersistence extends Persistence {
         executeUpdate(sql.build());
     }
 
-    public static Directory readById(final UUID userId, final UUID id) {
-        final var sql = new Sql.Builder()
+    public static Directory readById(UUID userId, UUID id) {
+        var sql = new Sql.Builder()
             .select()
             .from(Directory.TABLE)
             .where(
@@ -31,12 +31,12 @@ public class DirectoryPersistence extends Persistence {
                 and(),
                 eq(Directory.USER_ID, userId)
             );
-        final var result = executeQuery(sql.build(), Directory::fromResultSet);
+        var result = executeQuery(sql.build(), Directory::fromResultSet);
         return singleResult(result);
     }
 
-    public static List<Directory> readByParentId(final UUID userId, final UUID parentId) {
-        final var sql = new Sql.Builder()
+    public static List<Directory> readByParentId(UUID userId, UUID parentId) {
+        var sql = new Sql.Builder()
             .select()
             .from(Directory.TABLE)
             .where(eq(Directory.USER_ID, userId))

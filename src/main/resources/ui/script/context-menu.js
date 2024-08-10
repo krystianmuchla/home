@@ -2,7 +2,7 @@
 document.onkeydown = (event) => {
     if (event.key === 'Escape') {
         /** @type {HTMLDivElement} */
-        const menu = document.getElementById('context-menu');
+        let menu = document.getElementById('context-menu');
         if (menu) {
             event.preventDefault();
             menu.parentElement.remove();
@@ -28,7 +28,7 @@ function showContextMenu(event, options) {
         return;
     }
     /** @type {HTMLDivElement} */
-    const container = document.createElement('div');
+    let container = document.createElement('div');
     container.id = 'context-menu-container';
     container.className = 'background';
     container.style.zIndex = '1';
@@ -40,9 +40,9 @@ function showContextMenu(event, options) {
     menu.className = 'column on-top';
     menu.style.left = event.clientX + 'px';
     menu.style.top = event.clientY + 'px';
-    for (const optionData of options) {
+    for (let optionData of options) {
         /** @type {HTMLDivElement} */
-        const option = document.createElement('div');
+        let option = document.createElement('div');
         option.className = 'context-menu-option';
         option.innerText = optionData.name;
         option.onmousedown = optionData.onmousedown;
@@ -52,7 +52,7 @@ function showContextMenu(event, options) {
     document.body.appendChild(container);
     menu = document.getElementById('context-menu');
     /** @type {DOMRect} */
-    const rect = menu.getBoundingClientRect();
+    let rect = menu.getBoundingClientRect();
     if (rect.right > window.innerWidth) {
         menu.style.left = (rect.left - rect.width) + 'px';
     }

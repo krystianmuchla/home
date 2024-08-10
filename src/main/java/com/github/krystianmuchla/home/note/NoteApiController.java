@@ -18,34 +18,34 @@ public class NoteApiController extends Controller {
     }
 
     @Override
-    protected void delete(final HttpExchange exchange) throws IOException {
-        final var user = RequestReader.readUser(exchange);
-        final var request = RequestReader.readQuery(exchange, NoteFilterRequest::new);
+    protected void delete(HttpExchange exchange) throws IOException {
+        var user = RequestReader.readUser(exchange);
+        var request = RequestReader.readQuery(exchange, NoteFilterRequest::new);
         Transaction.run(() -> NoteService.delete(user.id(), request));
         ResponseWriter.write(exchange, 204);
     }
 
     @Override
-    protected void get(final HttpExchange exchange) throws IOException {
-        final var user = RequestReader.readUser(exchange);
-        final var request = RequestReader.readQuery(exchange, NoteFilterRequest::new);
-        final var pagination = RequestReader.readQuery(exchange, PaginationRequest::new);
-        final var result = NotePersistence.read(user.id(), request.ids(), new Pagination(pagination));
+    protected void get(HttpExchange exchange) throws IOException {
+        var user = RequestReader.readUser(exchange);
+        var request = RequestReader.readQuery(exchange, NoteFilterRequest::new);
+        var pagination = RequestReader.readQuery(exchange, PaginationRequest::new);
+        var result = NotePersistence.read(user.id(), request.ids(), new Pagination(pagination));
         ResponseWriter.writeJson(exchange, 200, new PaginatedResponse<>(result, NoteResponse::new));
     }
 
     @Override
-    protected void post(final HttpExchange exchange) throws IOException {
-        final var user = RequestReader.readUser(exchange);
-        final var request = RequestReader.readJson(exchange, CreateNoteRequest.class);
-        final var noteId = Transaction.run(() -> NoteService.create(user.id(), request));
+    protected void post(HttpExchange exchange) throws IOException {
+        var user = RequestReader.readUser(exchange);
+        var request = RequestReader.readJson(exchange, CreateNoteRequest.class);
+        var noteId = Transaction.run(() -> NoteService.create(user.id(), request));
         ResponseWriter.writeJson(exchange, 201, new IdResponse<>(noteId));
     }
 
     @Override
-    protected void put(final HttpExchange exchange) throws IOException {
-        final var user = RequestReader.readUser(exchange);
-        final var request = RequestReader.readJson(exchange, UpdateNoteRequest.class);
+    protected void put(HttpExchange exchange) throws IOException {
+        var user = RequestReader.readUser(exchange);
+        var request = RequestReader.readJson(exchange, UpdateNoteRequest.class);
         Transaction.run(() -> NoteService.update(user.id(), request));
         ResponseWriter.write(exchange, 204);
     }

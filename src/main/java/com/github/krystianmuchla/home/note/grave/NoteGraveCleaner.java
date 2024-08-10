@@ -17,15 +17,15 @@ public class NoteGraveCleaner implements Runnable {
     public void run() {
         try {
             while (true) {
-                final var creationTimeThreshold = InstantFactory.create().minus(threshold.toMillis(), ChronoUnit.MILLIS);
+                var creationTimeThreshold = InstantFactory.create().minus(threshold.toMillis(), ChronoUnit.MILLIS);
                 Transaction.run(() -> NoteGravePersistence.delete(creationTimeThreshold));
                 try {
                     Thread.sleep(rate);
-                } catch (final InterruptedException ignored) {
+                } catch (InterruptedException ignored) {
                     break;
                 }
             }
-        } catch (final Exception exception) {
+        } catch (Exception exception) {
             LOG.warn("{}", exception.getMessage(), exception);
         }
     }

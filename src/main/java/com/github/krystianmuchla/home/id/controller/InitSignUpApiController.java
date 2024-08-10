@@ -15,8 +15,8 @@ public class InitSignUpApiController extends Controller {
     }
 
     @Override
-    protected void post(final HttpExchange exchange) throws IOException {
-        final var success = SignUpToken.INSTANCE.generateAndLog();
+    protected void post(HttpExchange exchange) throws IOException {
+        var success = SignUpToken.INSTANCE.generateAndLog();
         if (success) {
             ResponseWriter.write(exchange, 202);
         } else {

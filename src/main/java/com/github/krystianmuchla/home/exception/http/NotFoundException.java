@@ -10,13 +10,13 @@ import static com.github.krystianmuchla.home.html.Html.document;
 
 public class NotFoundException extends HttpException {
     @Override
-    public void handleApi(final HttpExchange exchange) throws IOException {
+    public void handleApi(HttpExchange exchange) throws IOException {
         ResponseWriter.write(exchange, 404);
     }
 
     @Override
-    public void handleWeb(final HttpExchange exchange) throws IOException {
-        final var html = document(
+    public void handleWeb(HttpExchange exchange) throws IOException {
+        var html = document(
             Set.of(),
             Set.of(),
             Set.of(),

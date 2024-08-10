@@ -10,9 +10,9 @@ import java.io.IOException;
 
 public class QueryFilter extends Filter {
     @Override
-    public void doFilter(final HttpExchange exchange, final Chain chain) throws IOException {
-        final var uri = exchange.getRequestURI();
-        final var query = parse(uri.getQuery());
+    public void doFilter(HttpExchange exchange, Chain chain) throws IOException {
+        var uri = exchange.getRequestURI();
+        var query = parse(uri.getQuery());
         exchange.setAttribute(Attribute.QUERY, query);
         chain.doFilter(exchange);
     }
@@ -22,19 +22,19 @@ public class QueryFilter extends Filter {
         return "Adds query parameters map to the exchange.";
     }
 
-    private MultiValueMap<String, String> parse(final String query) {
-        final var result = new MultiValueHashMap<String, String>();
+    private MultiValueMap<String, String> parse(String query) {
+        var result = new MultiValueHashMap<String, String>();
         if (query == null) {
             return result;
         }
-        final var pairs = query.split("&");
-        for (final var pair : pairs) {
-            final var index = pair.indexOf("=");
+        var pairs = query.split("&");
+        for (var pair : pairs) {
+            var index = pair.indexOf("=");
             if (index < 0) {
                 continue;
             }
-            final var key = pair.substring(0, index);
-            final var value = pair.substring(index + 1);
+            var key = pair.substring(0, index);
+            var value = pair.substring(index + 1);
             result.add(key, value);
         }
         return result;

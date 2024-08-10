@@ -10,7 +10,7 @@ public record Change(int id, Instant executionTime) {
     public static final String ID = "id";
     public static final String EXECUTION_TIME = "execution_time";
 
-    public Change(final ResultSet resultSet) throws SQLException {
+    public Change(ResultSet resultSet) throws SQLException {
         this(resultSet.getInt(ID), InstantFactory.create(resultSet.getTimestamp(EXECUTION_TIME)));
     }
 }

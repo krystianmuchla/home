@@ -23,44 +23,44 @@ public class UserService {
     static {
         try {
             SECRET_KEY_FACTORY = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA256");
-        } catch (final NoSuchAlgorithmException exception) {
+        } catch (NoSuchAlgorithmException exception) {
             throw new InternalException(exception);
         }
     }
 
-    public static User createUser(final String name, final String login, final String password) {
+    public static User createUser(String name, String login, String password) {
         var accessData = AccessDataPersistence.read(login);
         if (accessData != null) {
             throw new ConflictException("USER_ALREADY_EXISTS");
         }
-        final var user = new User(UUID.randomUUID(), name);
+        var user = new User(UUID.randomUUID(), name);
         UserPersistence.create(user);
-        final var salt = SecureRandomFactory.createBytes(SALT_BYTES);
-        final var secret = secret(salt, password);
+        var salt = SecureRandomFactory.createBytes(SALT_BYTES);
+        var secret = secret(salt, password);
         accessData = new AccessData(UUID.randomUUID(), user.id(), login, salt, secret);
         AccessDataPersistence.create(accessData);
         return user;
     }
 
-    public static User getUser(final String login, final String password) {
-        final var accessData = AccessDataPersistence.read(login);
+    public static User getUser(String login, String password) {
+        var accessData = AccessDataPersistence.read(login);
         if (accessData == null) {
             throw new UnauthorizedException();
         }
         UserGuardService.inspect(accessData.userId());
-        final var secret = secret(accessData.salt(), password);
+        var secret = secret(accessData.salt(), password);
         if (!Arrays.equals(secret, accessData.secret())) {
             throw new UnauthorizedException(accessData.userId());
         }
         return UserPersistence.read(accessData.userId());
     }
 
-    private static byte[] secret(final byte[] salt, final String password) {
-        final var keySpec = new PBEKeySpec(password.toCharArray(), salt, 65536, SECRET_BYTES * 8);
-        final SecretKey secret;
+    private static byte[] secret(byte[] salt, String password) {
+        var keySpec = new PBEKeySpec(password.toCharArray(), salt, 65536, SECRET_BYTES * 8);
+        SecretKey secret;
         try {
             secret = SECRET_KEY_FACTORY.generateSecret(keySpec);
-        } catch (final InvalidKeySpecException exception) {
+        } catch (InvalidKeySpecException exception) {
             throw new InternalException(exception);
         }
         return secret.getEncoded();

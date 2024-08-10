@@ -9,18 +9,18 @@ import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 
 public class Resource {
-    public static String read(final String fileName) {
-        try (final var inputStream = inputStream(fileName)) {
-            try (final var outputStream = new ByteArrayOutputStream()) {
+    public static String read(String fileName) {
+        try (var inputStream = inputStream(fileName)) {
+            try (var outputStream = new ByteArrayOutputStream()) {
                 StreamService.copy(inputStream, outputStream);
                 return outputStream.toString(StandardCharsets.UTF_8);
             }
-        } catch (final IOException exception) {
+        } catch (IOException exception) {
             throw new InternalException(exception);
         }
     }
 
-    public static InputStream inputStream(final String fileName) {
+    public static InputStream inputStream(String fileName) {
         return ChangelogService.class.getClassLoader().getResourceAsStream(fileName);
     }
 }

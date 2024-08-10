@@ -11,7 +11,7 @@ public class Script {
     public static final String SIGN_UP_FORM = sanitize(Resource.read("ui/script/sign-up-form.js"));
     public static final String TOAST = sanitize(Resource.read("ui/script/toast.js"));
 
-    private static String sanitize(final String script) {
+    private static String sanitize(String script) {
         return Sanitizer.removeMultiLineComments(script)
             .lines()
             .map(Script::removeOneLineComment)
@@ -19,8 +19,8 @@ public class Script {
             .collect(Collectors.joining());
     }
 
-    private static String removeOneLineComment(final String script) {
-        final var index = script.indexOf("//");
+    private static String removeOneLineComment(String script) {
+        var index = script.indexOf("//");
         if (index > 0) {
             return script.substring(0, index);
         }

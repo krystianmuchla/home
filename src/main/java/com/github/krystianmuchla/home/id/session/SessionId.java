@@ -19,18 +19,18 @@ public record SessionId(String login, String token) {
     }
 
     public List<String> asCookies() {
-        final var cookies = new ArrayList<String>();
+        var cookies = new ArrayList<String>();
         cookies.add(Cookie.create("login", login));
         cookies.add(Cookie.create("token", token));
         return cookies;
     }
 
-    public static Optional<SessionId> fromCookies(final Map<String, String> cookies) {
-        final var login = cookies.get("login");
+    public static Optional<SessionId> fromCookies(Map<String, String> cookies) {
+        var login = cookies.get("login");
         if (login == null) {
             return Optional.empty();
         }
-        final var token = cookies.get("token");
+        var token = cookies.get("token");
         if (token == null) {
             return Optional.empty();
         }

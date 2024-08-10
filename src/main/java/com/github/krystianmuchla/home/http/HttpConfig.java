@@ -19,7 +19,7 @@ import java.util.Set;
 public class HttpConfig extends Config {
     public static final Integer PORT;
     public static final String DEFAULT_PATH = DriveController.PATH;
-    public static final Set<String> ANONYMOUS_PATHS = Set.of(
+    public static final Set<String> OPTIONAL_USER_PATHS = Set.of(
         FaviconController.PATH,
         FontController.PATH,
         HealthApiController.PATH
@@ -50,7 +50,7 @@ public class HttpConfig extends Config {
     );
 
     static {
-        final var port = resolve("http.port", "HOME_HTTP_PORT");
+        var port = resolve("http.port", "HOME_HTTP_PORT");
         if (port == null) {
             throw new InternalException("Http port is not specified");
         }

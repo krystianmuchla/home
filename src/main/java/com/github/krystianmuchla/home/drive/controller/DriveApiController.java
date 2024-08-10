@@ -20,31 +20,31 @@ public class DriveApiController extends Controller {
     }
 
     @Override
-    protected void get(final HttpExchange exchange) throws IOException {
-        final var user = RequestReader.readUser(exchange);
-        final var request = RequestReader.readQuery(exchange, DriveFilterRequest::new);
+    protected void get(HttpExchange exchange) throws IOException {
+        var user = RequestReader.readUser(exchange);
+        var request = RequestReader.readQuery(exchange, DriveFilterRequest::new);
         if (request.file() == null) {
-            final var list = DriveService.listDirectory(user.id(), request.dir());
+            var list = DriveService.listDirectory(user.id(), request.dir());
             ResponseWriter.writeJson(exchange, 200, list.stream().map(EntryResponse::new).toList());
         } else {
-            final var file = DriveService.getFile(user.id(), request.file());
+            var file = DriveService.getFile(user.id(), request.file());
             ResponseWriter.writeFile(exchange, 200, file);
         }
     }
 
     @Override
-    protected void post(final HttpExchange exchange) throws IOException {
-        final var user = RequestReader.readUser(exchange);
-        final var request = RequestReader.readJson(exchange, CreateDirectoryRequest.class);
+    protected void post(HttpExchange exchange) throws IOException {
+        var user = RequestReader.readUser(exchange);
+        var request = RequestReader.readJson(exchange, CreateDirectoryRequest.class);
         Transaction.run(() -> DriveService.createDirectory(user.id(), request.dir(), request.name()));
         ResponseWriter.write(exchange, 201);
     }
 
     @Override
-    protected void put(final HttpExchange exchange) throws IOException {
-        final var user = RequestReader.readUser(exchange);
-        final var filter = RequestReader.readQuery(exchange, DriveFilterRequest::new);
-        final var request = RequestReader.readHeaders(exchange, UploadFileRequest::new);
+    protected void put(HttpExchange exchange) throws IOException {
+        var user = RequestReader.readUser(exchange);
+        var filter = RequestReader.readQuery(exchange, DriveFilterRequest::new);
+        var request = RequestReader.readHeaders(exchange, UploadFileRequest::new);
         Transaction.run(
             () -> DriveService.uploadFile(
                 user.id(),

@@ -13,16 +13,16 @@ public class HttpException extends RuntimeException {
         super();
     }
 
-    public HttpException(final String message) {
+    public HttpException(String message) {
         super(message);
     }
 
-    public HttpException(final Throwable throwable) {
+    public HttpException(Throwable throwable) {
         super(throwable);
     }
 
-    public void handle(final HttpExchange exchange) throws IOException {
-        final var path = exchange.getRequestURI().getPath();
+    public void handle(HttpExchange exchange) throws IOException {
+        var path = exchange.getRequestURI().getPath();
         if (path.startsWith("/api/")) {
             handleApi(exchange);
         } else if (path.startsWith("/ui/")) {
@@ -32,16 +32,16 @@ public class HttpException extends RuntimeException {
         }
     }
 
-    public void handleApi(final HttpExchange exchange) throws IOException {
+    public void handleApi(HttpExchange exchange) throws IOException {
         ResponseWriter.write(exchange, 500);
     }
 
-    public void handleUi(final HttpExchange exchange) throws IOException {
+    public void handleUi(HttpExchange exchange) throws IOException {
         handleApi(exchange);
     }
 
-    public void handleWeb(final HttpExchange exchange) throws IOException {
-        final var html = document(
+    public void handleWeb(HttpExchange exchange) throws IOException {
+        var html = document(
             Set.of(),
             Set.of(),
             Set.of(),

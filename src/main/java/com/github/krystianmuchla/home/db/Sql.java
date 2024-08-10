@@ -13,15 +13,15 @@ public class Sql {
     public final List<String> words = new ArrayList<>();
     public final List<Object> parameters = new ArrayList<>();
 
-    public static Sql eq(final String field, final Object value) {
+    public static Sql eq(String field, Object value) {
         return new Builder().eq(field, value).build();
     }
 
-    public static Sql lt(final String field, final Object value) {
+    public static Sql lt(String field, Object value) {
         return new Builder().lt(field, value).build();
     }
 
-    public static Sql in(final String field, final Set<?> values) {
+    public static Sql in(String field, Set<?> values) {
         return new Builder().in(field, values).build();
     }
 
@@ -37,7 +37,7 @@ public class Sql {
         return parameters.stream().map(this::parameter).toArray();
     }
 
-    private Object parameter(final Object parameter) {
+    private Object parameter(Object parameter) {
         if (parameter == null) {
             return null;
         }
@@ -46,7 +46,7 @@ public class Sql {
             case URI uri -> uri.toString();
             case Timestamp timestamp -> timestamp.toString();
             case Instant instant -> {
-                final var timestamp = TimestampFactory.create(instant);
+                var timestamp = TimestampFactory.create(instant);
                 yield parameter(timestamp);
             }
             default -> parameter;
@@ -56,7 +56,7 @@ public class Sql {
     public static class Builder {
         private final Sql sql = new Sql();
 
-        public Builder update(final String table) {
+        public Builder update(String table) {
             sql.words.add("UPDATE");
             sql.words.add(table);
             return this;
@@ -67,7 +67,7 @@ public class Sql {
             return this;
         }
 
-        public Builder select(final String... fields) {
+        public Builder select(String... fields) {
             sql.words.add("SELECT");
             if (fields.length > 0) {
                 sql.words.add(String.join(", ", fields));
@@ -77,13 +77,13 @@ public class Sql {
             return this;
         }
 
-        public Builder insertInto(final String table, final String... fields) {
+        public Builder insertInto(String table, String... fields) {
             sql.words.add("INSERT INTO");
             sql.words.add(table);
             for (var index = 0; index < fields.length; index++) {
-                final var first = index == 0;
-                final var last = index == fields.length - 1;
-                final var builder = new StringBuilder(3);
+                var first = index == 0;
+                var last = index == fields.length - 1;
+                var builder = new StringBuilder(3);
                 if (first) {
                     builder.append("(");
                 }
@@ -99,28 +99,28 @@ public class Sql {
             return this;
         }
 
-        public Builder from(final String table) {
+        public Builder from(String table) {
             sql.words.add("FROM");
             sql.words.add(table);
             return this;
         }
 
-        public Builder set(final Sql... sqls) {
+        public Builder set(Sql... sqls) {
             sql.words.add("SET");
-            final var words = Arrays.stream(sqls).flatMap(sql -> sql.words.stream());
+            var words = Arrays.stream(sqls).flatMap(sql -> sql.words.stream());
             sql.words.add(StreamService.join(", ", words));
-            for (final var s : sqls) {
+            for (var s : sqls) {
                 sql.parameters.addAll(s.parameters);
             }
             return this;
         }
 
-        public Builder values(final Object... values) {
+        public Builder values(Object... values) {
             sql.words.add("VALUES");
             for (var index = 0; index < values.length; index++) {
-                final var first = index == 0;
-                final var last = index == values.length - 1;
-                final var builder = new StringBuilder(3);
+                var first = index == 0;
+                var last = index == values.length - 1;
+                var builder = new StringBuilder(3);
                 if (first) {
                     builder.append("(");
                 }
@@ -136,9 +136,9 @@ public class Sql {
             return this;
         }
 
-        public Builder where(final Sql... sqls) {
+        public Builder where(Sql... sqls) {
             sql.words.add("WHERE");
-            for (final var s : sqls) {
+            for (var s : sqls) {
                 sql.words.addAll(s.words);
                 sql.parameters.addAll(s.parameters);
             }
@@ -150,7 +150,7 @@ public class Sql {
             return this;
         }
 
-        public Builder eq(final String field, final Object value) {
+        public Builder eq(String field, Object value) {
             sql.words.add(field + " = ?");
             if (value == null) {
                 sql.parameters.add("NULL");
@@ -160,20 +160,20 @@ public class Sql {
             return this;
         }
 
-        public Builder lt(final String field, final Object value) {
+        public Builder lt(String field, Object value) {
             sql.words.add(field + " < ?");
             sql.parameters.add(value);
             return this;
         }
 
-        public Builder in(final String field, final Set<?> values) {
-            final var parameters = values.toArray();
+        public Builder in(String field, Set<?> values) {
+            var parameters = values.toArray();
             sql.words.add(field);
             sql.words.add("IN");
             for (var index = 0; index < parameters.length; index++) {
-                final var first = index == 0;
-                final var last = index == parameters.length - 1;
-                final var builder = new StringBuilder(3);
+                var first = index == 0;
+                var last = index == parameters.length - 1;
+                var builder = new StringBuilder(3);
                 if (first) {
                     builder.append("(");
                 }
@@ -189,13 +189,13 @@ public class Sql {
             return this;
         }
 
-        public Builder isNull(final String field) {
+        public Builder isNull(String field) {
             sql.words.add(field);
             sql.words.add("IS NULL");
             return this;
         }
 
-        public Builder orderBy(final String field) {
+        public Builder orderBy(String field) {
             sql.words.add("ORDER BY");
             sql.words.add(field);
             return this;
@@ -206,13 +206,13 @@ public class Sql {
             return this;
         }
 
-        public Builder limit(final int limit) {
+        public Builder limit(int limit) {
             sql.words.add("LIMIT ?");
             sql.parameters.add(limit);
             return this;
         }
 
-        public Builder offset(final int offset) {
+        public Builder offset(int offset) {
             sql.words.add("OFFSET ?");
             sql.parameters.add(offset);
             return this;

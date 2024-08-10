@@ -18,10 +18,10 @@ public class GsonHolder {
 
     private static JsonDeserializer<Instant> instantDeserializer() {
         return (element, type, context) -> {
-            final var string = element.getAsJsonPrimitive().getAsString();
+            var string = element.getAsJsonPrimitive().getAsString();
             try {
                 return Instant.parse(string);
-            } catch (final DateTimeParseException exception) {
+            } catch (DateTimeParseException exception) {
                 throw new BadRequestException(exception);
             }
         };

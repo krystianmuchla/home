@@ -3,11 +3,11 @@ package com.github.krystianmuchla.home.exception;
 import java.util.Map;
 
 public record ValidationError(String error, Map<String, Object> details) {
-    public ValidationError(final Enum<?> error) {
+    public ValidationError(Enum<?> error) {
         this(error, null);
     }
 
-    public ValidationError(final Enum<?> error, Map<String, Object> details) {
+    public ValidationError(Enum<?> error, Map<String, Object> details) {
         this(error.name(), details);
     }
 
@@ -23,19 +23,19 @@ public record ValidationError(String error, Map<String, Object> details) {
         return new ValidationError(Error.WRONG_FORMAT, null);
     }
 
-    public static ValidationError belowValue(final int minValue) {
+    public static ValidationError belowValue(int minValue) {
         return new ValidationError(Error.BELOW_VALUE, Map.of("minValue", minValue));
     }
 
-    public static ValidationError aboveValue(final int maxValue) {
+    public static ValidationError aboveValue(int maxValue) {
         return new ValidationError(Error.ABOVE_VALUE, Map.of("maxValue", maxValue));
     }
 
-    public static ValidationError belowMinLength(final int minLength) {
+    public static ValidationError belowMinLength(int minLength) {
         return new ValidationError(Error.BELOW_MIN_LENGTH, Map.of("minLength", minLength));
     }
 
-    public static ValidationError aboveMaxLength(final int maxLength) {
+    public static ValidationError aboveMaxLength(int maxLength) {
         return new ValidationError(Error.ABOVE_MAX_LENGTH, Map.of("maxLength", maxLength));
     }
 

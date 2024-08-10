@@ -21,16 +21,16 @@ public class SignUpApiController extends Controller {
     }
 
     @Override
-    protected void post(final HttpExchange exchange) throws IOException {
-        final var signUpRequest = RequestReader.readJson(exchange, SignUpRequest.class);
-        final var tokenValid = SignUpToken.INSTANCE.test(signUpRequest.token());
+    protected void post(HttpExchange exchange) throws IOException {
+        var signUpRequest = RequestReader.readJson(exchange, SignUpRequest.class);
+        var tokenValid = SignUpToken.INSTANCE.test(signUpRequest.token());
         if (!tokenValid) {
             throw new UnauthorizedException();
         }
-        final var userId = Transaction.run(
+        var userId = Transaction.run(
             () -> UserService.createUser(signUpRequest.name(), signUpRequest.login(), signUpRequest.password())
         );
-        final var sessionId = SessionService.createSession(signUpRequest.login(), userId);
+        var sessionId = SessionService.createSession(signUpRequest.login(), userId);
         ResponseWriter.writeCookies(exchange, 201, sessionId.asCookies());
     }
 }

@@ -17,21 +17,21 @@ import java.util.Set;
 public class AuthFilter extends Filter {
     private static final Logger LOG = LoggerFactory.getLogger(AuthFilter.class);
 
-    private final Set<String> anonymousPaths = HttpConfig.ANONYMOUS_PATHS;
+    private final Set<String> optionalUserPaths = HttpConfig.OPTIONAL_USER_PATHS;
     private final Set<String> noUserPaths = HttpConfig.NO_USER_PATHS;
 
     @Override
-    public void doFilter(final HttpExchange exchange, final Chain chain) throws IOException {
-        final var path = exchange.getRequestURI().getPath();
-        if (anonymousPaths.contains(path)) {
+    public void doFilter(HttpExchange exchange, Chain chain) throws IOException {
+        var path = exchange.getRequestURI().getPath();
+        if (optionalUserPaths.contains(path)) {
             chain.doFilter(exchange);
         } else if (noUserPaths.contains(path)) {
             User user = null;
             try {
                 user = user(exchange);
-            } catch (final UnauthorizedException exception) {
+            } catch (UnauthorizedException exception) {
                 chain.doFilter(exchange);
-            } catch (final Exception exception) {
+            } catch (Exception exception) {
                 LOG.warn("{}", exception.getMessage(), exception);
                 HttpErrorHandler.handle(exchange, exception);
             }
@@ -40,12 +40,12 @@ public class AuthFilter extends Filter {
             }
         } else {
             try {
-                final var user = user(exchange);
+                var user = user(exchange);
                 exchange.setAttribute(Attribute.USER, user);
                 chain.doFilter(exchange);
-            } catch (final UnauthorizedException exception) {
+            } catch (UnauthorizedException exception) {
                 HttpErrorHandler.handle(exchange, exception);
-            } catch (final Exception exception) {
+            } catch (Exception exception) {
                 LOG.warn("{}", exception.getMessage(), exception);
                 HttpErrorHandler.handle(exchange, exception);
             }
@@ -57,8 +57,8 @@ public class AuthFilter extends Filter {
         return "Handles authorization.";
     }
 
-    private User user(final HttpExchange exchange) {
-        final var cookies = RequestReader.readCookies(exchange);
+    private User user(HttpExchange exchange) {
+        var cookies = RequestReader.readCookies(exchange);
         return SessionId.fromCookies(cookies)
             .map(SessionService::getSession)
             .map(Session::user)

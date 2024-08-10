@@ -21,7 +21,7 @@ public class ChangelogService {
         if (!ChangelogPersistence.exists()) {
             Transaction.run(ChangelogPersistence::create);
         }
-        final var lastChange = ChangelogPersistence.getLastChange();
+        var lastChange = ChangelogPersistence.getLastChange();
         int changeId;
         if (lastChange == null) {
             changeId = 1;
@@ -29,31 +29,31 @@ public class ChangelogService {
             changeId = lastChange.id() + 1;
         }
         while (true) {
-            final List<String> statements;
-            try (final var stream = Resource.inputStream("db/changelog/" + changeId + ".sql")) {
+            List<String> statements;
+            try (var stream = Resource.inputStream("db/changelog/" + changeId + ".sql")) {
                 if (stream == null) {
                     break;
                 }
                 statements = readStatements(stream);
-            } catch (final IOException exception) {
+            } catch (IOException exception) {
                 throw new InternalException(exception);
             }
             if (statements.getLast().isBlank()) {
                 statements.removeLast();
             }
-            final int finalChangeId = changeId;
+            int id = changeId;
             Transaction.run(() -> {
                 statements.forEach(statement -> Persistence.executeUpdate(statement.trim()));
-                ChangelogPersistence.createChange(new Change(finalChangeId, InstantFactory.create()));
+                ChangelogPersistence.createChange(new Change(id, InstantFactory.create()));
             });
             LOG.info("Executed database change with id: {}", changeId);
             changeId++;
         }
     }
 
-    private static List<String> readStatements(final InputStream stream) {
-        final var result = new ArrayList<String>();
-        try (final var scanner = new Scanner(stream)) {
+    private static List<String> readStatements(InputStream stream) {
+        var result = new ArrayList<String>();
+        try (var scanner = new Scanner(stream)) {
             scanner.useDelimiter(";");
             while (scanner.hasNext()) {
                 result.add(scanner.next());

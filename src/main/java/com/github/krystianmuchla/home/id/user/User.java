@@ -24,10 +24,10 @@ public record User(UUID id, String name) {
         }
     }
 
-    public static User fromResultSet(final ResultSet resultSet) {
+    public static User fromResultSet(ResultSet resultSet) {
         try {
             return new User(UUID.fromString(resultSet.getString(ID)), resultSet.getString(NAME));
-        } catch (final SQLException exception) {
+        } catch (SQLException exception) {
             throw new InternalException(exception);
         }
     }

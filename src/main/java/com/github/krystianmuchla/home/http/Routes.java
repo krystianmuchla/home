@@ -16,14 +16,14 @@ public class Routes {
         this.children = new HashMap<>();
     }
 
-    public Routes(final List<Controller> controllers) {
+    public Routes(List<Controller> controllers) {
         this();
         controllers.forEach(controller -> addController(this, controller));
     }
 
-    public Controller findController(final String path) {
+    public Controller findController(String path) {
         var routes = this;
-        for (final var segment : Segment.segments(path)) {
+        for (var segment : Segment.segments(path)) {
             routes = routes.children.get(segment);
             if (routes == null) {
                 return null;
@@ -32,14 +32,14 @@ public class Routes {
         return routes.controller;
     }
 
-    private static void addController(Routes routes, final Controller controller) {
-        final var segments = new LinkedList<>(controller.segments);
+    private static void addController(Routes routes, Controller controller) {
+        var segments = new LinkedList<>(controller.segments);
         while (!segments.isEmpty()) {
-            final var segment = segments.removeFirst();
+            var segment = segments.removeFirst();
             routes = routes.children.computeIfAbsent(segment, s -> new Routes());
         }
         if (routes.controller != null) {
-            final var path = "/" + String.join("/", controller.segments);
+            var path = "/" + String.join("/", controller.segments);
             throw new InternalException("Controller with path '" + path + "' already exists");
         }
         routes.controller = controller;

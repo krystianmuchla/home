@@ -8,21 +8,21 @@ import com.github.krystianmuchla.home.util.InstantFactory;
 import java.util.UUID;
 
 public class NoteService {
-    public static UUID create(final UUID userId, final CreateNoteRequest request) {
-        final var id = UUID.randomUUID();
-        final var creationTime = InstantFactory.create();
-        final var note = new Note(id, userId, request.title(), request.content(), creationTime);
+    public static UUID create(UUID userId, CreateNoteRequest request) {
+        var id = UUID.randomUUID();
+        var creationTime = InstantFactory.create();
+        var note = new Note(id, userId, request.title(), request.content(), creationTime);
         NotePersistence.create(note);
         return note.id;
     }
 
-    public static void create(final Note note) {
+    public static void create(Note note) {
         NoteGravePersistence.delete(note.asNoteGrave());
         NotePersistence.create(note);
     }
 
-    public static void update(final UUID userId, final UpdateNoteRequest request) {
-        final var note = NotePersistence.readForUpdate(userId, request.id());
+    public static void update(UUID userId, UpdateNoteRequest request) {
+        var note = NotePersistence.readForUpdate(userId, request.id());
         if (note == null) {
             throw new NotFoundException();
         }
@@ -32,26 +32,26 @@ public class NoteService {
         update(note);
     }
 
-    public static void update(final Note note) {
-        final var result = NotePersistence.update(note);
+    public static void update(Note note) {
+        var result = NotePersistence.update(note);
         if (!result) {
             throw new NotFoundException();
         }
     }
 
-    public static void delete(final UUID userId, final NoteFilterRequest request) {
+    public static void delete(UUID userId, NoteFilterRequest request) {
         if (request.isEmpty()) {
             throw new BadRequestException();
         }
-        final var notes = NotePersistence.readForUpdate(userId, request.ids());
+        var notes = NotePersistence.readForUpdate(userId, request.ids());
         if (notes.isEmpty()) {
             throw new NotFoundException();
         }
         notes.stream().peek(note -> note.modificationTime = InstantFactory.create()).forEach(NoteService::delete);
     }
 
-    public static void delete(final Note note) {
-        final var result = NotePersistence.delete(note);
+    public static void delete(Note note) {
+        var result = NotePersistence.delete(note);
         if (!result) {
             throw new NotFoundException();
         }

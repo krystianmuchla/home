@@ -2,7 +2,7 @@
 let _toastId = 0;
 
 /** @type {HTMLDivElement[]} */
-const _pendingToasts = [];
+let _pendingToasts = [];
 
 /** 
  * @param {string} id
@@ -10,15 +10,15 @@ const _pendingToasts = [];
  */
 function closeToast(id) {
     /** @type {HTMLDivElement} */
-    const toast = document.getElementById(id);
+    let toast = document.getElementById(id);
     if (!toast) {
         return;
     }
     toast.remove();
     /** @type {HTMLDivElement | undefined} */
-    const pendingToast = _pendingToasts.shift();
+    let pendingToast = _pendingToasts.shift();
     if (pendingToast) {
-        const container = document.getElementById('toasts-container');
+        let container = document.getElementById('toasts-container');
         container.appendChild(pendingToast);
     }
 }
@@ -30,17 +30,17 @@ function closeToast(id) {
  */
 function queueToast(level, text) {
     /** @type {HTMLDivElement} */
-    const toast = document.createElement('div');
+    let toast = document.createElement('div');
     toast.id = ++_toastId;
     toast.className = `toast toast-${level}`;
     toast.innerHTML = `<span class="toast-text">${text}</span><div class="toast-close" onmousedown="closeToast(${toast.id})">close</div>`;
     /** @type {HTMLCollectionOf<HTMLDivElement>} */
-    const toasts = document.getElementsByClassName('toast');
+    let toasts = document.getElementsByClassName('toast');
     if (toasts.length > 1) {
         _pendingToasts.push(toast);
     } else {
         /** @type {HTMLDivElement} */
-        const container = document.getElementById('toasts-container');
+        let container = document.getElementById('toasts-container');
         container.appendChild(toast);
     }
     return toast.id;
@@ -53,12 +53,12 @@ function queueToast(level, text) {
  */
 function setToastText(id, text) {
     /** @type {HTMLDivElement} */
-    const toast = document.getElementById(id);
+    let toast = document.getElementById(id);
     if (!toast) {
         return;
     }
     /** @type {HTMLSpanElement} */
-    const textSpan = toast.getElementsByClassName('toast-text')[0];
+    let textSpan = toast.getElementsByClassName('toast-text')[0];
     if (!textSpan) {
         return;
     }
@@ -72,7 +72,7 @@ function setToastText(id, text) {
  */
 function setToastLevel(id, level) {
     /** @type {HTMLDivElement} */
-    const toast = document.getElementById(id);
+    let toast = document.getElementById(id);
     if (!toast) {
         return;
     }
@@ -81,7 +81,7 @@ function setToastLevel(id, level) {
 
 {
     /** @type {HTMLDivElement} */
-    const container = document.createElement('div');
+    let container = document.createElement('div');
     container.id = 'toasts-container';
     container.className = 'column';
     document.body.appendChild(container);

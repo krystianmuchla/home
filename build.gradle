@@ -15,13 +15,13 @@ dependencies {
     implementation 'ch.qos.logback:logback-classic:1.5.6'
     testImplementation 'org.junit.jupiter:junit-jupiter:5.10.2'
     testImplementation 'org.assertj:assertj-core:3.25.3'
-    final testContainersVersion = '1.19.8'
+    def testContainersVersion = '1.19.8'
     testImplementation "org.testcontainers:junit-jupiter:$testContainersVersion"
     testImplementation "org.testcontainers:mysql:$testContainersVersion"
 }
 
 application {
-    final driveLocation = projectDir.toPath().resolve('home-local').resolve('drive').toString()
+    def driveLocation = projectDir.toPath().resolve('home-local').resolve('drive').toString()
     applicationDefaultJvmArgs = [
         '-Dhttp.port=80',
         '-Ddatabase.url=jdbc:mysql://localhost:3306/home',

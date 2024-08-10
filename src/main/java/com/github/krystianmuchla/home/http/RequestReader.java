@@ -19,8 +19,8 @@ import java.util.Map;
 import java.util.function.Function;
 
 public class RequestReader {
-    public static User readUser(final HttpExchange exchange) {
-        final var user = exchange.getAttribute(Attribute.USER);
+    public static User readUser(HttpExchange exchange) {
+        var user = exchange.getAttribute(Attribute.USER);
         if (user == null) {
             throw new InternalException("Could not find user attribute");
         }
@@ -28,76 +28,70 @@ public class RequestReader {
     }
 
     public static <T extends RequestQuery> T readQuery(
-        final HttpExchange exchange,
-        final Function<MultiValueMap<String, String>, T> mapper
+        HttpExchange exchange,
+        Function<MultiValueMap<String, String>, T> mapper
     ) {
-        final var query = readQuery(exchange);
-        final var object = mapper.apply(query);
+        var query = readQuery(exchange);
+        var object = mapper.apply(query);
         object.validate();
         return object;
     }
 
     @SuppressWarnings("unchecked")
-    public static MultiValueMap<String, String> readQuery(final HttpExchange exchange) {
-        final var query = exchange.getAttribute(Attribute.QUERY);
+    public static MultiValueMap<String, String> readQuery(HttpExchange exchange) {
+        var query = exchange.getAttribute(Attribute.QUERY);
         if (query == null) {
             throw new InternalException("Could not find query attribute");
         }
         return (MultiValueMap<String, String>) query;
     }
 
-    public static Map<String, String> readCookies(final HttpExchange exchange) {
-        final var cookie = readHeader(exchange, "Cookie");
+    public static Map<String, String> readCookies(HttpExchange exchange) {
+        var cookie = readHeader(exchange, "Cookie");
         return Cookie.parse(cookie);
     }
 
-    public static String readHeader(final HttpExchange exchange, final String name) {
+    public static String readHeader(HttpExchange exchange, String name) {
         return readHeaders(exchange).getFirst(name);
     }
 
-    public static <T extends RequestHeaders> T readHeaders(
-        final HttpExchange exchange,
-        final Function<Headers, T> mapper
-    ) {
-        final var headers = readHeaders(exchange);
-        final var object = mapper.apply(headers);
+    public static <T extends RequestHeaders> T readHeaders(HttpExchange exchange, Function<Headers, T> mapper) {
+        var headers = readHeaders(exchange);
+        var object = mapper.apply(headers);
         object.validate();
         return object;
     }
 
-    public static Headers readHeaders(final HttpExchange exchange) {
+    public static Headers readHeaders(HttpExchange exchange) {
         return exchange.getRequestHeaders();
     }
 
-    public static <T extends RequestBody> T readJson(
-        final HttpExchange exchange,
-        final Class<T> clazz
-    ) throws IOException {
-        final var contentType = readHeader(exchange, "Content-Type");
+    public static <T extends RequestBody> T readJson(HttpExchange exchange, Class<T> clazz) throws IOException {
+        var contentType = readHeader(exchange, "Content-Type");
         if (contentType == null || !contentType.contains("application/json")) {
             throw new UnsupportedMediaTypeException();
         }
-        final String requestBody = readString(exchange);
-        final T object;
+        String requestBody = readString(exchange);
+        T object;
         try {
             object = GsonHolder.INSTANCE.fromJson(requestBody, clazz);
-        } catch (final JsonSyntaxException exception) {
+        } catch (JsonSyntaxException exception) {
             throw new BadRequestException(exception);
         }
         object.validate();
         return object;
     }
 
-    public static InputStream readStream(final HttpExchange exchange) {
-        final var contentType = readHeader(exchange, "Content-Type");
+    public static InputStream readStream(HttpExchange exchange) {
+        var contentType = readHeader(exchange, "Content-Type");
         if (contentType == null || !contentType.contains("application/octet-stream")) {
             throw new UnsupportedMediaTypeException();
         }
         return exchange.getRequestBody();
     }
 
-    private static String readString(final HttpExchange exchange) throws IOException {
-        try (final var inputStream = exchange.getRequestBody()) {
+    private static String readString(HttpExchange exchange) throws IOException {
+        try (var inputStream = exchange.getRequestBody()) {
             return new String(inputStream.readAllBytes());
         }
     }

@@ -19,7 +19,7 @@ public class LabeledTextInput implements Component {
         return Stream.empty();
     }
 
-    public static Tag labeledTextInput(final String label, final String id, final String type) {
+    public static Tag labeledTextInput(String label, String id, String type) {
         return div(attrs(clazz("labeled-text-input")),
             label(attrs(fur(id)),
                 label

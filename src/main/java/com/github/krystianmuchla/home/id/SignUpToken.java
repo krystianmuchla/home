@@ -16,7 +16,7 @@ public class SignUpToken {
     private Thread tokenExpirationThread;
 
     public boolean generateAndLog() {
-        final var success = semaphore.tryAcquire();
+        var success = semaphore.tryAcquire();
         if (success) {
             token = token();
             tokenExpirationThread = tokenExpirationThread();
@@ -26,11 +26,11 @@ public class SignUpToken {
         return success;
     }
 
-    public boolean test(final String token) {
+    public boolean test(String token) {
         if (semaphore.availablePermits() > 0) {
             return false;
         }
-        final var success = Objects.equals(this.token, token);
+        var success = Objects.equals(this.token, token);
         if (success) {
             LOG.info("Sign up token {} has been consumed", token);
         }
@@ -39,9 +39,9 @@ public class SignUpToken {
     }
 
     private String token() {
-        final var token = SecureRandomFactory.createIntegers(6, 10);
-        final var builder = new StringBuilder(6);
-        for (final var number : token) {
+        var token = SecureRandomFactory.createIntegers(6, 10);
+        var builder = new StringBuilder(6);
+        for (var number : token) {
             builder.append(number);
         }
         return builder.toString();
@@ -51,7 +51,7 @@ public class SignUpToken {
         return new Thread(() -> {
             try {
                 Thread.sleep(Duration.ofMinutes(1));
-            } catch (final InterruptedException ignored) {
+            } catch (InterruptedException ignored) {
             }
             semaphore.release();
             LOG.info("Sign up token {} has expired", token);

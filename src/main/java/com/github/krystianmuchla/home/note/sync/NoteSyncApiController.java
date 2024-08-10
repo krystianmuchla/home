@@ -18,20 +18,20 @@ public class NoteSyncApiController extends Controller {
     }
 
     @Override
-    protected void put(final HttpExchange exchange) throws IOException {
-        final var user = RequestReader.readUser(exchange);
-        final var syncNotesRequest = RequestReader.readJson(exchange, SyncNotesRequest.class);
-        final var notes = Transaction.run(
+    protected void put(HttpExchange exchange) throws IOException {
+        var user = RequestReader.readUser(exchange);
+        var syncNotesRequest = RequestReader.readJson(exchange, SyncNotesRequest.class);
+        var notes = Transaction.run(
             () -> NoteSyncService.sync(user.id(), map(user.id(), syncNotesRequest.notes()))
         );
         ResponseWriter.writeJson(exchange, 200, new NoteSyncResponse(map(notes)));
     }
 
-    private static List<Note> map(final UUID userId, final List<NoteRequest> notes) {
+    private static List<Note> map(UUID userId, List<NoteRequest> notes) {
         return notes.stream().map(noteRequest -> new Note(userId, noteRequest)).toList();
     }
 
-    private static List<NoteResponse> map(final List<Note> notes) {
+    private static List<NoteResponse> map(List<Note> notes) {
         return notes.stream().map(NoteResponse::new).toList();
     }
 }

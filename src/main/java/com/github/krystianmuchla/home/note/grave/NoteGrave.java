@@ -27,15 +27,19 @@ public record NoteGrave(UUID id, UUID userId, Instant creationTime) {
         }
     }
 
-    public NoteGrave(final ResultSet resultSet) throws SQLException {
-        this(
-            UUID.fromString(resultSet.getString(ID)),
-            UUID.fromString(resultSet.getString(USER_ID)),
-            InstantFactory.create(resultSet.getTimestamp(CREATION_TIME))
-        );
-    }
-
     public Note asNote() {
         return new Note(id, userId, creationTime);
+    }
+
+    public static NoteGrave fromResultSet(ResultSet resultSet) {
+        try {
+            return new NoteGrave(
+                UUID.fromString(resultSet.getString(ID)),
+                UUID.fromString(resultSet.getString(USER_ID)),
+                InstantFactory.create(resultSet.getTimestamp(CREATION_TIME))
+            );
+        } catch (SQLException exception) {
+            throw new InternalException(exception);
+        }
     }
 }

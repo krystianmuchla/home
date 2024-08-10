@@ -1,6 +1,6 @@
 {
     /** @type {HTMLButtonElement} */
-    const signUp = document.getElementById('sign-up');
+    let signUp = document.getElementById('sign-up');
     /** @type {KeyboardEvent} */
     document.onkeydown = (event) => {
         if (event.key === 'Enter') {
@@ -13,7 +13,7 @@
         /** @type {string | null} */
         let token;
         /** @type {Response} */
-        const response = await fetch('/api/id/sign_up/init', { method: 'POST' });
+        let response = await fetch('/api/id/sign_up/init', { method: 'POST' });
         if (response.ok) {
             token = prompt('Enter sing up token');
         } else if (response.status === 409) {
@@ -22,14 +22,14 @@
             queueToast('error', 'Something went wrong when initializing sing up.');
         }
         /** @type {HTMLInputElement} */
-        const password = document.getElementById('password');
+        let password = document.getElementById('password');
         if (token) {
             /** @type {HTMLInputElement} */
-            const name = document.getElementById('name');
+            let name = document.getElementById('name');
             /** @type {HTMLInputElement} */
-            const login = document.getElementById('login');
+            let login = document.getElementById('login');
             /** @type {Response} */
-            const response = await fetch('/api/id/sign_up', {
+            let response = await fetch('/api/id/sign_up', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'

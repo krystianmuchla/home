@@ -16,11 +16,11 @@ public class ConnectionManager {
     private static final ArrayBlockingQueue<Connection> CONNECTIONS = new ArrayBlockingQueue<>(ConnectionConfig.POOL_SIZE);
 
     public static BorrowedConnection borrowConnection() throws SQLException {
-        final var connection = REGISTERED_CONNECTIONS.get(threadId());
+        var connection = REGISTERED_CONNECTIONS.get(threadId());
         return new BorrowedConnection(connection != null ? connection : pollConnection());
     }
 
-    public static void returnConnection(final Connection connection) throws SQLException {
+    public static void returnConnection(Connection connection) throws SQLException {
         if (REGISTERED_CONNECTIONS.containsValue(connection)) {
             // no-op
         } else {
@@ -29,8 +29,8 @@ public class ConnectionManager {
     }
 
     public static RegisteredConnection registerConnection() throws SQLException {
-        final var connection = pollConnection();
-        final var previousConnection = REGISTERED_CONNECTIONS.put(threadId(), connection);
+        var connection = pollConnection();
+        var previousConnection = REGISTERED_CONNECTIONS.put(threadId(), connection);
         if (previousConnection != null) {
             previousConnection.close();
             LOG.warn("Several connection registration occurred");
@@ -38,8 +38,8 @@ public class ConnectionManager {
         return new RegisteredConnection(connection);
     }
 
-    public static void deregisterConnection(final Connection connection) throws SQLException {
-        final var result = REGISTERED_CONNECTIONS.values().remove(connection);
+    public static void deregisterConnection(Connection connection) throws SQLException {
+        var result = REGISTERED_CONNECTIONS.values().remove(connection);
         if (!result) {
             LOG.warn("Missing connection to deregister");
             return;
@@ -48,22 +48,22 @@ public class ConnectionManager {
     }
 
     private static Connection pollConnection() throws SQLException {
-        final var connection = CONNECTIONS.poll();
+        var connection = CONNECTIONS.poll();
         if (connection == null || !connection.isValid(2)) {
             return createConnection();
         }
         return connection;
     }
 
-    private static void offerConnection(final Connection connection) throws SQLException {
-        final var result = CONNECTIONS.offer(connection);
+    private static void offerConnection(Connection connection) throws SQLException {
+        var result = CONNECTIONS.offer(connection);
         if (!result) {
             connection.close();
         }
     }
 
     private static Connection createConnection() throws SQLException {
-        final var connection = DriverManager.getConnection(
+        var connection = DriverManager.getConnection(
             ConnectionConfig.URL,
             ConnectionConfig.USER,
             ConnectionConfig.PASSWORD

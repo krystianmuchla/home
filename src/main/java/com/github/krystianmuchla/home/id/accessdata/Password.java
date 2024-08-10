@@ -15,8 +15,8 @@ public class Password {
         private static final String SPECIAL = "`~!@#$%^&*()-_=+[{]};:'\"\\|,<.>/? ";
         private static final String ALL = LOWER_CASE + UPPER_CASE + DIGIT + SPECIAL;
 
-        public static List<ValidationError> validate(final String password) {
-            final var errors = new ArrayList<ValidationError>();
+        public static List<ValidationError> validate(String password) {
+            var errors = new ArrayList<ValidationError>();
             if (password == null) {
                 errors.add(ValidationError.nullValue());
                 return errors;
@@ -45,9 +45,9 @@ public class Password {
             return errors;
         }
 
-        private static boolean containsAny(final String password, final char[] chars) {
-            final char[] passwordCharArray = password.toCharArray();
-            for (final char character : chars) {
+        private static boolean containsAny(String password, char[] chars) {
+            char[] passwordCharArray = password.toCharArray();
+            for (char character : chars) {
                 if (contains(passwordCharArray, character)) {
                     return true;
                 }
@@ -55,8 +55,8 @@ public class Password {
             return false;
         }
 
-        private static boolean containsOnly(final String password, final char[] chars) {
-            for (final char character : password.toCharArray()) {
+        private static boolean containsOnly(String password, char[] chars) {
+            for (char character : password.toCharArray()) {
                 if (!contains(chars, character)) {
                     return false;
                 }
@@ -64,7 +64,7 @@ public class Password {
             return true;
         }
 
-        private static boolean contains(final char[] charArray, final char character) {
+        private static boolean contains(char[] charArray, char character) {
             if (charArray.length == 0) {
                 return false;
             }

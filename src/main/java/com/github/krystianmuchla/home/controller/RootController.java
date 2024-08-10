@@ -13,7 +13,7 @@ public class RootController extends Controller {
     }
 
     @Override
-    protected void get(final HttpExchange exchange) throws IOException {
+    protected void get(HttpExchange exchange) throws IOException {
         ResponseWriter.writeLocation(exchange, 302, HttpConfig.DEFAULT_PATH);
     }
 }

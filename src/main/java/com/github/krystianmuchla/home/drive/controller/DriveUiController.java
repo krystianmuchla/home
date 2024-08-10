@@ -28,15 +28,15 @@ public class DriveUiController extends Controller {
     }
 
     @Override
-    protected void get(final HttpExchange exchange) throws IOException {
-        final var user = RequestReader.readUser(exchange);
-        final var request = RequestReader.readQuery(exchange, DriveFilterRequest::new);
-        final var path = DirectoryService.getPath(user.id(), request.dir());
-        final var list = DriveService.listDirectory(user.id(), request.dir());
+    protected void get(HttpExchange exchange) throws IOException {
+        var user = RequestReader.readUser(exchange);
+        var request = RequestReader.readQuery(exchange, DriveFilterRequest::new);
+        var path = DirectoryService.getPath(user.id(), request.dir());
+        var list = DriveService.listDirectory(user.id(), request.dir());
         ResponseWriter.writeHtml(exchange, 200, html(user.name(), path, list));
     }
 
-    private Group html(final String userName, final List<Directory> path, final List<Entry> list) {
+    private Group html(String userName, List<Directory> path, List<Entry> list) {
         return group(
             div(attrs(id("path")), path(userName, path)),
             div(attrs(id("list"), clazz("column")),
@@ -51,14 +51,14 @@ public class DriveUiController extends Controller {
         );
     }
 
-    private String path(final String userName, final List<Directory> path) {
-        final var segments = new ArrayList<Tag>();
-        final var rootSegment = span(attrs(clazz("segment")),
+    private String path(String userName, List<Directory> path) {
+        var segments = new ArrayList<Tag>();
+        var rootSegment = span(attrs(clazz("segment")),
             userName
         );
         segments.add(rootSegment);
-        for (final var directory : path) {
-            final var segment = span(attrs(id(directory.id()), clazz("segment")),
+        for (var directory : path) {
+            var segment = span(attrs(id(directory.id()), clazz("segment")),
                 directory.getName()
             );
             segments.add(segment);

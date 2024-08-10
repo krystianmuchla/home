@@ -1,36 +1,36 @@
 {
     /** @type {URL} */
-    const url = new URL(location);
+    let url = new URL(location);
     /** @type {URLSearchParams} */
-    const query = url.searchParams;
+    let query = url.searchParams;
     {
         /** @type {HTMLButtonElement} */
-        const button = document.getElementById('upload-file');
+        let button = document.getElementById('upload-file');
         /** @type {HTMLInputElement} */
-        const input = document.createElement('input');
+        let input = document.createElement('input');
         input.type = 'file';
         input.multiple = true;
         input.onchange = async () => {
             /** @type {FileList} */
-            const files = input.files;
+            let files = input.files;
             /** @type {number} */
             let count = 0;
             /** @type {HTMLDivElement} */
-            const toastId = queueToast('info', `Uploading 0 of ${files.length} files...`);
+            let toastId = queueToast('info', `Uploading 0 of ${files.length} files...`);
             for (let index = 0; index < files.length; index++) {
                 /** @type {File} */
-                const file = files[index];
+                let file = files[index];
                 /** @type {HTMLDivElement} */
-                const list = document.getElementById('list');
+                let list = document.getElementById('list');
                 if ([...list.children].find((element) => element.textContent === file.name)) {
-                    const confirmed = confirm(`Are you sure you want do overwrite the existing ${file.name} file?`);
+                    let confirmed = confirm(`Are you sure you want do overwrite the existing ${file.name} file?`);
                     if (!confirmed) {
                         return;
                     }
                 }
                 setToastText(toastId, `Uploading ${index + 1} of ${files.length} files...`);
                 /** @type {Response} */
-                const response = await fetch(
+                let response = await fetch(
                     '/api/drive?' + query.toString(),
                     {
                         method: 'PUT',
@@ -61,15 +61,15 @@
     }
     {
         /** @type {HTMLButtonElement} */
-        const button = document.getElementById('create-dir');
+        let button = document.getElementById('create-dir');
         button.onmousedown = async () => {
             /** @type {string | null} */
-            const name = prompt('Enter new directory name');
+            let name = prompt('Enter new directory name');
             if (!name) {
                 return;
             }
             /** @type {Response} */
-            const response = await fetch(
+            let response = await fetch(
                 '/api/drive',
                 {
                     method: 'POST',
@@ -106,7 +106,7 @@
         onpopstate = (event) => {
             query.delete('dir');
             /** @type {string | null} */
-            const dir = event.state.dir;
+            let dir = event.state.dir;
             if (dir) {
                 query.set('dir', dir);
             }
@@ -117,7 +117,7 @@
     /** @returns {Promise<void>} */
     async function refreshMain() {
         /** @type {Response} */
-        const response = await fetch('/ui/drive/main?' + query.toString());
+        let response = await fetch('/ui/drive/main?' + query.toString());
         if (!response.ok) {
             switch (response.status) {
                 case 401:
@@ -128,13 +128,13 @@
             }
             return;
         }
-        const main = document.getElementById('main');
+        let main = document.getElementById('main');
         /** @type {string} */
-        const html = await response.text();
+        let html = await response.text();
         main.innerHTML = html;
         /** @type {HTMLCollectionOf<HTMLSpanElement>} */
-        const segments = document.getElementsByClassName('segment');
-        for (const segment of segments) {
+        let segments = document.getElementsByClassName('segment');
+        for (let segment of segments) {
             if (segment.id !== (query.get('dir') ?? '')) {
                 segment.classList.add('path-nav');
                 segment.onmousedown = () => {
@@ -149,8 +149,8 @@
             }
         }
         /** @type {HTMLCollectionOf<HTMLDivElement>} */
-        const dirs = document.getElementsByClassName('dir');
-        for (const dir of dirs) {
+        let dirs = document.getElementsByClassName('dir');
+        for (let dir of dirs) {
             dir.onmousedown = () => {
                 query.set('dir', dir.id);
                 refreshMain();
@@ -158,14 +158,14 @@
             };
         }
         /** @type {HTMLCollectionOf<HTMLDivElement>} */
-        const files = document.getElementsByClassName('file');
-        for (const file of files) {
+        let files = document.getElementsByClassName('file');
+        for (let file of files) {
             file.onmousedown = async () => {
                 /** @type {URLSearchParams} */
-                const query = new URLSearchParams(location.search);
+                let query = new URLSearchParams(location.search);
                 query.set('file', file.id);
                 /** @type {HTMLAnchorElement} */
-                const a = document.createElement('a');
+                let a = document.createElement('a');
                 a.href = '/api/drive?' + query.toString();
                 a.download = file.textContent;
                 a.click();

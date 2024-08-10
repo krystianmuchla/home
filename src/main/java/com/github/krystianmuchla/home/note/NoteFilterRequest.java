@@ -10,7 +10,7 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 public record NoteFilterRequest(Set<UUID> ids) implements RequestQuery {
-    public NoteFilterRequest(final MultiValueMap<String, String> query) {
+    public NoteFilterRequest(MultiValueMap<String, String> query) {
         this(resolveId(query));
     }
 
@@ -18,14 +18,14 @@ public record NoteFilterRequest(Set<UUID> ids) implements RequestQuery {
         return ids.isEmpty();
     }
 
-    private static Set<UUID> resolveId(final MultiValueMap<String, String> query) {
-        final var id = query.get("id");
+    private static Set<UUID> resolveId(MultiValueMap<String, String> query) {
+        var id = query.get("id");
         if (id == null) {
             return Set.of();
         }
         try {
             return id.stream().map(UUID::fromString).collect(Collectors.toSet());
-        } catch (final IllegalArgumentException exception) {
+        } catch (IllegalArgumentException exception) {
             throw new BadRequestException("id", ValidationError.wrongFormat());
         }
     }

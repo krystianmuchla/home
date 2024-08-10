@@ -6,7 +6,7 @@ import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 
 public class TimestampFactory {
-    public static Timestamp create(final Instant instant) {
+    public static Timestamp create(Instant instant) {
         if (instant == null) {
             return null;
         }

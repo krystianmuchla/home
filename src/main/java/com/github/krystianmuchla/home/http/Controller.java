@@ -9,11 +9,11 @@ import java.util.List;
 public abstract class Controller {
     public final List<String> segments;
 
-    protected Controller(final String path) {
+    protected Controller(String path) {
         segments = Segment.segments(path);
     }
 
-    public void handle(final HttpExchange exchange) throws IOException {
+    public void handle(HttpExchange exchange) throws IOException {
         switch (exchange.getRequestMethod()) {
             case "DELETE" -> delete(exchange);
             case "GET" -> get(exchange);
@@ -23,19 +23,20 @@ public abstract class Controller {
         }
     }
 
-    protected void delete(final HttpExchange exchange) throws IOException {
+    protected void delete(HttpExchange exchange) throws IOException {
         throw new MethodNotAllowedException();
     }
 
-    protected void get(final HttpExchange exchange) throws IOException {
+    protected void get(HttpExchange exchange) throws IOException {
         throw new MethodNotAllowedException();
     }
 
-    protected void post(final HttpExchange exchange) throws IOException {
+    protected void post(HttpExchange exchange) throws IOException {
         throw new MethodNotAllowedException();
     }
 
-    protected void put(final HttpExchange exchange) throws IOException {
+    protected void put(HttpExchange exchange) throws IOException {
         throw new MethodNotAllowedException();
     }
 }
+

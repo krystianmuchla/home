@@ -14,7 +14,7 @@ public class FaviconController extends Controller {
     }
 
     @Override
-    protected void get(final HttpExchange exchange) throws IOException {
+    protected void get(HttpExchange exchange) throws IOException {
         ResponseWriter.write(exchange, 200);
     }
 }

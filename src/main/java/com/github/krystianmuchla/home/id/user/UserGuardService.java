@@ -14,8 +14,8 @@ public class UserGuardService {
     private static final int MAX_FAILURES = 3;
     private static final Map<UUID, Integer> FAILURES = new ConcurrentHashMap<>();
 
-    public static void inspect(final UUID userId) {
-        final var failures = FAILURES.get(userId);
+    public static void inspect(UUID userId) {
+        var failures = FAILURES.get(userId);
         if (failures == null) {
             return;
         }
@@ -24,8 +24,8 @@ public class UserGuardService {
         }
     }
 
-    public synchronized static void incrementAuthFailures(final UUID userId) {
-        final var failures = FAILURES.get(userId);
+    public synchronized static void incrementAuthFailures(UUID userId) {
+        var failures = FAILURES.get(userId);
         if (failures == null) {
             FAILURES.put(userId, 1);
             authFailuresRemovalThread(userId).start();
@@ -34,8 +34,8 @@ public class UserGuardService {
         }
     }
 
-    private synchronized static void decrementAuthFailures(final UUID userId) {
-        final var failures = FAILURES.get(userId);
+    private synchronized static void decrementAuthFailures(UUID userId) {
+        var failures = FAILURES.get(userId);
         if (failures == null) {
             return;
         }
@@ -46,12 +46,12 @@ public class UserGuardService {
         }
     }
 
-    private static Thread authFailuresRemovalThread(final UUID userId) {
+    private static Thread authFailuresRemovalThread(UUID userId) {
         return new Thread(() -> {
             do {
                 try {
                     Thread.sleep(Duration.ofMinutes(5));
-                } catch (final InterruptedException exception) {
+                } catch (InterruptedException exception) {
                     LOG.warn("{}", exception.getMessage(), exception);
                 }
                 decrementAuthFailures(userId);

@@ -7,15 +7,15 @@ import java.util.stream.Stream;
 public class Group {
     private final Stream<Object> content;
 
-    private Group(final Stream<Object> content) {
+    private Group(Stream<Object> content) {
         this.content = content;
     }
 
-    public static Group group(final Stream<Object> content) {
+    public static Group group(Stream<Object> content) {
         return new Group(content);
     }
 
-    public static Group group(final Object... content) {
+    public static Group group(Object... content) {
         return group(Arrays.stream(content));
     }
 

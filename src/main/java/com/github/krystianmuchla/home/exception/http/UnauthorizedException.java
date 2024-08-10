@@ -14,12 +14,12 @@ public class UnauthorizedException extends HttpException {
         this(null);
     }
 
-    public UnauthorizedException(final UUID userId) {
+    public UnauthorizedException(UUID userId) {
         this.userId = userId;
     }
 
     @Override
-    public void handleApi(final HttpExchange exchange) throws IOException {
+    public void handleApi(HttpExchange exchange) throws IOException {
         if (userId != null) {
             UserGuardService.incrementAuthFailures(userId);
         }
@@ -27,7 +27,7 @@ public class UnauthorizedException extends HttpException {
     }
 
     @Override
-    public void handleWeb(final HttpExchange exchange) throws IOException {
+    public void handleWeb(HttpExchange exchange) throws IOException {
         if (userId != null) {
             UserGuardService.incrementAuthFailures(userId);
         }

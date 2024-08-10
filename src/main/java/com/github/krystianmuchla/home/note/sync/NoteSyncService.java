@@ -16,21 +16,21 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class NoteSyncService {
-    public static List<Note> sync(final UUID userId, final List<Note> externalNotes) {
+    public static List<Note> sync(UUID userId, List<Note> externalNotes) {
         if (externalNotes == null || externalNotes.isEmpty()) {
             return NotePersistence.read(userId);
         }
-        final var notes = toMap(NotePersistence.readForUpdate(userId), NoteGravePersistence.readForUpdate(userId));
-        final var excludedNotes = sync(notes, externalNotes);
+        var notes = toMap(NotePersistence.readForUpdate(userId), NoteGravePersistence.readForUpdate(userId));
+        var excludedNotes = sync(notes, externalNotes);
         excludedNotes.forEach(notes::remove);
         return List.copyOf(notes.values());
     }
 
-    private static List<UUID> sync(final Map<UUID, Note> notes, final List<Note> externalNotes) {
-        final var excludedNotes = new ArrayList<UUID>();
-        for (final var externalNote : externalNotes) {
-            final var id = externalNote.id;
-            final var note = notes.get(id);
+    private static List<UUID> sync(Map<UUID, Note> notes, List<Note> externalNotes) {
+        var excludedNotes = new ArrayList<UUID>();
+        for (var externalNote : externalNotes) {
+            var id = externalNote.id;
+            var note = notes.get(id);
             if (note == null) {
                 if (externalNote.hasContent()) {
                     NoteService.create(externalNote);
@@ -59,7 +59,7 @@ public class NoteSyncService {
         return excludedNotes;
     }
 
-    private static Map<UUID, Note> toMap(final List<Note> notes, final List<NoteGrave> noteGraves) {
+    private static Map<UUID, Note> toMap(List<Note> notes, List<NoteGrave> noteGraves) {
         return Stream.concat(notes.stream(), noteGraves.stream().map(NoteGrave::asNote))
             .collect(Collectors.toMap(note -> note.id, Function.identity()));
     }
