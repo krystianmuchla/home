@@ -22,7 +22,8 @@ public class HttpConfig extends Config {
     public static final Set<String> OPTIONAL_USER_PATHS = Set.of(
         FaviconController.PATH,
         FontController.PATH,
-        HealthApiController.PATH
+        HealthApiController.PATH,
+        RootController.PATH
     );
     public static final Set<String> NO_USER_PATHS = Set.of(
         InitSignUpApiController.PATH,

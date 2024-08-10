@@ -8,8 +8,10 @@ import com.sun.net.httpserver.HttpExchange;
 import java.io.IOException;
 
 public class RootController extends Controller {
+    public static final String PATH = "/";
+
     public RootController() {
-        super("/");
+        super(PATH);
     }
 
     @Override
