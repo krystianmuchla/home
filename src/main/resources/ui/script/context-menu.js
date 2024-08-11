@@ -1,7 +1,7 @@
 /** @param {KeyboardEvent} event */
 document.onkeydown = (event) => {
     if (event.key === 'Escape') {
-        /** @type {HTMLDivElement} */
+        /** @type {HTMLDivElement | null} */
         let menu = document.getElementById('context-menu');
         if (menu) {
             event.preventDefault();

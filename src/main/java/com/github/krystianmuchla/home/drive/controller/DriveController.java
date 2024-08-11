@@ -47,7 +47,7 @@ public class DriveController extends Controller {
                         "Create directory"
                     )
                 ),
-                div(attrs(id("main"), clazz("left-top")))
+                div(attrs(id("main"), clazz("left-top column")))
             )
         );
     }

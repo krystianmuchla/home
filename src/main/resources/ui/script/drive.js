@@ -15,16 +15,17 @@
             let files = input.files;
             /** @type {number} */
             let count = 0;
-            /** @type {HTMLDivElement} */
+            /** @type {string} */
             let toastId = queueToast('info', `Uploading 0 of ${files.length} files...`);
             for (let index = 0; index < files.length; index++) {
                 /** @type {File} */
                 let file = files[index];
-                /** @type {HTMLDivElement} */
-                let list = document.getElementById('list');
-                if ([...list.children].find((element) => element.textContent === file.name)) {
+                /** @type {HTMLCollectionOf<HTMLDivElement>} */
+                let fileNames = document.getElementsByClassName('file-name');
+                if ([...fileNames].find((fName) => fName.textContent === file.name)) {
                     let confirmed = confirm(`Are you sure you want do overwrite the existing ${file.name} file?`);
                     if (!confirmed) {
+                        closeToast(toastId);
                         return;
                     }
                 }
@@ -151,25 +152,57 @@
         /** @type {HTMLCollectionOf<HTMLDivElement>} */
         let dirs = document.getElementsByClassName('dir');
         for (let dir of dirs) {
-            dir.onmousedown = () => {
-                query.set('dir', dir.id);
-                refreshMain();
-                history.pushState({ dir: query.get('dir') }, '', url);
+            /** @type {HTMLDivElement} */
+            let name = [...dir.children].find((d) => d.classList.contains('dir-name'));
+            name.onmousedown = () => openDir(dir.id);
+            /** @type {HTMLDivElement} */
+            let menu = [...dir.children].find((d) => d.classList.contains('dir-menu'));
+            /** @param {MouseEvent} event */
+            menu.onmousedown = (event) => {
+                showContextMenu(event, [
+                    { name: 'Open', onmousedown: () => openDir(dir.id) }
+                ]);
             };
         }
         /** @type {HTMLCollectionOf<HTMLDivElement>} */
         let files = document.getElementsByClassName('file');
         for (let file of files) {
-            file.onmousedown = async () => {
-                /** @type {URLSearchParams} */
-                let query = new URLSearchParams(location.search);
-                query.set('file', file.id);
-                /** @type {HTMLAnchorElement} */
-                let a = document.createElement('a');
-                a.href = '/api/drive?' + query.toString();
-                a.download = file.textContent;
-                a.click();
+            /** @type {HTMLDivElement} */
+            let name = [...file.children].find((f) => f.classList.contains('file-name'));
+            /** @type {HTMLDivElement} */
+            let menu = [...file.children].find((f) => f.classList.contains('file-menu'));
+            /** @param {MouseEvent} event */
+            menu.onmousedown = (event) => {
+                showContextMenu(event, [
+                    { name: 'Download', onmousedown: () => downloadFile(file.id, name.textContent) }
+                ]);
             };
         }
+    }
+
+    /**
+     * @param {string} id
+     * @returns {void}
+     */
+    function openDir(id) {
+        query.set('dir', id);
+        refreshMain();
+        history.pushState({ dir: query.get('dir') }, '', url);
+    }
+
+    /**
+     * @param {string} id
+     * @param {string} name
+     * @returns {void}
+     */
+    function downloadFile(id, name) {
+        /** @type {URLSearchParams} */
+        let query = new URLSearchParams(location.search);
+        query.set('file', id);
+        /** @type {HTMLAnchorElement} */
+        let a = document.createElement('a');
+        a.href = '/api/drive?' + query.toString();
+        a.download = name;
+        a.click();
     }
 }

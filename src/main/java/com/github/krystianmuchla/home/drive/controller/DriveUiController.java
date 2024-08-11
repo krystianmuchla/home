@@ -2,10 +2,12 @@ package com.github.krystianmuchla.home.drive.controller;
 
 import com.github.krystianmuchla.home.drive.DriveService;
 import com.github.krystianmuchla.home.drive.Entry;
+import com.github.krystianmuchla.home.drive.EntryType;
 import com.github.krystianmuchla.home.drive.api.DriveFilterRequest;
 import com.github.krystianmuchla.home.drive.directory.Directory;
 import com.github.krystianmuchla.home.drive.directory.DirectoryService;
 import com.github.krystianmuchla.home.html.Group;
+import com.github.krystianmuchla.home.html.Image;
 import com.github.krystianmuchla.home.html.Tag;
 import com.github.krystianmuchla.home.http.Controller;
 import com.github.krystianmuchla.home.http.RequestReader;
@@ -40,13 +42,12 @@ public class DriveUiController extends Controller {
         return group(
             div(attrs(id("path")), path(userName, path)),
             div(attrs(id("list"), clazz("column")),
-                group(
-                    list.stream().map(
-                        entry -> div(attrs(id(entry.id()), clazz(entry.type().asClass())),
-                            entry.name()
-                        )
+                group(list.stream().map(entry ->
+                    div(attrs(id(entry.id()), clazz("row " + entry.type().asClass())),
+                        entryName(entry),
+                        entryMenu(entry)
                     )
-                )
+                ))
             )
         );
     }
@@ -64,5 +65,25 @@ public class DriveUiController extends Controller {
             segments.add(segment);
         }
         return "/ " + CollectionService.join(" / ", segments);
+    }
+
+    private Tag entryName(Entry entry) {
+        var clazz = switch (entry.type()) {
+            case EntryType.DIR -> "dir-name";
+            case EntryType.FILE -> "file-name";
+        };
+        return div(attrs(clazz(clazz)),
+            entry.name()
+        );
+    }
+
+    private Tag entryMenu(Entry entry) {
+        var clazz = switch (entry.type()) {
+            case EntryType.DIR -> "dir-menu";
+            case EntryType.FILE -> "file-menu";
+        };
+        return div(attrs(clazz(clazz)),
+            Image.CONTEXT_MENU
+        );
     }
 }

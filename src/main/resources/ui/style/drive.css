@@ -9,4 +9,31 @@
 
 #list {
     padding: 0 10px;
+    align-self: start;
+}
+
+.dir-name {
+    align-self: center;
+    cursor: pointer;
+    text-decoration: underline;
+}
+
+.file-name {
+    align-self: center;
+}
+
+.dir-menu {
+    width: 25px;
+    height: 25px;
+    align-self: center;
+    margin-left: auto;
+    cursor: pointer;
+}
+
+.file-menu {
+    width: 25px;
+    height: 25px;
+    align-self: center;
+    margin-left: auto;
+    cursor: pointer;
 }
