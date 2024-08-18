@@ -1,9 +1,6 @@
 package com.github.krystianmuchla.home.util;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 public class MultiValueHashMap<K, V> extends HashMap<K, List<V>> implements MultiValueMap<K, V> {
     @Override
@@ -17,6 +14,11 @@ public class MultiValueHashMap<K, V> extends HashMap<K, List<V>> implements Mult
     }
 
     @Override
+    public final void addAll(K key, V... values) {
+        addAll(key, List.of(values));
+    }
+
+    @Override
     public Optional<V> getFirst(K key) {
         var value = get(key);
         if (value == null || value.isEmpty()) {
@@ -25,11 +27,14 @@ public class MultiValueHashMap<K, V> extends HashMap<K, List<V>> implements Mult
         return Optional.of(value.getFirst());
     }
 
-    public static <T, S> MultiValueHashMap<T, S> of(T key, S value) {
+    @Override
+    public Optional<List<V>> getAll(K key) {
+        return Optional.ofNullable(get(key));
+    }
+
+    public static <T, S> MultiValueHashMap<T, S> of(T key, S... values) {
         return new MultiValueHashMap<>() {{
-            put(key, new ArrayList<>() {{
-                add(value);
-            }});
+            addAll(key, List.of(values));
         }};
     }
 }

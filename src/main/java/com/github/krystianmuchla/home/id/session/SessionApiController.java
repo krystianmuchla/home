@@ -1,19 +1,21 @@
-package com.github.krystianmuchla.home.id.controller;
+package com.github.krystianmuchla.home.id.session;
 
 import com.github.krystianmuchla.home.exception.ValidationError;
 import com.github.krystianmuchla.home.exception.http.BadRequestException;
 import com.github.krystianmuchla.home.http.Controller;
 import com.github.krystianmuchla.home.http.RequestReader;
 import com.github.krystianmuchla.home.http.ResponseWriter;
-import com.github.krystianmuchla.home.id.session.SessionId;
-import com.github.krystianmuchla.home.id.session.SessionService;
+import com.github.krystianmuchla.home.id.SignInRequest;
+import com.github.krystianmuchla.home.id.user.UserService;
 import com.sun.net.httpserver.HttpExchange;
 
 import java.io.IOException;
 
-public class SignOutApiController extends Controller {
-    public SignOutApiController() {
-        super("/api/id/sign_out");
+public class SessionApiController extends Controller {
+    public static final String PATH = "/api/sessions";
+
+    public SessionApiController() {
+        super(PATH);
     }
 
     @Override
@@ -29,5 +31,13 @@ public class SignOutApiController extends Controller {
         } else {
             ResponseWriter.write(exchange, 410);
         }
+    }
+
+    @Override
+    protected void post(HttpExchange exchange) throws IOException {
+        var signInRequest = RequestReader.readJson(exchange, SignInRequest.class);
+        var user = UserService.getUser(signInRequest.login(), signInRequest.password());
+        var sessionId = SessionService.createSession(signInRequest.login(), user);
+        ResponseWriter.writeCookies(exchange, 204, sessionId.asCookies());
     }
 }

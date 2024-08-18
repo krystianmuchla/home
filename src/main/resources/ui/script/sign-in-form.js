@@ -15,7 +15,7 @@
         /** @type {HTMLInputElement} */
         let password = document.getElementById('password');
         /** @type {Response} */
-        let response = await fetch('/api/id/sign_in', {
+        let response = await fetch('/api/sessions', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'

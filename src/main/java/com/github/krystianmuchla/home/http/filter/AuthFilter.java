@@ -6,38 +6,34 @@ import com.github.krystianmuchla.home.id.session.Session;
 import com.github.krystianmuchla.home.id.session.SessionId;
 import com.github.krystianmuchla.home.id.session.SessionService;
 import com.github.krystianmuchla.home.id.user.User;
+import com.github.krystianmuchla.home.util.MultiValueMap;
 import com.sun.net.httpserver.Filter;
 import com.sun.net.httpserver.HttpExchange;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.util.Set;
 
 public class AuthFilter extends Filter {
     private static final Logger LOG = LoggerFactory.getLogger(AuthFilter.class);
 
-    private final Set<String> optionalUserPaths = HttpConfig.OPTIONAL_USER_PATHS;
-    private final Set<String> noUserPaths = HttpConfig.NO_USER_PATHS;
+    private final MultiValueMap<String, Method> optionalUserRoutes = HttpConfig.OPTIONAL_USER_ROUTES;
+    private final MultiValueMap<String, Method> noUserRoutes = HttpConfig.NO_USER_ROUTES;
 
     @Override
     public void doFilter(HttpExchange exchange, Chain chain) throws IOException {
-        var path = exchange.getRequestURI().getPath();
-        if (optionalUserPaths.contains(path)) {
+        if (matches(exchange, optionalUserRoutes)) {
             chain.doFilter(exchange);
-        } else if (noUserPaths.contains(path)) {
-            User user = null;
+        } else if (matches(exchange, noUserRoutes)) {
             try {
-                user = user(exchange);
+                user(exchange);
             } catch (UnauthorizedException exception) {
                 chain.doFilter(exchange);
             } catch (Exception exception) {
                 LOG.warn("{}", exception.getMessage(), exception);
                 HttpErrorHandler.handle(exchange, exception);
             }
-            if (user != null) {
-                ResponseWriter.writeLocation(exchange, 302, HttpConfig.DEFAULT_PATH);
-            }
+            ResponseWriter.writeLocation(exchange, 302, HttpConfig.DEFAULT_PATH);
         } else {
             try {
                 var user = user(exchange);
@@ -54,7 +50,13 @@ public class AuthFilter extends Filter {
 
     @Override
     public String description() {
-        return "Handles authorization.";
+        return "";
+    }
+
+    private boolean matches(HttpExchange exchange, MultiValueMap<String, Method> routes) {
+        var path = exchange.getRequestURI().getPath();
+        var method = Method.of(exchange.getRequestMethod());
+        return routes.getAll(path).map(methods -> methods.contains(method)).orElse(false);
     }
 
     private User user(HttpExchange exchange) {

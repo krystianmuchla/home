@@ -1,4 +1,4 @@
-package com.github.krystianmuchla.home.id.controller;
+package com.github.krystianmuchla.home.id.user;
 
 import com.github.krystianmuchla.home.db.Transaction;
 import com.github.krystianmuchla.home.exception.http.UnauthorizedException;
@@ -8,15 +8,14 @@ import com.github.krystianmuchla.home.http.ResponseWriter;
 import com.github.krystianmuchla.home.id.SignUpRequest;
 import com.github.krystianmuchla.home.id.SignUpToken;
 import com.github.krystianmuchla.home.id.session.SessionService;
-import com.github.krystianmuchla.home.id.user.UserService;
 import com.sun.net.httpserver.HttpExchange;
 
 import java.io.IOException;
 
-public class SignUpApiController extends Controller {
-    public static final String PATH = "/api/id/sign_up";
+public class UserApiController extends Controller {
+    public static final String PATH = "/api/users";
 
-    public SignUpApiController() {
+    public UserApiController() {
         super(PATH);
     }
 

@@ -14,12 +14,12 @@ public abstract class Controller {
     }
 
     public void handle(HttpExchange exchange) throws IOException {
-        switch (exchange.getRequestMethod()) {
-            case "DELETE" -> delete(exchange);
-            case "GET" -> get(exchange);
-            case "POST" -> post(exchange);
-            case "PUT" -> put(exchange);
-            default -> throw new MethodNotAllowedException();
+        var method = Method.of(exchange.getRequestMethod());
+        switch (method) {
+            case DELETE -> delete(exchange);
+            case GET -> get(exchange);
+            case POST -> post(exchange);
+            case PUT -> put(exchange);
         }
     }
 

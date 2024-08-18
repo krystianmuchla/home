@@ -13,7 +13,7 @@
         /** @type {string | null} */
         let token;
         /** @type {Response} */
-        let response = await fetch('/api/id/sign_up/init', { method: 'POST' });
+        let response = await fetch('/api/users/init', { method: 'POST' });
         if (response.ok) {
             token = prompt('Enter sing up token');
         } else if (response.status === 409) {
@@ -29,7 +29,7 @@
             /** @type {HTMLInputElement} */
             let login = document.getElementById('login');
             /** @type {Response} */
-            let response = await fetch('/api/id/sign_up', {
+            let response = await fetch('/api/users', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'

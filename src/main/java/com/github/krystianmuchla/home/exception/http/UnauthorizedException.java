@@ -1,6 +1,7 @@
 package com.github.krystianmuchla.home.exception.http;
 
 import com.github.krystianmuchla.home.http.ResponseWriter;
+import com.github.krystianmuchla.home.id.controller.SignInController;
 import com.github.krystianmuchla.home.id.user.UserGuardService;
 import com.sun.net.httpserver.HttpExchange;
 
@@ -31,6 +32,6 @@ public class UnauthorizedException extends HttpException {
         if (userId != null) {
             UserGuardService.incrementAuthFailures(userId);
         }
-        ResponseWriter.writeLocation(exchange, 302, "/id/sign_in");
+        ResponseWriter.writeLocation(exchange, 302, SignInController.PATH);
     }
 }

@@ -7,10 +7,10 @@ import com.sun.net.httpserver.HttpExchange;
 
 import java.io.IOException;
 
-public class InitSignUpApiController extends Controller {
-    public static final String PATH = "/api/id/sign_up/init";
+public class UserInitApiController extends Controller {
+    public static final String PATH = "/api/users/init";
 
-    public InitSignUpApiController() {
+    public UserInitApiController() {
         super(PATH);
     }
 

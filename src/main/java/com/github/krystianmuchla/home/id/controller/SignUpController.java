@@ -47,7 +47,7 @@ public class SignUpController extends Controller {
                         button(attrs(id("sign-up"), clazz("main-button")),
                             "Sign up"
                         ),
-                        a(attrs(href("sign_in")),
+                        a(attrs(href(SignInController.PATH)),
                             "Already have an account?"
                         )
                     )

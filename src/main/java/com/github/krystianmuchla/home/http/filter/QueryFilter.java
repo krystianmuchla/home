@@ -19,7 +19,7 @@ public class QueryFilter extends Filter {
 
     @Override
     public String description() {
-        return "Adds query parameters map to the exchange.";
+        return "";
     }
 
     private MultiValueMap<String, String> parse(String query) {
