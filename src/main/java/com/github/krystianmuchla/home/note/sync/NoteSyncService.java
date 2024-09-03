@@ -3,9 +3,9 @@ package com.github.krystianmuchla.home.note.sync;
 import com.github.krystianmuchla.home.note.Note;
 import com.github.krystianmuchla.home.note.NotePersistence;
 import com.github.krystianmuchla.home.note.NoteService;
-import com.github.krystianmuchla.home.note.grave.NoteGrave;
-import com.github.krystianmuchla.home.note.grave.NoteGravePersistence;
-import com.github.krystianmuchla.home.note.grave.NoteGraveService;
+import com.github.krystianmuchla.home.note.removed.RemovedNote;
+import com.github.krystianmuchla.home.note.removed.RemovedNotePersistence;
+import com.github.krystianmuchla.home.note.removed.RemovedNoteService;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -20,7 +20,7 @@ public class NoteSyncService {
         if (externalNotes == null || externalNotes.isEmpty()) {
             return NotePersistence.read(userId);
         }
-        var notes = toMap(NotePersistence.readForUpdate(userId), NoteGravePersistence.readForUpdate(userId));
+        var notes = toMap(NotePersistence.readForUpdate(userId), RemovedNotePersistence.readForUpdate(userId));
         var excludedNotes = sync(notes, externalNotes);
         excludedNotes.forEach(notes::remove);
         return List.copyOf(notes.values());
@@ -47,7 +47,7 @@ public class NoteSyncService {
                         if (note.hasContent()) {
                             NoteService.delete(externalNote);
                         } else {
-                            NoteGraveService.update(externalNote.asNoteGrave());
+                            RemovedNoteService.update(externalNote.asRemovedNote());
                         }
                     }
                     excludedNotes.add(id);
@@ -59,8 +59,8 @@ public class NoteSyncService {
         return excludedNotes;
     }
 
-    private static Map<UUID, Note> toMap(List<Note> notes, List<NoteGrave> noteGraves) {
-        return Stream.concat(notes.stream(), noteGraves.stream().map(NoteGrave::asNote))
+    private static Map<UUID, Note> toMap(List<Note> notes, List<RemovedNote> removedNotes) {
+        return Stream.concat(notes.stream(), removedNotes.stream().map(RemovedNote::asNote))
             .collect(Collectors.toMap(note -> note.id, Function.identity()));
     }
 }

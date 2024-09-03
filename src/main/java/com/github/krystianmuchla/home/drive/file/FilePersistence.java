@@ -14,15 +14,18 @@ public class FilePersistence extends Persistence {
         var sql = new Sql.Builder()
             .insertInto(File.TABLE)
             .values(
-                file.id(),
-                file.userId(),
-                file.directoryId(),
-                file.path()
+                file.getId(),
+                file.getUserId(),
+                file.getStatus(),
+                file.getDirectoryId(),
+                file.getName(),
+                file.getCreationTime(),
+                file.getModificationTime()
             );
         executeUpdate(sql.build());
     }
 
-    public static File readById(UUID userId, UUID id) {
+    public static File read(UUID userId, UUID id) {
         var sql = new Sql.Builder()
             .select()
             .from(File.TABLE)
@@ -35,11 +38,15 @@ public class FilePersistence extends Persistence {
         return singleResult(result);
     }
 
-    public static List<File> readByDirectoryId(UUID userId, UUID directoryId) {
+    public static List<File> read(UUID userId, UUID directoryId, FileStatus status) {
         var sql = new Sql.Builder()
             .select()
             .from(File.TABLE)
-            .where(eq(File.USER_ID, userId))
+            .where(
+                eq(File.USER_ID, userId),
+                and(),
+                eq(File.STATUS, status)
+            )
             .and();
         if (directoryId == null) {
             sql.isNull(File.DIRECTORY_ID);
@@ -47,5 +54,44 @@ public class FilePersistence extends Persistence {
             sql.eq(File.DIRECTORY_ID, directoryId);
         }
         return executeQuery(sql.build(), File::fromResultSet);
+    }
+
+    public static File readForUpdate(UUID userId, UUID id) {
+        var sql = new Sql.Builder()
+            .select()
+            .from(File.TABLE)
+            .where(
+                eq(File.ID, id),
+                and(),
+                eq(File.USER_ID, userId)
+            )
+            .forUpdate();
+        var result = executeQuery(sql.build(), File::fromResultSet);
+        return singleResult(result);
+    }
+
+    public static List<File> readForUpdate(FileStatus status) {
+        var sql = new Sql.Builder()
+            .select()
+            .from(File.TABLE)
+            .where(
+                eq(File.STATUS, status)
+            )
+            .forUpdate();
+        return executeQuery(sql.build(), File::fromResultSet);
+    }
+
+    public static boolean update(File file) {
+        var sql = new Sql.Builder()
+            .update(File.TABLE)
+            .set(
+                eq(File.STATUS, file.getStatus()),
+                eq(File.MODIFICATION_TIME, file.getModificationTime())
+            )
+            .where(
+                eq(File.ID, file.getId())
+            );
+        var result = executeUpdate(sql.build());
+        return boolResult(result);
     }
 }

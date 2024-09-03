@@ -42,6 +42,7 @@ public class Sql {
             return null;
         }
         return switch (parameter) {
+            case Enum<?> enumeration -> enumeration.toString();
             case UUID uuid -> uuid.toString();
             case URI uri -> uri.toString();
             case Timestamp timestamp -> timestamp.toString();

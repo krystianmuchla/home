@@ -2,7 +2,7 @@ package com.github.krystianmuchla.home.note;
 
 import com.github.krystianmuchla.home.exception.http.BadRequestException;
 import com.github.krystianmuchla.home.exception.http.NotFoundException;
-import com.github.krystianmuchla.home.note.grave.NoteGravePersistence;
+import com.github.krystianmuchla.home.note.removed.RemovedNotePersistence;
 import com.github.krystianmuchla.home.util.InstantFactory;
 
 import java.util.UUID;
@@ -17,7 +17,7 @@ public class NoteService {
     }
 
     public static void create(Note note) {
-        NoteGravePersistence.delete(note.asNoteGrave());
+        RemovedNotePersistence.delete(note.asRemovedNote());
         NotePersistence.create(note);
     }
 
@@ -55,6 +55,6 @@ public class NoteService {
         if (!result) {
             throw new NotFoundException();
         }
-        NoteGravePersistence.create(note.asNoteGrave());
+        RemovedNotePersistence.create(note.asRemovedNote());
     }
 }

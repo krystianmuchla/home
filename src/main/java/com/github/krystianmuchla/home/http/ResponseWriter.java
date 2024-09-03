@@ -52,8 +52,8 @@ public class ResponseWriter {
         writeBytes(exchange, status, bytes);
     }
 
-    public static void writeFile(HttpExchange exchange, int status, File file) throws IOException {
-        headers(exchange).add("Content-Disposition", "attachment; filename=\"" + file.getName() + "\"");
+    public static void writeFile(HttpExchange exchange, int status, String name, File file) throws IOException {
+        headers(exchange).add("Content-Disposition", "attachment; filename=\"" + name + "\"");
         try (var inputStream = new FileInputStream(file)) {
             writeStream(exchange, status, inputStream, file.length());
         }

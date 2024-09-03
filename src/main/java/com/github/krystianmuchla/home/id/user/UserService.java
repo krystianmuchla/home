@@ -6,6 +6,7 @@ import com.github.krystianmuchla.home.exception.http.UnauthorizedException;
 import com.github.krystianmuchla.home.id.SecureRandomFactory;
 import com.github.krystianmuchla.home.id.accessdata.AccessData;
 import com.github.krystianmuchla.home.id.accessdata.AccessDataPersistence;
+import com.github.krystianmuchla.home.util.InstantFactory;
 
 import javax.crypto.SecretKey;
 import javax.crypto.SecretKeyFactory;
@@ -33,11 +34,11 @@ public class UserService {
         if (accessData != null) {
             throw new ConflictException("USER_ALREADY_EXISTS");
         }
-        var user = new User(UUID.randomUUID(), name);
+        var user = new User(UUID.randomUUID(), name, InstantFactory.create());
         UserPersistence.create(user);
         var salt = SecureRandomFactory.createBytes(SALT_BYTES);
         var secret = secret(salt, password);
-        accessData = new AccessData(UUID.randomUUID(), user.id(), login, salt, secret);
+        accessData = new AccessData(UUID.randomUUID(), user.id(), login, salt, secret, InstantFactory.create());
         AccessDataPersistence.create(accessData);
         return user;
     }

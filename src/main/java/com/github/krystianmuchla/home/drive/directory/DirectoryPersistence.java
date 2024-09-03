@@ -14,15 +14,18 @@ public class DirectoryPersistence extends Persistence {
         var sql = new Sql.Builder()
             .insertInto(Directory.TABLE)
             .values(
-                directory.id(),
-                directory.userId(),
-                directory.parentId(),
-                directory.path()
+                directory.id,
+                directory.userId,
+                directory.status,
+                directory.parentId,
+                directory.name,
+                directory.creationTime,
+                directory.modificationTime
             );
         executeUpdate(sql.build());
     }
 
-    public static Directory readById(UUID userId, UUID id) {
+    public static Directory read(UUID userId, UUID id) {
         var sql = new Sql.Builder()
             .select()
             .from(Directory.TABLE)
@@ -35,11 +38,15 @@ public class DirectoryPersistence extends Persistence {
         return singleResult(result);
     }
 
-    public static List<Directory> readByParentId(UUID userId, UUID parentId) {
+    public static List<Directory> read(UUID userId, UUID parentId, DirectoryStatus status) {
         var sql = new Sql.Builder()
             .select()
             .from(Directory.TABLE)
-            .where(eq(Directory.USER_ID, userId))
+            .where(
+                eq(Directory.USER_ID, userId),
+                and(),
+                eq(Directory.STATUS, status)
+            )
             .and();
         if (parentId == null) {
             sql.isNull(Directory.PARENT_ID);

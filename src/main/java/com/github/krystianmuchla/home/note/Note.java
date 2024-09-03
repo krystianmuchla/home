@@ -1,7 +1,7 @@
 package com.github.krystianmuchla.home.note;
 
 import com.github.krystianmuchla.home.exception.InternalException;
-import com.github.krystianmuchla.home.note.grave.NoteGrave;
+import com.github.krystianmuchla.home.note.removed.RemovedNote;
 import com.github.krystianmuchla.home.note.sync.NoteRequest;
 import com.github.krystianmuchla.home.util.InstantFactory;
 
@@ -84,8 +84,8 @@ public class Note {
         this(id, userId, title, content, creationTime, creationTime);
     }
 
-    public NoteGrave asNoteGrave() {
-        return new NoteGrave(id, userId, modificationTime);
+    public RemovedNote asRemovedNote() {
+        return new RemovedNote(id, userId, modificationTime);
     }
 
     public boolean hasContent() {

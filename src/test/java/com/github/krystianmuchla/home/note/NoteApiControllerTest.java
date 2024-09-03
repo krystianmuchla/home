@@ -8,7 +8,7 @@ import com.github.krystianmuchla.home.id.session.SessionId;
 import com.github.krystianmuchla.home.id.session.SessionService;
 import com.github.krystianmuchla.home.id.user.User;
 import com.github.krystianmuchla.home.id.user.UserService;
-import com.github.krystianmuchla.home.note.grave.NoteGrave;
+import com.github.krystianmuchla.home.note.removed.RemovedNote;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import org.junit.jupiter.api.AfterAll;
@@ -30,6 +30,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 class NoteApiControllerTest {
     private static Gson gson;
     private static User user;
+    private static User otherUser;
     private static SessionId sessionId;
     private static String cookie;
 
@@ -39,6 +40,7 @@ class NoteApiControllerTest {
         gson = GsonHolder.INSTANCE;
         var login = "note_controller_user";
         user = Transaction.run(() -> UserService.createUser("User name", login, "zaq1@WSX"));
+        otherUser = Transaction.run(() -> UserService.createUser("Other user name", "other_user_login", "zaq1@WSX"));
         sessionId = SessionService.createSession(login, user);
         cookie = "login=%s; token=%s".formatted(sessionId.login(), sessionId.token());
     }
@@ -47,7 +49,7 @@ class NoteApiControllerTest {
     void afterEachTest() {
         Transaction.run(() -> {
             Persistence.executeUpdate("DELETE FROM note");
-            Persistence.executeUpdate("DELETE FROM note_grave");
+            Persistence.executeUpdate("DELETE FROM removed_note");
         });
     }
 
@@ -214,7 +216,6 @@ class NoteApiControllerTest {
     @Test
     void shouldNotGetNotesOfOtherUser() throws Exception {
         var noteId = UUID.fromString("7a07f782-d2c0-4dc5-9cf2-a984b9ad9690");
-        var userId = UUID.fromString("0fdbbc6b-a71f-44d4-b8b1-2843cdb493b7");
         var noteTitle = "Note title";
         var noteContent = "Note content";
         var noteCreationTime = Instant.parse("2010-10-10T10:10:10.100Z");
@@ -223,7 +224,7 @@ class NoteApiControllerTest {
             () -> NotePersistence.create(
                 new Note(
                     noteId,
-                    userId,
+                    otherUser.id(),
                     noteTitle,
                     noteContent,
                     noteCreationTime,
@@ -316,14 +317,13 @@ class NoteApiControllerTest {
     @Test
     void shouldNotPutNoteOfOtherUser() throws Exception {
         var noteId = UUID.fromString("d4630597-d447-4b81-ab7f-839f839a6931");
-        var userId = UUID.fromString("20f42fc1-e523-4173-b51f-acc6806fffbd");
         var noteCreationTime = Instant.parse("2010-10-10T10:10:10.100Z");
         var noteModificationTime = Instant.parse("2011-11-11T11:11:11.111Z");
         Transaction.run(
             () -> NotePersistence.create(
                 new Note(
                     noteId,
-                    userId,
+                    otherUser.id(),
                     "Note title",
                     "Note content",
                     noteCreationTime,
@@ -400,24 +400,24 @@ class NoteApiControllerTest {
         assertThat(response.body()).isEmpty();
         var notes = Persistence.executeQuery("SELECT * FROM note", Note::fromResultSet);
         assertThat(notes).hasSize(0);
-        var noteGraves = Persistence.executeQuery("SELECT * FROM note_grave", NoteGrave::fromResultSet);
-        assertThat(noteGraves).hasSize(1);
-        var noteGrave = noteGraves.getFirst();
-        assertThat(noteGrave.id()).isEqualTo(noteId);
-        assertThat(noteGrave.userId()).isEqualTo(user.id());
-        assertThat(noteGrave.creationTime()).isAfter(noteModificationTime);
+        var removedNotes = Persistence.executeQuery("SELECT * FROM removed_note", RemovedNote::fromResultSet);
+        assertThat(removedNotes).hasSize(1);
+        var removedNote = removedNotes.getFirst();
+        assertThat(removedNote.id()).isEqualTo(noteId);
+        assertThat(removedNote.userId()).isEqualTo(user.id());
+        assertThat(removedNote.creationTime()).isAfter(noteModificationTime);
+        assertThat(removedNote.modificationTime()).isAfter(noteModificationTime);
     }
 
     @Test
     void shouldNotDeleteNotOfOtherUser() throws Exception {
         var noteId = UUID.fromString("946a95dd-8cb5-4d59-ae7e-101ac3ea715b");
-        var userId = UUID.fromString("36cfee27-1b49-4540-965a-533044f7dbfc");
         var noteModificationTime = Instant.parse("2011-11-11T11:11:11Z");
         Transaction.run(
             () -> NotePersistence.create(
                 new Note(
                     noteId,
-                    userId,
+                    otherUser.id(),
                     "Note title",
                     "Note content",
                     Instant.parse("2011-11-11T11:11:11Z"),

@@ -11,23 +11,22 @@ public class SignUpToken {
     private static final Logger LOG = LoggerFactory.getLogger(SignUpToken.class);
     public static final SignUpToken INSTANCE = new SignUpToken();
 
-    private final Semaphore semaphore = new Semaphore(1);
+    private final Semaphore availableAttempts = new Semaphore(1);
     private String token;
     private Thread tokenExpirationThread;
 
     public boolean generateAndLog() {
-        var success = semaphore.tryAcquire();
+        var success = availableAttempts.tryAcquire();
         if (success) {
             token = token();
-            tokenExpirationThread = tokenExpirationThread();
-            tokenExpirationThread.start();
+            tokenExpirationThread = startTokenExpirationThread();
             LOG.info("Sign up token: {}", token);
         }
         return success;
     }
 
     public boolean test(String token) {
-        if (semaphore.availablePermits() > 0) {
+        if (availableAttempts.availablePermits() > 0) {
             return false;
         }
         var success = Objects.equals(this.token, token);
@@ -47,13 +46,13 @@ public class SignUpToken {
         return builder.toString();
     }
 
-    private Thread tokenExpirationThread() {
-        return new Thread(() -> {
+    private Thread startTokenExpirationThread() {
+        return Thread.startVirtualThread(() -> {
             try {
                 Thread.sleep(Duration.ofMinutes(1));
             } catch (InterruptedException ignored) {
             }
-            semaphore.release();
+            availableAttempts.release();
             LOG.info("Sign up token {} has expired", token);
         });
     }

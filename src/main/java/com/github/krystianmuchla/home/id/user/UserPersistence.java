@@ -11,7 +11,9 @@ public class UserPersistence extends Persistence {
             .insertInto(User.TABLE)
             .values(
                 user.id(),
-                user.name()
+                user.name(),
+                user.creationTime(),
+                user.modificationTime()
             );
         executeUpdate(sql.build());
     }

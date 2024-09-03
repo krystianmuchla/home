@@ -19,7 +19,9 @@ public class AccessDataPersistence extends Persistence {
                 accessData.userId(),
                 accessData.login(),
                 accessData.salt(),
-                accessData.secret()
+                accessData.secret(),
+                accessData.creationTime(),
+                accessData.modificationTime()
             );
         executeUpdate(sql.build());
     }

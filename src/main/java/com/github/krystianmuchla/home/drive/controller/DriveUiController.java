@@ -33,14 +33,14 @@ public class DriveUiController extends Controller {
     protected void get(HttpExchange exchange) throws IOException {
         var user = RequestReader.readUser(exchange);
         var request = RequestReader.readQuery(exchange, DriveFilterRequest::new);
-        var path = DirectoryService.getPath(user.id(), request.dir());
+        var dirHierarchy = DirectoryService.getHierarchy(user.id(), request.dir());
         var list = DriveService.listDirectory(user.id(), request.dir());
-        ResponseWriter.writeHtml(exchange, 200, html(user.name(), path, list));
+        ResponseWriter.writeHtml(exchange, 200, html(user.name(), dirHierarchy, list));
     }
 
-    private Group html(String userName, List<Directory> path, List<Entry> list) {
+    private Group html(String userName, List<Directory> dirHierarchy, List<Entry> list) {
         return group(
-            div(attrs(id("path")), path(userName, path)),
+            div(attrs(id("path")), path(userName, dirHierarchy)),
             div(attrs(id("list"), clazz("column")),
                 group(list.stream().map(entry ->
                     div(attrs(id(entry.id()), clazz("row " + entry.type().asClass())),
@@ -52,15 +52,15 @@ public class DriveUiController extends Controller {
         );
     }
 
-    private String path(String userName, List<Directory> path) {
+    private String path(String userName, List<Directory> dirHierarchy) {
         var segments = new ArrayList<Tag>();
         var rootSegment = span(attrs(clazz("segment")),
             userName
         );
         segments.add(rootSegment);
-        for (var directory : path) {
-            var segment = span(attrs(id(directory.id()), clazz("segment")),
-                directory.getName()
+        for (var directory : dirHierarchy) {
+            var segment = span(attrs(id(directory.id), clazz("segment")),
+                directory.name
             );
             segments.add(segment);
         }

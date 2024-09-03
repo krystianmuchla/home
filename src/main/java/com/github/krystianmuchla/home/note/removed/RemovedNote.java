@@ -1,4 +1,4 @@
-package com.github.krystianmuchla.home.note.grave;
+package com.github.krystianmuchla.home.note.removed;
 
 import com.github.krystianmuchla.home.exception.InternalException;
 import com.github.krystianmuchla.home.note.Note;
@@ -9,13 +9,14 @@ import java.sql.SQLException;
 import java.time.Instant;
 import java.util.UUID;
 
-public record NoteGrave(UUID id, UUID userId, Instant creationTime) {
-    public static final String TABLE = "note_grave";
+public record RemovedNote(UUID id, UUID userId, Instant creationTime, Instant modificationTime) {
+    public static final String TABLE = "removed_note";
     public static final String ID = "id";
     public static final String USER_ID = "user_id";
     public static final String CREATION_TIME = "creation_time";
+    public static final String MODIFICATION_TIME = "modification_time";
 
-    public NoteGrave {
+    public RemovedNote {
         if (id == null) {
             throw new InternalException("Id cannot be null");
         }
@@ -25,18 +26,26 @@ public record NoteGrave(UUID id, UUID userId, Instant creationTime) {
         if (creationTime == null) {
             throw new InternalException("Creation time cannot be null");
         }
+        if (modificationTime == null) {
+            throw new InternalException("Modification time cannot be null");
+        }
+    }
+
+    public RemovedNote(UUID id, UUID userId, Instant creationTime) {
+        this(id, userId, creationTime, creationTime);
     }
 
     public Note asNote() {
-        return new Note(id, userId, creationTime);
+        return new Note(id, userId, modificationTime);
     }
 
-    public static NoteGrave fromResultSet(ResultSet resultSet) {
+    public static RemovedNote fromResultSet(ResultSet resultSet) {
         try {
-            return new NoteGrave(
+            return new RemovedNote(
                 UUID.fromString(resultSet.getString(ID)),
                 UUID.fromString(resultSet.getString(USER_ID)),
-                InstantFactory.create(resultSet.getTimestamp(CREATION_TIME))
+                InstantFactory.create(resultSet.getTimestamp(CREATION_TIME)),
+                InstantFactory.create(resultSet.getTimestamp(MODIFICATION_TIME))
             );
         } catch (SQLException exception) {
             throw new InternalException(exception);
