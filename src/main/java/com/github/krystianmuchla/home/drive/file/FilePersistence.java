@@ -25,20 +25,22 @@ public class FilePersistence extends Persistence {
         executeUpdate(sql.build());
     }
 
-    public static File read(UUID userId, UUID id) {
+    public static File readByIdAndStatus(UUID userId, UUID id, FileStatus status) {
         var sql = new Sql.Builder()
             .select()
             .from(File.TABLE)
             .where(
                 eq(File.ID, id),
                 and(),
-                eq(File.USER_ID, userId)
+                eq(File.USER_ID, userId),
+                and(),
+                eq(File.STATUS, status)
             );
         var result = executeQuery(sql.build(), File::fromResultSet);
         return singleResult(result);
     }
 
-    public static List<File> read(UUID userId, UUID directoryId, FileStatus status) {
+    public static List<File> readByDirectoryIdAndStatus(UUID userId, UUID directoryId, FileStatus status) {
         var sql = new Sql.Builder()
             .select()
             .from(File.TABLE)
@@ -56,21 +58,23 @@ public class FilePersistence extends Persistence {
         return executeQuery(sql.build(), File::fromResultSet);
     }
 
-    public static File readForUpdate(UUID userId, UUID id) {
+    public static File readByIdAndStatusForUpdate(UUID userId, UUID id, FileStatus status) {
         var sql = new Sql.Builder()
             .select()
             .from(File.TABLE)
             .where(
                 eq(File.ID, id),
                 and(),
-                eq(File.USER_ID, userId)
+                eq(File.USER_ID, userId),
+                and(),
+                eq(File.STATUS, status)
             )
             .forUpdate();
         var result = executeQuery(sql.build(), File::fromResultSet);
         return singleResult(result);
     }
 
-    public static List<File> readForUpdate(FileStatus status) {
+    public static List<File> readByStatusForUpdate(FileStatus status) {
         var sql = new Sql.Builder()
             .select()
             .from(File.TABLE)
@@ -88,6 +92,17 @@ public class FilePersistence extends Persistence {
                 eq(File.STATUS, file.getStatus()),
                 eq(File.MODIFICATION_TIME, file.getModificationTime())
             )
+            .where(
+                eq(File.ID, file.getId())
+            );
+        var result = executeUpdate(sql.build());
+        return boolResult(result);
+    }
+
+    public static boolean delete(File file) {
+        var sql = new Sql.Builder()
+            .delete()
+            .from(File.TABLE)
             .where(
                 eq(File.ID, file.getId())
             );

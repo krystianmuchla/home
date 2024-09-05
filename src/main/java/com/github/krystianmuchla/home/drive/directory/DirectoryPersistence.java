@@ -25,20 +25,22 @@ public class DirectoryPersistence extends Persistence {
         executeUpdate(sql.build());
     }
 
-    public static Directory read(UUID userId, UUID id) {
+    public static Directory readByIdAndStatus(UUID userId, UUID id, DirectoryStatus status) {
         var sql = new Sql.Builder()
             .select()
             .from(Directory.TABLE)
             .where(
                 eq(Directory.ID, id),
                 and(),
-                eq(Directory.USER_ID, userId)
+                eq(Directory.USER_ID, userId),
+                and(),
+                eq(Directory.STATUS, status)
             );
         var result = executeQuery(sql.build(), Directory::fromResultSet);
         return singleResult(result);
     }
 
-    public static List<Directory> read(UUID userId, UUID parentId, DirectoryStatus status) {
+    public static List<Directory> readByParentIdAndStatus(UUID userId, UUID parentId, DirectoryStatus status) {
         var sql = new Sql.Builder()
             .select()
             .from(Directory.TABLE)

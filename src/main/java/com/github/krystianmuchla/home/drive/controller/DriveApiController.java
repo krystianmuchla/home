@@ -8,6 +8,7 @@ import com.github.krystianmuchla.home.drive.api.EntryResponse;
 import com.github.krystianmuchla.home.drive.api.UploadFileRequest;
 import com.github.krystianmuchla.home.drive.directory.DirectoryService;
 import com.github.krystianmuchla.home.drive.file.FileService;
+import com.github.krystianmuchla.home.exception.http.BadRequestException;
 import com.github.krystianmuchla.home.http.Controller;
 import com.github.krystianmuchla.home.http.RequestReader;
 import com.github.krystianmuchla.home.http.ResponseWriter;
@@ -18,6 +19,20 @@ import java.io.IOException;
 public class DriveApiController extends Controller {
     public DriveApiController() {
         super("/api/drive");
+    }
+
+    @Override
+    protected void delete(HttpExchange exchange) throws IOException {
+        var user = RequestReader.readUser(exchange);
+        var request = RequestReader.readQuery(exchange, DriveFilterRequest::new);
+        if (request.file() != null) {
+            Transaction.run(() -> FileService.remove(user.id(), request.file()));
+        } else if (request.dir() != null) {
+            throw new BadRequestException();
+        } else {
+            throw new BadRequestException(); // todo
+        }
+        ResponseWriter.write(exchange, 204);
     }
 
     @Override

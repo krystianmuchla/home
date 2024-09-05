@@ -101,6 +101,18 @@ public class File {
         this.status = status;
     }
 
+    public boolean isRemoved() {
+        return this.status == FileStatus.REMOVED;
+    }
+
+    public void remove() {
+        var status = FileStatus.REMOVED;
+        if (this.status != FileStatus.UPLOADED) {
+            throw new InternalException("Cannot change status to %s from %s".formatted(status, this.status));
+        }
+        this.status = status;
+    }
+
     public UUID getDirectoryId() {
         return directoryId;
     }

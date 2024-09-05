@@ -23,7 +23,7 @@ dependencies {
 application {
     def driveLocation = projectDir.toPath().resolve('home-local').resolve('drive').toString()
     applicationDefaultJvmArgs = [
-        '-Dhttp.port=80',
+        '-Dhttp.port=8080',
         '-Ddatabase.url=jdbc:mysql://localhost:3306/home',
         '-Ddatabase.user=root',
         '-Ddatabase.password=root',

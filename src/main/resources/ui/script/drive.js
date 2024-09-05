@@ -51,6 +51,8 @@
             setToastText(toastId, `Uploaded ${count} of ${files.length} files.`);
             if (count > 0) {
                 refreshMain();
+            } else {
+                setToastLevel(toastId, 'error');
             }
             if (count === files.length) {
                 setToastLevel(toastId, 'success');
@@ -174,7 +176,8 @@
             /** @param {MouseEvent} event */
             menu.onmousedown = (event) => {
                 showContextMenu(event, [
-                    { name: 'Download', onmousedown: () => downloadFile(file.id, name.textContent) }
+                    { name: 'Download', onmousedown: () => downloadFile(file.id, name.textContent) },
+                    { name: 'Delete', onmousedown: () => deleteFile(file.id, name.textContent) },
                 ]);
             };
         }
@@ -204,5 +207,37 @@
         a.href = '/api/drive?' + query.toString();
         a.download = name;
         a.click();
+    }
+
+    /**
+     * @param {string} id
+     * @param {string} name
+     * @returns {Promise<void>}
+     */
+    async function deleteFile(id, name) {
+        let confirmation = confirm(`Are you sure you want to delete ${name} file?`);
+        if (!confirmation) {
+            return;
+        }
+        /** @type {URLSearchParams} */
+        let query = new URLSearchParams(location.search);
+        query.set('file', id);
+        /** @type {Response} */
+        let response = await fetch(
+            '/api/drive?' + query.toString(),
+            { method: 'DELETE' }
+        );
+        if (response.ok) {
+            queueToast('success', 'File deleted.');
+            refreshMain();
+            return;
+        }
+        switch (response.status) {
+            case 401:
+                location.replace('/id/sign_in');
+                break;
+            default:
+                queueToast('error', 'Something went wrong when deleting file.');
+        }
     }
 }

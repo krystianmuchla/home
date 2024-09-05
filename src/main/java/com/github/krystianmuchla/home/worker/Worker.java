@@ -17,16 +17,17 @@ public abstract class Worker implements Runnable {
 
     @Override
     public void run() {
-        try {
-            while (true) {
+        while (true) {
+            try {
                 work();
-                try {
-                    Thread.sleep(rate);
-                } catch (InterruptedException ignored) {
-                }
+            } catch (Exception exception) {
+                LOG.warn("{}", exception.getMessage(), exception);
             }
-        } catch (Exception exception) {
-            LOG.warn("{}", exception.getMessage(), exception);
+            try {
+                Thread.sleep(rate);
+            } catch (InterruptedException exception) {
+                LOG.info("{}", exception.getMessage(), exception);
+            }
         }
     }
 

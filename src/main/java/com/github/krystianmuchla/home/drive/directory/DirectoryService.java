@@ -18,7 +18,7 @@ public class DirectoryService {
     }
 
     public static Directory get(UUID userId, UUID directoryId) {
-        var directory = DirectoryPersistence.read(userId, directoryId);
+        var directory = DirectoryPersistence.readByIdAndStatus(userId, directoryId, DirectoryStatus.CREATED);
         if (directory == null) {
             throw new NotFoundException();
         }
