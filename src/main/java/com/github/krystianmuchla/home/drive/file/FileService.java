@@ -1,5 +1,6 @@
 package com.github.krystianmuchla.home.drive.file;
 
+import com.github.krystianmuchla.home.drive.directory.DirectoryService;
 import com.github.krystianmuchla.home.exception.InternalException;
 import com.github.krystianmuchla.home.exception.http.NotFoundException;
 import com.github.krystianmuchla.home.util.InstantFactory;
@@ -8,16 +9,19 @@ import java.util.UUID;
 
 public class FileService {
     public static UUID create(UUID userId, UUID directoryId, String name) {
+        if (directoryId != null) {
+            DirectoryService.get(userId, directoryId);
+        }
         var id = UUID.randomUUID();
-        var status = FileStatus.INITIATED;
+        var status = FileStatus.UPLOADING;
         var creationTime = InstantFactory.create();
         var file = new File(id, userId, status, directoryId, name, creationTime);
         FilePersistence.create(file);
-        return file.getId();
+        return file.id;
     }
 
     public static File get(UUID userId, UUID fileId) {
-        var file = FilePersistence.readByIdAndStatus(userId, fileId, FileStatus.UPLOADED);
+        var file = FilePersistence.readByIdAndStatus(userId, fileId, FileStatus.UPLOADED, false);
         if (file == null) {
             throw new NotFoundException();
         }
@@ -25,7 +29,7 @@ public class FileService {
     }
 
     public static void upload(UUID userId, UUID fileId) {
-        var file = FilePersistence.readByIdAndStatusForUpdate(userId, fileId, FileStatus.INITIATED);
+        var file = FilePersistence.readByIdAndStatus(userId, fileId, FileStatus.UPLOADING, true);
         if (file == null) {
             throw new NotFoundException();
         }
@@ -40,7 +44,7 @@ public class FileService {
     }
 
     public static void remove(UUID userId, UUID fileId) {
-        var file = FilePersistence.readByIdAndStatus(userId, fileId, FileStatus.UPLOADED);
+        var file = FilePersistence.readByIdAndStatus(userId, fileId, FileStatus.UPLOADED, true);
         if (file == null) {
             throw new NotFoundException();
         }
@@ -55,8 +59,7 @@ public class FileService {
     }
 
     public static void update(File file) {
-        var modificationTime = InstantFactory.create();
-        file.setModificationTime(modificationTime);
+        file.modificationTime = InstantFactory.create();
         var result = FilePersistence.update(file);
         if (!result) {
             throw new NotFoundException();
@@ -66,7 +69,7 @@ public class FileService {
     public static void delete(File file) {
         if (!file.isRemoved()) {
             throw new InternalException(
-                "Attempting to delete file %s in wrong status %s".formatted(file.getId(), file.getStatus())
+                "Attempting to delete file %s in wrong status %s".formatted(file.id, file.status)
             );
         }
         var result = FilePersistence.delete(file);

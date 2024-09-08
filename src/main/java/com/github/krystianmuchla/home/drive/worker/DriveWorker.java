@@ -2,6 +2,9 @@ package com.github.krystianmuchla.home.drive.worker;
 
 import com.github.krystianmuchla.home.db.Transaction;
 import com.github.krystianmuchla.home.drive.DriveService;
+import com.github.krystianmuchla.home.drive.directory.DirectoryPersistence;
+import com.github.krystianmuchla.home.drive.directory.DirectoryService;
+import com.github.krystianmuchla.home.drive.directory.DirectoryStatus;
 import com.github.krystianmuchla.home.drive.file.FilePersistence;
 import com.github.krystianmuchla.home.drive.file.FileService;
 import com.github.krystianmuchla.home.drive.file.FileStatus;
@@ -22,23 +25,39 @@ public class DriveWorker extends Worker {
     @Override
     protected void work() {
         Transaction.run(this::syncUploadedFiles);
+        Transaction.run(this::removeFilesAndDirectories);
         Transaction.run(this::deleteRemovedFiles);
+        Transaction.run(this::deleteRemovedDirectories);
     }
 
     private void syncUploadedFiles() {
-        var files = FilePersistence.readByStatusForUpdate(FileStatus.INITIATED);
+        var files = FilePersistence.readByStatus(FileStatus.UPLOADING, true);
         for (var file : files) {
-            var path = DriveService.path(file.getUserId(), file.getId());
+            var path = DriveService.path(file.userId, file.id);
             if (Files.isRegularFile(path)) {
                 FileService.upload(file);
             }
         }
     }
 
+    private void removeFilesAndDirectories() {
+        var directories = DirectoryPersistence.readByStatus(DirectoryStatus.REMOVED, false);
+        for (var directory : directories) {
+            var subdirectories = DirectoryPersistence.readByParentIdAndStatus(directory.userId, directory.id, DirectoryStatus.CREATED, true);
+            for (var subdirectory : subdirectories) {
+                DirectoryService.remove(subdirectory);
+            }
+            var files = FilePersistence.readByDirectoryIdAndStatus(directory.userId, directory.id, FileStatus.UPLOADED, true);
+            for (var file : files) {
+                FileService.remove(file);
+            }
+        }
+    }
+
     private void deleteRemovedFiles() {
-        var files = FilePersistence.readByStatusForUpdate(FileStatus.REMOVED);
+        var files = FilePersistence.readByStatus(FileStatus.REMOVED, true);
         for (var file : files) {
-            var path = DriveService.path(file.getUserId(), file.getId());
+            var path = DriveService.path(file.userId, file.id);
             if (!Files.exists(path)) {
                 try {
                     Files.delete(path);
@@ -48,6 +67,21 @@ public class DriveWorker extends Worker {
                 }
             }
             FileService.delete(file);
+        }
+    }
+
+    private void deleteRemovedDirectories() {
+        var directories = DirectoryPersistence.readByStatus(DirectoryStatus.REMOVED, true);
+        for (var directory : directories) {
+            var subdirectories = DirectoryPersistence.readByParentId(directory.userId, directory.id);
+            if (!subdirectories.isEmpty()) {
+                continue;
+            }
+            var files = FilePersistence.readByDirectoryId(directory.userId, directory.id);
+            if (!files.isEmpty()) {
+                continue;
+            }
+            DirectoryService.delete(directory);
         }
     }
 }

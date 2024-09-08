@@ -5,5 +5,5 @@ import com.github.krystianmuchla.home.Config;
 import java.time.Duration;
 
 public class DriveWorkerConfig extends Config {
-    public static final Duration RATE = Duration.ofDays(1);
+    public static final Duration RATE = Duration.ofMinutes(60);
 }

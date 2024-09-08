@@ -98,7 +98,7 @@
                     queueToast('warn', 'Directory already exists.');
                     break;
                 default:
-                    queueToast('error', 'Something went wrong when creating directory.');
+                    queueToast('error', 'Something went wrong when creating a directory.');
             }
         };
     }
@@ -127,7 +127,7 @@
                     location.replace('/id/sign_in');
                     break;
                 default:
-                    queueToast('error', 'Something went wrong when listing directory.');
+                    queueToast('error', 'Something went wrong when listing a directory.');
             }
             return;
         }
@@ -162,7 +162,8 @@
             /** @param {MouseEvent} event */
             menu.onmousedown = (event) => {
                 showContextMenu(event, [
-                    { name: 'Open', onmousedown: () => openDir(dir.id) }
+                    { name: 'Open', onmousedown: () => openDir(dir.id) },
+                    { name: 'Delete', onmousedown: () => deleteDir(dir.id, name.textContent) },
                 ]);
             };
         }
@@ -196,15 +197,38 @@
     /**
      * @param {string} id
      * @param {string} name
+     * @returns {Promise<void>}
+     */
+    async function deleteDir(id, name) {
+        let confirmation = confirm(`Are you sure you want to delete the ${name} directory and all of its content?`);
+        if (!confirmation) {
+            return;
+        }
+        /** @type {Response} */
+        let response = await fetch(`/api/drive?dir=${id}`, { method: 'DELETE' });
+        if (response.ok) {
+            queueToast('success', 'Directory deleted.');
+            refreshMain();
+            return;
+        }
+        switch (response.status) {
+            case 401:
+                location.replace('/id/sign_in');
+                break;
+            default:
+                queueToast('error', 'Something went wrong when deleting a directory.');
+        }
+    }
+
+    /**
+     * @param {string} id
+     * @param {string} name
      * @returns {void}
      */
     function downloadFile(id, name) {
-        /** @type {URLSearchParams} */
-        let query = new URLSearchParams(location.search);
-        query.set('file', id);
         /** @type {HTMLAnchorElement} */
         let a = document.createElement('a');
-        a.href = '/api/drive?' + query.toString();
+        a.href = `/api/drive?file=${id}`;
         a.download = name;
         a.click();
     }
@@ -219,14 +243,8 @@
         if (!confirmation) {
             return;
         }
-        /** @type {URLSearchParams} */
-        let query = new URLSearchParams(location.search);
-        query.set('file', id);
         /** @type {Response} */
-        let response = await fetch(
-            '/api/drive?' + query.toString(),
-            { method: 'DELETE' }
-        );
+        let response = await fetch(`/api/drive?file=${id}`, { method: 'DELETE' });
         if (response.ok) {
             queueToast('success', 'File deleted.');
             refreshMain();
@@ -237,7 +255,7 @@
                 location.replace('/id/sign_in');
                 break;
             default:
-                queueToast('error', 'Something went wrong when deleting file.');
+                queueToast('error', 'Something went wrong when deleting a file.');
         }
     }
 }

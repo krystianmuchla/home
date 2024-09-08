@@ -25,7 +25,7 @@ public class Directory {
     public final UUID parentId;
     public final String name;
     public final Instant creationTime;
-    public final Instant modificationTime;
+    public Instant modificationTime;
 
     public Directory(
         UUID id,
@@ -75,6 +75,18 @@ public class Directory {
         Instant creationTime
     ) {
         this(id, userId, status, parentId, name, creationTime, creationTime);
+    }
+
+    public boolean isRemoved() {
+        return status == DirectoryStatus.REMOVED;
+    }
+
+    public void remove() {
+        var status = DirectoryStatus.REMOVED;
+        if (this.status != DirectoryStatus.CREATED) {
+            throw new InternalException("Cannot change status to %s from %s".formatted(status, this.status));
+        }
+        this.status = status;
     }
 
     public static Directory fromResultSet(ResultSet resultSet) {

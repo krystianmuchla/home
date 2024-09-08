@@ -19,13 +19,13 @@ public class File {
     public static final String CREATION_TIME = "creation_time";
     public static final String MODIFICATION_TIME = "modification_time";
 
-    private final UUID id;
-    private final UUID userId;
-    private FileStatus status;
-    private final UUID directoryId;
-    private final String name;
-    private final Instant creationTime;
-    private Instant modificationTime;
+    public final UUID id;
+    public final UUID userId;
+    public FileStatus status;
+    public final UUID directoryId;
+    public final String name;
+    public final Instant creationTime;
+    public Instant modificationTime;
 
     public File(
         UUID id,
@@ -77,32 +77,20 @@ public class File {
         this(id, userId, status, directoryId, name, creationTime, creationTime);
     }
 
-    public UUID getId() {
-        return id;
-    }
-
-    public UUID getUserId() {
-        return userId;
-    }
-
-    public FileStatus getStatus() {
-        return status;
-    }
-
     public boolean isUploaded() {
-        return this.status == FileStatus.UPLOADED;
+        return status == FileStatus.UPLOADED;
     }
 
     public void upload() {
         var status = FileStatus.UPLOADED;
-        if (this.status != FileStatus.INITIATED) {
+        if (this.status != FileStatus.UPLOADING) {
             throw new InternalException("Cannot change status to %s from %s".formatted(status, this.status));
         }
         this.status = status;
     }
 
     public boolean isRemoved() {
-        return this.status == FileStatus.REMOVED;
+        return status == FileStatus.REMOVED;
     }
 
     public void remove() {
@@ -111,26 +99,6 @@ public class File {
             throw new InternalException("Cannot change status to %s from %s".formatted(status, this.status));
         }
         this.status = status;
-    }
-
-    public UUID getDirectoryId() {
-        return directoryId;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public Instant getCreationTime() {
-        return creationTime;
-    }
-
-    public Instant getModificationTime() {
-        return modificationTime;
-    }
-
-    public void setModificationTime(Instant modificationTime) {
-        this.modificationTime = modificationTime;
     }
 
     public static File fromResultSet(ResultSet resultSet) {

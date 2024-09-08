@@ -56,7 +56,7 @@ public class AuthFilter extends Filter {
     private boolean matches(HttpExchange exchange, MultiValueMap<String, Method> routes) {
         var path = exchange.getRequestURI().getPath();
         var method = Method.of(exchange.getRequestMethod());
-        return routes.getAll(path).map(methods -> methods.contains(method)).orElse(false);
+        return routes.maybeGet(path).map(methods -> methods.contains(method)).orElse(false);
     }
 
     private User user(HttpExchange exchange) {

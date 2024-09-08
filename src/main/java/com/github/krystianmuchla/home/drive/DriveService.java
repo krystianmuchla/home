@@ -30,10 +30,10 @@ public class DriveService {
     }
 
     public static List<Entry> listDirectory(UUID userId, UUID directoryId) {
-        var directories = DirectoryPersistence.readByParentIdAndStatus(userId, directoryId, DirectoryStatus.CREATED).stream()
-            .map(directory -> new Entry(directory.id, EntryType.DIR, directory.name));
-        var files = FilePersistence.readByDirectoryIdAndStatus(userId, directoryId, FileStatus.UPLOADED).stream()
-            .map(file -> new Entry(file.getId(), EntryType.FILE, file.getName()));
+        var directories = DirectoryPersistence.readByParentIdAndStatus(userId, directoryId, DirectoryStatus.CREATED, false)
+            .stream().map(directory -> new Entry(directory.id, EntryType.DIR, directory.name));
+        var files = FilePersistence.readByDirectoryIdAndStatus(userId, directoryId, FileStatus.UPLOADED, false)
+            .stream().map(file -> new Entry(file.id, EntryType.FILE, file.name));
         return Stream.concat(directories, files).toList();
     }
 
@@ -51,7 +51,7 @@ public class DriveService {
     public static FileDto getFile(UUID userId, UUID fileId) {
         var file = FileService.get(userId, fileId);
         var actualFile = actualFile(userId, fileId);
-        return new FileDto(file.getName(), actualFile);
+        return new FileDto(file.name, actualFile);
     }
 
     public static Path path(UUID userId, UUID fileId) {

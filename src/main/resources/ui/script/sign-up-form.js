@@ -19,7 +19,7 @@
         } else if (response.status === 409) {
             queueToast('warn', 'Cannot initialize sign up. Try again later.');
         } else {
-            queueToast('error', 'Something went wrong when initializing sing up.');
+            queueToast('error', 'Something went wrong when initializing sign up.');
         }
         /** @type {HTMLInputElement} */
         let password = document.getElementById('password');

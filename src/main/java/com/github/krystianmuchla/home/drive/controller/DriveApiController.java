@@ -28,9 +28,9 @@ public class DriveApiController extends Controller {
         if (request.file() != null) {
             Transaction.run(() -> FileService.remove(user.id(), request.file()));
         } else if (request.dir() != null) {
-            throw new BadRequestException();
+            Transaction.run(() -> DirectoryService.remove(user.id(), request.dir()));
         } else {
-            throw new BadRequestException(); // todo
+            throw new BadRequestException();
         }
         ResponseWriter.write(exchange, 204);
     }

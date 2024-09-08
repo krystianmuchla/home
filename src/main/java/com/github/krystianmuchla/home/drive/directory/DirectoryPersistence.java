@@ -25,7 +25,7 @@ public class DirectoryPersistence extends Persistence {
         executeUpdate(sql.build());
     }
 
-    public static Directory readByIdAndStatus(UUID userId, UUID id, DirectoryStatus status) {
+    public static Directory readByIdAndStatus(UUID userId, UUID id, DirectoryStatus status, boolean forUpdate) {
         var sql = new Sql.Builder()
             .select()
             .from(Directory.TABLE)
@@ -36,11 +36,35 @@ public class DirectoryPersistence extends Persistence {
                 and(),
                 eq(Directory.STATUS, status)
             );
+        if (forUpdate) {
+            sql.forUpdate();
+        }
         var result = executeQuery(sql.build(), Directory::fromResultSet);
         return singleResult(result);
     }
 
-    public static List<Directory> readByParentIdAndStatus(UUID userId, UUID parentId, DirectoryStatus status) {
+    public static List<Directory> readByParentId(UUID userId, UUID parentId) {
+        var sql = new Sql.Builder()
+            .select()
+            .from(Directory.TABLE)
+            .where(
+                eq(Directory.USER_ID, userId)
+            )
+            .and();
+        if (parentId == null) {
+            sql.isNull(Directory.PARENT_ID);
+        } else {
+            sql.eq(Directory.PARENT_ID, parentId);
+        }
+        return executeQuery(sql.build(), Directory::fromResultSet);
+    }
+
+    public static List<Directory> readByParentIdAndStatus(
+        UUID userId,
+        UUID parentId,
+        DirectoryStatus status,
+        boolean forUpdate
+    ) {
         var sql = new Sql.Builder()
             .select()
             .from(Directory.TABLE)
@@ -55,6 +79,47 @@ public class DirectoryPersistence extends Persistence {
         } else {
             sql.eq(Directory.PARENT_ID, parentId);
         }
+        if (forUpdate) {
+            sql.forUpdate();
+        }
         return executeQuery(sql.build(), Directory::fromResultSet);
+    }
+
+    public static List<Directory> readByStatus(DirectoryStatus status, boolean forUpdate) {
+        var sql = new Sql.Builder()
+            .select()
+            .from(Directory.TABLE)
+            .where(
+                eq(Directory.STATUS, status)
+            );
+        if (forUpdate) {
+            sql.forUpdate();
+        }
+        return executeQuery(sql.build(), Directory::fromResultSet);
+    }
+
+    public static boolean update(Directory directory) {
+        var sql = new Sql.Builder()
+            .update(Directory.TABLE)
+            .set(
+                eq(Directory.STATUS, directory.status),
+                eq(Directory.MODIFICATION_TIME, directory.modificationTime)
+            )
+            .where(
+                eq(Directory.ID, directory.id)
+            );
+        var result = executeUpdate(sql.build());
+        return boolResult(result);
+    }
+
+    public static boolean delete(Directory directory) {
+        var sql = new Sql.Builder()
+            .delete()
+            .from(Directory.TABLE)
+            .where(
+                eq(Directory.ID, directory.id)
+            );
+        var result = executeUpdate(sql.build());
+        return boolResult(result);
     }
 }

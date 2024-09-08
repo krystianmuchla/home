@@ -36,7 +36,7 @@ public class BadRequestException extends HttpException {
 
     @Override
     public void handleApi(HttpExchange exchange) throws IOException {
-        if (errors.isEmpty()) {
+        if (errors == null || errors.isEmpty()) {
             ResponseWriter.write(exchange, 400);
         } else {
             var response = ProblemResponseFactory.create(Map.of("errors", errors));

@@ -13,5 +13,5 @@ public interface MultiValueMap<K, V> extends Map<K, List<V>> {
 
     Optional<V> getFirst(K key);
 
-    Optional<List<V>> getAll(K key);
+    Optional<List<V>> maybeGet(K key);
 }
