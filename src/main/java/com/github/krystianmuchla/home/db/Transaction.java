@@ -15,8 +15,8 @@ public class Transaction {
     }
 
     public static <T> T run(Supplier<T> supplier) {
-        try (var registeredConnection = ConnectionManager.registerConnection()) {
-            var connection = registeredConnection.connection();
+        try (var writeConnection = ConnectionManager.addWriteConnection()) {
+            var connection = writeConnection.connection();
             T result;
             try {
                 result = supplier.get();

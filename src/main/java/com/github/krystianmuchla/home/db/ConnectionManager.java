@@ -1,7 +1,6 @@
 package com.github.krystianmuchla.home.db;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import com.github.krystianmuchla.home.exception.InternalException;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -11,65 +10,77 @@ import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class ConnectionManager {
-    private static final Logger LOG = LoggerFactory.getLogger(ConnectionManager.class);
-    private static final Map<Long, Connection> REGISTERED_CONNECTIONS = new ConcurrentHashMap<>();
-    private static final ArrayBlockingQueue<Connection> CONNECTIONS = new ArrayBlockingQueue<>(ConnectionConfig.POOL_SIZE);
+    private static final Map<Long, Connection> WRITE_CONNECTIONS = new ConcurrentHashMap<>();
+    private static final ArrayBlockingQueue<Connection> CONNECTIONS = new ArrayBlockingQueue<>(1);
 
-    public static BorrowedConnection borrowConnection() throws SQLException {
-        var connection = REGISTERED_CONNECTIONS.get(threadId());
-        return new BorrowedConnection(connection != null ? connection : pollConnection());
-    }
-
-    public static void returnConnection(Connection connection) throws SQLException {
-        if (REGISTERED_CONNECTIONS.containsValue(connection)) {
-            // no-op
-        } else {
-            offerConnection(connection);
+    static {
+        try {
+            CONNECTIONS.add(createConnection());
+        } catch (SQLException exception) {
+            throw new InternalException(exception);
         }
     }
 
-    public static RegisteredConnection registerConnection() throws SQLException {
-        var connection = pollConnection();
-        var previousConnection = REGISTERED_CONNECTIONS.put(threadId(), connection);
-        if (previousConnection != null) {
-            previousConnection.close();
-            LOG.warn("Several connection registration occurred");
-        }
-        return new RegisteredConnection(connection);
+    public static WriteConnection addWriteConnection() throws SQLException {
+        var connection = takeConnection();
+        connection = maybeRenewConnection(connection);
+        WRITE_CONNECTIONS.put(threadId(), connection);
+        return new WriteConnection(connection);
     }
 
-    public static void deregisterConnection(Connection connection) throws SQLException {
-        var result = REGISTERED_CONNECTIONS.values().remove(connection);
-        if (!result) {
-            LOG.warn("Missing connection to deregister");
-            return;
-        }
-        offerConnection(connection);
-    }
-
-    private static Connection pollConnection() throws SQLException {
-        var connection = CONNECTIONS.poll();
-        if (connection == null || !connection.isValid(2)) {
-            return createConnection();
-        }
+    public static Connection getWriteConnection() {
+        var connection = WRITE_CONNECTIONS.get(threadId());
+        assert connection != null;
         return connection;
     }
 
-    private static void offerConnection(Connection connection) throws SQLException {
+    public static ReadConnection getReadConnection() throws SQLException {
+        var connection = WRITE_CONNECTIONS.get(threadId());
+        if (connection == null) {
+            connection = takeConnection();
+            connection = maybeRenewConnection(connection);
+        }
+        return new ReadConnection(connection);
+    }
+
+    public static void returnWriteConnection() throws SQLException {
+        var connection = WRITE_CONNECTIONS.remove(threadId());
+        assert connection != null;
         var result = CONNECTIONS.offer(connection);
         if (!result) {
             connection.close();
         }
     }
 
+    public static void returnReadConnection(Connection connection) throws SQLException {
+        if (!WRITE_CONNECTIONS.containsKey(threadId())) {
+            var result = CONNECTIONS.offer(connection);
+            if (!result) {
+                connection.close();
+            }
+        }
+    }
+
     private static Connection createConnection() throws SQLException {
-        var connection = DriverManager.getConnection(
-            ConnectionConfig.URL,
-            ConnectionConfig.USER,
-            ConnectionConfig.PASSWORD
-        );
+        var connection = DriverManager.getConnection(ConnectionConfig.URL);
         connection.setAutoCommit(false);
-        connection.setTransactionIsolation(Connection.TRANSACTION_READ_COMMITTED);
+        connection.setTransactionIsolation(Connection.TRANSACTION_READ_UNCOMMITTED);
+        return connection;
+    }
+
+    private static Connection takeConnection() {
+        try {
+            return CONNECTIONS.take();
+        } catch (InterruptedException exception) {
+            throw new InternalException(exception);
+        }
+    }
+
+    private static Connection maybeRenewConnection(Connection connection) throws SQLException {
+        if (!connection.isValid(1)) {
+            connection.close();
+            return createConnection();
+        }
         return connection;
     }
 

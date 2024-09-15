@@ -11,22 +11,19 @@ repositories {
 
 dependencies {
     implementation 'com.google.code.gson:gson:2.10.1'
-    implementation 'com.mysql:mysql-connector-j:8.4.0'
+    implementation 'org.xerial:sqlite-jdbc:3.46.1.0'
     implementation 'ch.qos.logback:logback-classic:1.5.6'
     testImplementation 'org.junit.jupiter:junit-jupiter:5.10.2'
     testImplementation 'org.assertj:assertj-core:3.25.3'
-    def testContainersVersion = '1.20.1'
-    testImplementation "org.testcontainers:junit-jupiter:$testContainersVersion"
-    testImplementation "org.testcontainers:mysql:$testContainersVersion"
 }
 
 application {
-    def driveLocation = projectDir.toPath().resolve('home-local').resolve('drive').toString()
+    def localPath = projectDir.toPath().resolve('home-local')
+    def databaseLocation = localPath.resolve('home.db').toString()
+    def driveLocation = localPath.resolve('drive').toString()
     applicationDefaultJvmArgs = [
         '-Dhttp.port=8080',
-        '-Ddatabase.url=jdbc:mysql://localhost:3306/home',
-        '-Ddatabase.user=root',
-        '-Ddatabase.password=root',
+        "-Ddatabase.url=jdbc:sqlite:$databaseLocation",
         "-Ddrive.location=$driveLocation"
     ]
     mainClass = 'com.github.krystianmuchla.home.App'

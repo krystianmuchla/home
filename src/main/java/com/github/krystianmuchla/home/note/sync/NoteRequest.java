@@ -14,8 +14,7 @@ public record NoteRequest(
     UUID id,
     String title,
     String content,
-    Instant creationTime,
-    Instant modificationTime
+    Instant contentsModificationTime
 ) implements RequestBody {
     @Override
     public void validate() {
@@ -29,13 +28,10 @@ public record NoteRequest(
         if (content != null && content.length() > Note.CONTENT_MAX_LENGTH) {
             errors.add("content", ValidationError.aboveMaxLength(Note.CONTENT_MAX_LENGTH));
         }
-        if (InstantFactory.create(creationTime) != creationTime) {
-            errors.add("creationTime", ValidationError.wrongFormat());
-        }
-        if (modificationTime == null) {
-            errors.add("modificationTime", ValidationError.nullValue());
-        } else if (InstantFactory.create(modificationTime) != modificationTime) {
-            errors.add("modificationTime", ValidationError.wrongFormat());
+        if (contentsModificationTime == null) {
+            errors.add("contentsModificationTime", ValidationError.nullValue());
+        } else if (InstantFactory.create(contentsModificationTime) != contentsModificationTime) {
+            errors.add("contentsModificationTime", ValidationError.wrongFormat());
         }
         if (!errors.isEmpty()) {
             throw new BadRequestException(errors);

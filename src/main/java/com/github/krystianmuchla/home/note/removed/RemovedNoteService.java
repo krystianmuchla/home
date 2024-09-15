@@ -9,4 +9,11 @@ public class RemovedNoteService {
             throw new NotFoundException();
         }
     }
+
+    public static void delete(RemovedNote removedNote) {
+        var result = RemovedNotePersistence.delete(removedNote);
+        if (!result) {
+            throw new NotFoundException();
+        }
+    }
 }

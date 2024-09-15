@@ -30,9 +30,9 @@ public class DriveService {
     }
 
     public static List<Entry> listDirectory(UUID userId, UUID directoryId) {
-        var directories = DirectoryPersistence.readByParentIdAndStatus(userId, directoryId, DirectoryStatus.CREATED, false)
+        var directories = DirectoryPersistence.readByParentIdAndStatus(userId, directoryId, DirectoryStatus.CREATED)
             .stream().map(directory -> new Entry(directory.id, EntryType.DIR, directory.name));
-        var files = FilePersistence.readByDirectoryIdAndStatus(userId, directoryId, FileStatus.UPLOADED, false)
+        var files = FilePersistence.readByDirectoryIdAndStatus(userId, directoryId, FileStatus.UPLOADED)
             .stream().map(file -> new Entry(file.id, EntryType.FILE, file.name));
         return Stream.concat(directories, files).toList();
     }

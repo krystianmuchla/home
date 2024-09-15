@@ -26,10 +26,10 @@ public class SessionService {
         if (accessData == null) {
             throw new UnauthorizedException();
         }
-        UserGuardService.inspect(accessData.userId());
+        UserGuardService.inspect(accessData.userId);
         var session = SESSIONS.get(sessionId);
         if (session == null) {
-            throw new UnauthorizedException(accessData.userId());
+            throw new UnauthorizedException(accessData.userId);
         }
         return session;
     }

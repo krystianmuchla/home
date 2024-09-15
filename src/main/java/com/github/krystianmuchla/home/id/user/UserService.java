@@ -2,11 +2,11 @@ package com.github.krystianmuchla.home.id.user;
 
 import com.github.krystianmuchla.home.exception.InternalException;
 import com.github.krystianmuchla.home.exception.http.ConflictException;
+import com.github.krystianmuchla.home.exception.http.NotFoundException;
 import com.github.krystianmuchla.home.exception.http.UnauthorizedException;
 import com.github.krystianmuchla.home.id.SecureRandomFactory;
 import com.github.krystianmuchla.home.id.accessdata.AccessData;
 import com.github.krystianmuchla.home.id.accessdata.AccessDataPersistence;
-import com.github.krystianmuchla.home.util.InstantFactory;
 
 import javax.crypto.SecretKey;
 import javax.crypto.SecretKeyFactory;
@@ -29,31 +29,39 @@ public class UserService {
         }
     }
 
-    public static User createUser(String name, String login, String password) {
+    public static UUID create(String name, String login, String password) {
         var accessData = AccessDataPersistence.read(login);
         if (accessData != null) {
             throw new ConflictException("USER_ALREADY_EXISTS");
         }
-        var user = new User(UUID.randomUUID(), name, InstantFactory.create());
+        var user = new User(name);
         UserPersistence.create(user);
         var salt = SecureRandomFactory.createBytes(SALT_BYTES);
         var secret = secret(salt, password);
-        accessData = new AccessData(UUID.randomUUID(), user.id(), login, salt, secret, InstantFactory.create());
+        accessData = new AccessData(user.id, login, salt, secret);
         AccessDataPersistence.create(accessData);
-        return user;
+        return user.id;
     }
 
-    public static User getUser(String login, String password) {
+    public static User get(String login, String password) {
         var accessData = AccessDataPersistence.read(login);
         if (accessData == null) {
             throw new UnauthorizedException();
         }
-        UserGuardService.inspect(accessData.userId());
-        var secret = secret(accessData.salt(), password);
-        if (!Arrays.equals(secret, accessData.secret())) {
-            throw new UnauthorizedException(accessData.userId());
+        UserGuardService.inspect(accessData.userId);
+        var secret = secret(accessData.salt, password);
+        if (!Arrays.equals(secret, accessData.secret)) {
+            throw new UnauthorizedException(accessData.userId);
         }
-        return UserPersistence.read(accessData.userId());
+        return get(accessData.userId);
+    }
+
+    public static User get(UUID id) {
+        var user = UserPersistence.read(id);
+        if (user == null) {
+            throw new NotFoundException();
+        }
+        return user;
     }
 
     private static byte[] secret(byte[] salt, String password) {

@@ -12,8 +12,8 @@ public class ChangelogPersistence extends Persistence {
     private static final String CHANGELOG = "changelog";
 
     public static boolean exists() {
-        var result = executeQuery("SHOW TABLES LIKE ?", stringMapper(), CHANGELOG);
-        return boolResult(result.size());
+        var result = executeQuery("PRAGMA table_list", tableName());
+        return result.contains(CHANGELOG);
     }
 
     public static void create() {
@@ -45,24 +45,14 @@ public class ChangelogPersistence extends Persistence {
             .orderBy(Change.ID)
             .desc()
             .limit(1);
-        var result = executeQuery(sql.build(), mapper());
+        var result = executeQuery(sql.build(), Change::fromResultSet);
         return singleResult(result);
     }
 
-    public static Function<ResultSet, Change> mapper() {
+    private static Function<ResultSet, String> tableName() {
         return resultSet -> {
             try {
-                return new Change(resultSet);
-            } catch (SQLException exception) {
-                throw new InternalException(exception);
-            }
-        };
-    }
-
-    public static Function<ResultSet, String> stringMapper() {
-        return resultSet -> {
-            try {
-                return resultSet.getString(1);
+                return resultSet.getString("name");
             } catch (SQLException exception) {
                 throw new InternalException(exception);
             }

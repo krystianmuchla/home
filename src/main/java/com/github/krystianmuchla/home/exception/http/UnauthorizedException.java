@@ -1,7 +1,7 @@
 package com.github.krystianmuchla.home.exception.http;
 
 import com.github.krystianmuchla.home.http.ResponseWriter;
-import com.github.krystianmuchla.home.id.controller.SignInController;
+import com.github.krystianmuchla.home.id.SignInController;
 import com.github.krystianmuchla.home.id.user.UserGuardService;
 import com.sun.net.httpserver.HttpExchange;
 

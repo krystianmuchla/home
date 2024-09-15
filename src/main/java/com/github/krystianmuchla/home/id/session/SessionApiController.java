@@ -36,7 +36,7 @@ public class SessionApiController extends Controller {
     @Override
     protected void post(HttpExchange exchange) throws IOException {
         var signInRequest = RequestReader.readJson(exchange, SignInRequest.class);
-        var user = UserService.getUser(signInRequest.login(), signInRequest.password());
+        var user = UserService.get(signInRequest.login(), signInRequest.password());
         var sessionId = SessionService.createSession(signInRequest.login(), user);
         ResponseWriter.writeCookies(exchange, 204, sessionId.asCookies());
     }

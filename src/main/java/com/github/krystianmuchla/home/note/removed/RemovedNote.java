@@ -1,51 +1,74 @@
 package com.github.krystianmuchla.home.note.removed;
 
+import com.github.krystianmuchla.home.db.Entity;
 import com.github.krystianmuchla.home.exception.InternalException;
 import com.github.krystianmuchla.home.note.Note;
 import com.github.krystianmuchla.home.util.InstantFactory;
+import com.github.krystianmuchla.home.util.UUIDFactory;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.Instant;
 import java.util.UUID;
 
-public record RemovedNote(UUID id, UUID userId, Instant creationTime, Instant modificationTime) {
+public class RemovedNote extends Entity {
     public static final String TABLE = "removed_note";
     public static final String ID = "id";
     public static final String USER_ID = "user_id";
+    public static final String REMOVAL_TIME = "removal_time";
     public static final String CREATION_TIME = "creation_time";
     public static final String MODIFICATION_TIME = "modification_time";
+    public static final String VERSION = "version";
+    public static final int VERSION_MIN_VALUE = 1;
 
-    public RemovedNote {
-        if (id == null) {
-            throw new InternalException("Id cannot be null");
-        }
-        if (userId == null) {
-            throw new InternalException("User id cannot be null");
-        }
-        if (creationTime == null) {
-            throw new InternalException("Creation time cannot be null");
-        }
-        if (modificationTime == null) {
-            throw new InternalException("Modification time cannot be null");
-        }
+    public final UUID id;
+    public final UUID userId;
+    public final Instant removalTime;
+    public final Instant creationTime;
+    public final Instant modificationTime;
+    public final Integer version;
+
+    public RemovedNote(
+        UUID id,
+        UUID userId,
+        Instant removalTime,
+        Instant creationTime,
+        Instant modificationTime,
+        Integer version
+    ) {
+        assert id != null;
+        assert userId != null;
+        assert removalTime != null;
+        assert version == null || version >= VERSION_MIN_VALUE;
+        this.id = id;
+        this.userId = userId;
+        this.removalTime = removalTime;
+        this.creationTime = creationTime;
+        this.modificationTime = modificationTime;
+        this.version = version;
     }
 
-    public RemovedNote(UUID id, UUID userId, Instant creationTime) {
-        this(id, userId, creationTime, creationTime);
+    public RemovedNote(UUID id, UUID userId, Instant removalTime) {
+        this(id, userId, removalTime, null, null, null);
+    }
+
+    public void updateRemovalTime(Instant removalTime) {
+        updates.put(REMOVAL_TIME, removalTime);
     }
 
     public Note asNote() {
-        return new Note(id, userId, modificationTime);
+        return new Note(id, userId, removalTime);
     }
 
     public static RemovedNote fromResultSet(ResultSet resultSet) {
         try {
             return new RemovedNote(
-                UUID.fromString(resultSet.getString(ID)),
-                UUID.fromString(resultSet.getString(USER_ID)),
+                UUIDFactory.create(resultSet.getString(ID)),
+                UUIDFactory.create(resultSet.getString(USER_ID)),
+                InstantFactory.create(resultSet.getTimestamp(REMOVAL_TIME)),
                 InstantFactory.create(resultSet.getTimestamp(CREATION_TIME)),
-                InstantFactory.create(resultSet.getTimestamp(MODIFICATION_TIME))
+                InstantFactory.create(resultSet.getTimestamp(MODIFICATION_TIME)),
+                resultSet.getInt(VERSION)
             );
         } catch (SQLException exception) {
             throw new InternalException(exception);

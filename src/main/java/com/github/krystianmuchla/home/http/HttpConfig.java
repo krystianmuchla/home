@@ -9,12 +9,11 @@ import com.github.krystianmuchla.home.drive.controller.DriveApiController;
 import com.github.krystianmuchla.home.drive.controller.DriveController;
 import com.github.krystianmuchla.home.drive.controller.DriveUiController;
 import com.github.krystianmuchla.home.exception.InternalException;
-import com.github.krystianmuchla.home.id.controller.SignInController;
-import com.github.krystianmuchla.home.id.controller.SignUpController;
-import com.github.krystianmuchla.home.id.controller.UserInitApiController;
+import com.github.krystianmuchla.home.id.SignInController;
+import com.github.krystianmuchla.home.id.SignUpController;
+import com.github.krystianmuchla.home.id.user.UserInitApiController;
 import com.github.krystianmuchla.home.id.session.SessionApiController;
 import com.github.krystianmuchla.home.id.user.UserApiController;
-import com.github.krystianmuchla.home.note.NoteApiController;
 import com.github.krystianmuchla.home.note.sync.NoteSyncApiController;
 import com.github.krystianmuchla.home.util.MultiValueHashMap;
 import com.github.krystianmuchla.home.util.MultiValueMap;
@@ -33,7 +32,6 @@ public class HttpConfig extends Config {
         new FaviconController(),
         new FontController(),
         new HealthApiController(),
-        new NoteApiController(),
         new NoteSyncApiController(),
         new RootController(),
         new SessionApiController(),

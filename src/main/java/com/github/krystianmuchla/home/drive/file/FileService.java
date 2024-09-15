@@ -3,25 +3,19 @@ package com.github.krystianmuchla.home.drive.file;
 import com.github.krystianmuchla.home.drive.directory.DirectoryService;
 import com.github.krystianmuchla.home.exception.InternalException;
 import com.github.krystianmuchla.home.exception.http.NotFoundException;
-import com.github.krystianmuchla.home.util.InstantFactory;
 
 import java.util.UUID;
 
 public class FileService {
     public static UUID create(UUID userId, UUID directoryId, String name) {
-        if (directoryId != null) {
-            DirectoryService.get(userId, directoryId);
-        }
-        var id = UUID.randomUUID();
-        var status = FileStatus.UPLOADING;
-        var creationTime = InstantFactory.create();
-        var file = new File(id, userId, status, directoryId, name, creationTime);
+        checkDirectoryExistence(userId, directoryId);
+        var file = new File(userId, directoryId, name);
         FilePersistence.create(file);
         return file.id;
     }
 
     public static File get(UUID userId, UUID fileId) {
-        var file = FilePersistence.readByIdAndStatus(userId, fileId, FileStatus.UPLOADED, false);
+        var file = FilePersistence.readByIdAndStatus(userId, fileId, FileStatus.UPLOADED);
         if (file == null) {
             throw new NotFoundException();
         }
@@ -29,7 +23,7 @@ public class FileService {
     }
 
     public static void upload(UUID userId, UUID fileId) {
-        var file = FilePersistence.readByIdAndStatus(userId, fileId, FileStatus.UPLOADING, true);
+        var file = FilePersistence.readByIdAndStatus(userId, fileId, FileStatus.UPLOADING);
         if (file == null) {
             throw new NotFoundException();
         }
@@ -38,13 +32,13 @@ public class FileService {
 
     public static void upload(File file) {
         if (!file.isUploaded()) {
-            file.upload();
+            file.updateStatus(FileStatus.UPLOADED);
             update(file);
         }
     }
 
     public static void remove(UUID userId, UUID fileId) {
-        var file = FilePersistence.readByIdAndStatus(userId, fileId, FileStatus.UPLOADED, true);
+        var file = FilePersistence.readByIdAndStatus(userId, fileId, FileStatus.UPLOADED);
         if (file == null) {
             throw new NotFoundException();
         }
@@ -53,13 +47,12 @@ public class FileService {
 
     public static void remove(File file) {
         if (!file.isRemoved()) {
-            file.remove();
+            file.updateStatus(FileStatus.REMOVED);
             update(file);
         }
     }
 
     public static void update(File file) {
-        file.modificationTime = InstantFactory.create();
         var result = FilePersistence.update(file);
         if (!result) {
             throw new NotFoundException();
@@ -75,6 +68,12 @@ public class FileService {
         var result = FilePersistence.delete(file);
         if (!result) {
             throw new NotFoundException();
+        }
+    }
+
+    private static void checkDirectoryExistence(UUID userId, UUID directoryId) {
+        if (directoryId != null) {
+            DirectoryService.get(userId, directoryId);
         }
     }
 }

@@ -2,6 +2,7 @@ package com.github.krystianmuchla.home.id.accessdata;
 
 import com.github.krystianmuchla.home.db.Persistence;
 import com.github.krystianmuchla.home.db.Sql;
+import com.github.krystianmuchla.home.util.InstantFactory;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -12,16 +13,18 @@ public class AccessDataPersistence extends Persistence {
     private static final Map<String, AccessData> READ_CACHE = new ConcurrentHashMap<>();
 
     public static void create(AccessData accessData) {
+        var creationTime = InstantFactory.create();
         var sql = new Sql.Builder()
             .insertInto(AccessData.TABLE)
             .values(
-                accessData.id(),
-                accessData.userId(),
-                accessData.login(),
-                accessData.salt(),
-                accessData.secret(),
-                accessData.creationTime(),
-                accessData.modificationTime()
+                accessData.id,
+                accessData.userId,
+                accessData.login,
+                accessData.salt,
+                accessData.secret,
+                creationTime,
+                creationTime,
+                1
             );
         executeUpdate(sql.build());
     }

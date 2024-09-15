@@ -2,6 +2,7 @@ package com.github.krystianmuchla.home.drive.directory;
 
 import com.github.krystianmuchla.home.db.Persistence;
 import com.github.krystianmuchla.home.db.Sql;
+import com.github.krystianmuchla.home.util.InstantFactory;
 
 import java.util.List;
 import java.util.UUID;
@@ -11,6 +12,7 @@ import static com.github.krystianmuchla.home.db.Sql.eq;
 
 public class DirectoryPersistence extends Persistence {
     public static void create(Directory directory) {
+        var creationTime = InstantFactory.create();
         var sql = new Sql.Builder()
             .insertInto(Directory.TABLE)
             .values(
@@ -19,13 +21,14 @@ public class DirectoryPersistence extends Persistence {
                 directory.status,
                 directory.parentId,
                 directory.name,
-                directory.creationTime,
-                directory.modificationTime
+                creationTime,
+                creationTime,
+                1
             );
         executeUpdate(sql.build());
     }
 
-    public static Directory readByIdAndStatus(UUID userId, UUID id, DirectoryStatus status, boolean forUpdate) {
+    public static Directory readByIdAndStatus(UUID userId, UUID id, DirectoryStatus status) {
         var sql = new Sql.Builder()
             .select()
             .from(Directory.TABLE)
@@ -36,9 +39,6 @@ public class DirectoryPersistence extends Persistence {
                 and(),
                 eq(Directory.STATUS, status)
             );
-        if (forUpdate) {
-            sql.forUpdate();
-        }
         var result = executeQuery(sql.build(), Directory::fromResultSet);
         return singleResult(result);
     }
@@ -59,12 +59,7 @@ public class DirectoryPersistence extends Persistence {
         return executeQuery(sql.build(), Directory::fromResultSet);
     }
 
-    public static List<Directory> readByParentIdAndStatus(
-        UUID userId,
-        UUID parentId,
-        DirectoryStatus status,
-        boolean forUpdate
-    ) {
+    public static List<Directory> readByParentIdAndStatus(UUID userId, UUID parentId, DirectoryStatus status) {
         var sql = new Sql.Builder()
             .select()
             .from(Directory.TABLE)
@@ -79,34 +74,32 @@ public class DirectoryPersistence extends Persistence {
         } else {
             sql.eq(Directory.PARENT_ID, parentId);
         }
-        if (forUpdate) {
-            sql.forUpdate();
-        }
         return executeQuery(sql.build(), Directory::fromResultSet);
     }
 
-    public static List<Directory> readByStatus(DirectoryStatus status, boolean forUpdate) {
+    public static List<Directory> readByStatus(DirectoryStatus status) {
         var sql = new Sql.Builder()
             .select()
             .from(Directory.TABLE)
             .where(
                 eq(Directory.STATUS, status)
             );
-        if (forUpdate) {
-            sql.forUpdate();
-        }
         return executeQuery(sql.build(), Directory::fromResultSet);
     }
 
     public static boolean update(Directory directory) {
+        var updates = directory.consumeUpdates();
+        updates.put(Directory.MODIFICATION_TIME, InstantFactory.create());
+        updates.put(Directory.VERSION, directory.version + 1);
         var sql = new Sql.Builder()
             .update(Directory.TABLE)
-            .set(
-                eq(Directory.STATUS, directory.status),
-                eq(Directory.MODIFICATION_TIME, directory.modificationTime)
-            )
+            .set(toSql(updates))
             .where(
-                eq(Directory.ID, directory.id)
+                eq(Directory.ID, directory.id),
+                and(),
+                eq(Directory.USER_ID, directory.userId),
+                and(),
+                eq(Directory.VERSION, directory.version)
             );
         var result = executeUpdate(sql.build());
         return boolResult(result);
@@ -117,7 +110,9 @@ public class DirectoryPersistence extends Persistence {
             .delete()
             .from(Directory.TABLE)
             .where(
-                eq(Directory.ID, directory.id)
+                eq(Directory.ID, directory.id),
+                and(),
+                eq(Directory.USER_ID, directory.userId)
             );
         var result = executeUpdate(sql.build());
         return boolResult(result);

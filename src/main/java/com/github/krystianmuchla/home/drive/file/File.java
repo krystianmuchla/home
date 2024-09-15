@@ -1,31 +1,36 @@
 package com.github.krystianmuchla.home.drive.file;
 
+import com.github.krystianmuchla.home.db.Entity;
 import com.github.krystianmuchla.home.exception.InternalException;
 import com.github.krystianmuchla.home.util.InstantFactory;
+import com.github.krystianmuchla.home.util.UUIDFactory;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.Instant;
 import java.util.UUID;
 
-public class File {
+public class File extends Entity {
     public static final String TABLE = "file";
     public static final String ID = "id";
     public static final String USER_ID = "user_id";
     public static final String STATUS = "status";
     public static final String DIRECTORY_ID = "directory_id";
     public static final String NAME = "name";
-    public static final int NAME_MAX_LENGTH = 255;
     public static final String CREATION_TIME = "creation_time";
     public static final String MODIFICATION_TIME = "modification_time";
+    public static final String VERSION = "version";
+    public static final int NAME_MAX_LENGTH = 255;
+    public static final int VERSION_MIN_VALUE = 1;
 
     public final UUID id;
     public final UUID userId;
-    public FileStatus status;
+    public final FileStatus status;
     public final UUID directoryId;
     public final String name;
     public final Instant creationTime;
-    public Instant modificationTime;
+    public final Instant modificationTime;
+    public final Integer version;
 
     public File(
         UUID id,
@@ -34,84 +39,59 @@ public class File {
         UUID directoryId,
         String name,
         Instant creationTime,
-        Instant modificationTime
+        Instant modificationTime,
+        Integer version
     ) {
-        if (id == null) {
-            throw new InternalException("Id cannot be null");
-        }
+        assert id != null;
+        assert userId != null;
+        assert status != null;
+        assert name != null && name.length() <= NAME_MAX_LENGTH;
+        assert version == null || version >= VERSION_MIN_VALUE;
         this.id = id;
-        if (userId == null) {
-            throw new InternalException("User id cannot be null");
-        }
         this.userId = userId;
-        if (status == null) {
-            throw new InternalException("Status cannot be null");
-        }
         this.status = status;
         this.directoryId = directoryId;
-        if (name == null) {
-            throw new InternalException("Name cannot be null");
-        }
-        if (name.length() > NAME_MAX_LENGTH) {
-            throw new InternalException("Name exceeded max length of " + NAME_MAX_LENGTH);
-        }
         this.name = name;
-        if (creationTime == null) {
-            throw new InternalException("Creation time cannot be null");
-        }
         this.creationTime = creationTime;
-        if (modificationTime == null) {
-            throw new InternalException("Modification time cannot be null");
-        }
         this.modificationTime = modificationTime;
+        this.version = version;
     }
 
-    public File(
-        UUID id,
-        UUID userId,
-        FileStatus status,
-        UUID directoryId,
-        String name,
-        Instant creationTime
-    ) {
-        this(id, userId, status, directoryId, name, creationTime, creationTime);
+    public File(UUID userId, UUID directoryId, String name) {
+        this(UUID.randomUUID(), userId, FileStatus.UPLOADING, directoryId, name, null, null, null);
     }
 
     public boolean isUploaded() {
         return status == FileStatus.UPLOADED;
     }
 
-    public void upload() {
-        var status = FileStatus.UPLOADED;
-        if (this.status != FileStatus.UPLOADING) {
-            throw new InternalException("Cannot change status to %s from %s".formatted(status, this.status));
-        }
-        this.status = status;
-    }
-
     public boolean isRemoved() {
         return status == FileStatus.REMOVED;
     }
 
-    public void remove() {
-        var status = FileStatus.REMOVED;
-        if (this.status != FileStatus.UPLOADED) {
-            throw new InternalException("Cannot change status to %s from %s".formatted(status, this.status));
+    public void updateStatus(FileStatus status) {
+        switch (this.status) {
+            case UPLOADING -> {
+                assert status == FileStatus.UPLOADED;
+            }
+            case UPLOADED, REMOVED -> {
+                assert status == FileStatus.REMOVED;
+            }
         }
-        this.status = status;
+        updates.put(STATUS, status);
     }
 
     public static File fromResultSet(ResultSet resultSet) {
         try {
-            var directoryId = resultSet.getString(DIRECTORY_ID);
             return new File(
-                UUID.fromString(resultSet.getString(ID)),
-                UUID.fromString(resultSet.getString(USER_ID)),
+                UUIDFactory.create(resultSet.getString(ID)),
+                UUIDFactory.create(resultSet.getString(USER_ID)),
                 FileStatus.valueOf(resultSet.getString(STATUS)),
-                directoryId == null ? null : UUID.fromString(resultSet.getString(DIRECTORY_ID)),
+                UUIDFactory.create(resultSet.getString(DIRECTORY_ID)),
                 resultSet.getString(NAME),
                 InstantFactory.create(resultSet.getTimestamp(CREATION_TIME)),
-                InstantFactory.create(resultSet.getTimestamp(MODIFICATION_TIME))
+                InstantFactory.create(resultSet.getTimestamp(MODIFICATION_TIME)),
+                resultSet.getInt(VERSION)
             );
         } catch (SQLException exception) {
             throw new InternalException(exception);

@@ -21,10 +21,6 @@ public class Sql {
         return new Builder().lt(field, value).build();
     }
 
-    public static Sql in(String field, Set<?> values) {
-        return new Builder().in(field, values).build();
-    }
-
     public static Sql and() {
         return new Builder().and().build();
     }
@@ -210,17 +206,6 @@ public class Sql {
         public Builder limit(int limit) {
             sql.words.add("LIMIT ?");
             sql.parameters.add(limit);
-            return this;
-        }
-
-        public Builder offset(int offset) {
-            sql.words.add("OFFSET ?");
-            sql.parameters.add(offset);
-            return this;
-        }
-
-        public Builder forUpdate() {
-            sql.words.add("FOR UPDATE");
             return this;
         }
 

@@ -2,18 +2,18 @@ package com.github.krystianmuchla.home.note;
 
 import com.github.krystianmuchla.home.db.Persistence;
 import com.github.krystianmuchla.home.db.Sql;
-import com.github.krystianmuchla.home.pagination.PaginatedResult;
-import com.github.krystianmuchla.home.pagination.Pagination;
+import com.github.krystianmuchla.home.util.InstantFactory;
 
 import java.util.List;
-import java.util.Set;
 import java.util.UUID;
 
-import static com.github.krystianmuchla.home.db.Sql.*;
+import static com.github.krystianmuchla.home.db.Sql.and;
+import static com.github.krystianmuchla.home.db.Sql.eq;
 
 public class NotePersistence extends Persistence {
     public static void create(Note... notes) {
         for (var note : notes) {
+            var creationTime = InstantFactory.create();
             var sql = new Sql.Builder()
                 .insertInto(Note.TABLE)
                 .values(
@@ -21,8 +21,10 @@ public class NotePersistence extends Persistence {
                     note.userId,
                     note.title,
                     note.content,
-                    note.creationTime,
-                    note.modificationTime
+                    note.contentsModificationTime,
+                    creationTime,
+                    creationTime,
+                    1
                 );
             executeUpdate(sql.build());
         }
@@ -38,70 +40,19 @@ public class NotePersistence extends Persistence {
         return executeQuery(sql.build(), Note::fromResultSet);
     }
 
-    public static PaginatedResult<Note> read(UUID userId, Set<UUID> ids, Pagination pagination) {
-        var sql = new Sql.Builder()
-            .select()
-            .from(Note.TABLE)
-            .where();
-        if (!ids.isEmpty()) {
-            sql.in(Note.ID, ids)
-                .and();
-        }
-        sql.eq(Note.USER_ID, userId)
-            .limit(limit(pagination.pageSize()))
-            .offset(offset(pagination.pageNumber(), pagination.pageSize()));
-        var result = executeQuery(sql.build(), Note::fromResultSet);
-        return paginatedResult(pagination, result);
-    }
-
-    public static List<Note> readForUpdate(UUID userId) {
-        var sql = new Sql.Builder()
-            .select()
-            .from(Note.TABLE)
-            .where(
-                eq(Note.USER_ID, userId)
-            )
-            .forUpdate();
-        return executeQuery(sql.build(), Note::fromResultSet);
-    }
-
-    public static Note readForUpdate(UUID userId, UUID id) {
-        var sql = new Sql.Builder()
-            .select()
-            .from(Note.TABLE)
-            .where(
-                eq(Note.ID, id),
-                and(),
-                eq(Note.USER_ID, userId)
-            )
-            .forUpdate();
-        var result = executeQuery(sql.build(), Note::fromResultSet);
-        return singleResult(result);
-    }
-
-    public static List<Note> readForUpdate(UUID userId, Set<UUID> ids) {
-        var sql = new Sql.Builder()
-            .select()
-            .from(Note.TABLE)
-            .where(
-                eq(Note.USER_ID, userId),
-                and(),
-                in(Note.ID, ids)
-            )
-            .forUpdate();
-        return executeQuery(sql.build(), Note::fromResultSet);
-    }
-
     public static boolean update(Note note) {
+        var updates = note.consumeUpdates();
+        updates.put(Note.MODIFICATION_TIME, InstantFactory.create());
+        updates.put(Note.VERSION, note.version + 1);
         var sql = new Sql.Builder()
             .update(Note.TABLE)
-            .set(
-                eq(Note.TITLE, note.title),
-                eq(Note.CONTENT, note.content),
-                eq(Note.MODIFICATION_TIME, note.modificationTime)
-            )
+            .set(toSql(updates))
             .where(
-                eq(Note.ID, note.id)
+                eq(Note.ID, note.id),
+                and(),
+                eq(Note.USER_ID, note.userId),
+                and(),
+                eq(Note.VERSION, note.version)
             );
         var result = executeUpdate(sql.build());
         return boolResult(result);
@@ -112,7 +63,9 @@ public class NotePersistence extends Persistence {
             .delete()
             .from(Note.TABLE)
             .where(
-                eq(Note.ID, note.id)
+                eq(Note.ID, note.id),
+                and(),
+                eq(Note.USER_ID, note.userId)
             );
         var result = executeUpdate(sql.build());
         return boolResult(result);

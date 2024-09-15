@@ -2,6 +2,7 @@ package com.github.krystianmuchla.home.note.removed;
 
 import com.github.krystianmuchla.home.db.Persistence;
 import com.github.krystianmuchla.home.db.Sql;
+import com.github.krystianmuchla.home.util.InstantFactory;
 
 import java.time.Instant;
 import java.util.List;
@@ -10,57 +11,66 @@ import java.util.UUID;
 import static com.github.krystianmuchla.home.db.Sql.*;
 
 public class RemovedNotePersistence extends Persistence {
-    public static void create(final RemovedNote... removedNotes) {
-        for (final var removedNote : removedNotes) {
-            final var sql = new Sql.Builder()
+    public static void create(RemovedNote... removedNotes) {
+        for (var removedNote : removedNotes) {
+            var creationTime = InstantFactory.create();
+            var sql = new Sql.Builder()
                 .insertInto(RemovedNote.TABLE)
                 .values(
-                    removedNote.id(),
-                    removedNote.userId(),
-                    removedNote.creationTime(),
-                    removedNote.modificationTime()
+                    removedNote.id,
+                    removedNote.userId,
+                    removedNote.removalTime,
+                    creationTime,
+                    creationTime,
+                    1
                 );
             executeUpdate(sql.build());
         }
     }
 
-    public static List<RemovedNote> readForUpdate(final UUID userId) {
-        final var sql = new Sql.Builder()
+    public static List<RemovedNote> read(UUID userId) {
+        var sql = new Sql.Builder()
             .select()
             .from(RemovedNote.TABLE)
             .where(
                 eq(RemovedNote.USER_ID, userId)
-            )
-            .forUpdate();
+            );
         return executeQuery(sql.build(), RemovedNote::fromResultSet);
     }
 
-    public static boolean update(final RemovedNote removedNote) {
-        final var sql = new Sql.Builder()
+    public static boolean update(RemovedNote removedNote) {
+        var updates = removedNote.consumeUpdates();
+        updates.put(RemovedNote.MODIFICATION_TIME, InstantFactory.create());
+        updates.put(RemovedNote.VERSION, removedNote.version + 1);
+        var sql = new Sql.Builder()
             .update(RemovedNote.TABLE)
-            .set(
-                eq(RemovedNote.CREATION_TIME, removedNote.creationTime()),
-                eq(RemovedNote.MODIFICATION_TIME, removedNote.modificationTime())
-            )
+            .set(toSql(updates))
             .where(
-                eq(RemovedNote.ID, removedNote.id())
+                eq(RemovedNote.ID, removedNote.id),
+                and(),
+                eq(RemovedNote.USER_ID, removedNote.userId),
+                and(),
+                eq(RemovedNote.VERSION, removedNote.version)
             );
-        final var result = executeUpdate(sql.build());
+        var result = executeUpdate(sql.build());
         return boolResult(result);
     }
 
-    public static void delete(final RemovedNote removedNote) {
-        final var sql = new Sql.Builder()
+    public static boolean delete(RemovedNote removedNote) {
+        var sql = new Sql.Builder()
             .delete()
             .from(RemovedNote.TABLE)
             .where(
-                eq(RemovedNote.ID, removedNote.id())
+                eq(RemovedNote.ID, removedNote.id),
+                and(),
+                eq(RemovedNote.USER_ID, removedNote.userId)
             );
-        executeUpdate(sql.build());
+        var result = executeUpdate(sql.build());
+        return boolResult(result);
     }
 
-    public static void delete(final Instant creationTime) {
-        final var sql = new Sql.Builder()
+    public static void delete(Instant creationTime) {
+        var sql = new Sql.Builder()
             .delete()
             .from(RemovedNote.TABLE)
             .where(

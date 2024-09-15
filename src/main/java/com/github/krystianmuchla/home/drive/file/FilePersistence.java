@@ -2,6 +2,7 @@ package com.github.krystianmuchla.home.drive.file;
 
 import com.github.krystianmuchla.home.db.Persistence;
 import com.github.krystianmuchla.home.db.Sql;
+import com.github.krystianmuchla.home.util.InstantFactory;
 
 import java.util.List;
 import java.util.UUID;
@@ -11,6 +12,7 @@ import static com.github.krystianmuchla.home.db.Sql.eq;
 
 public class FilePersistence extends Persistence {
     public static void create(File file) {
+        var creationTime = InstantFactory.create();
         var sql = new Sql.Builder()
             .insertInto(File.TABLE)
             .values(
@@ -19,13 +21,14 @@ public class FilePersistence extends Persistence {
                 file.status,
                 file.directoryId,
                 file.name,
-                file.creationTime,
-                file.modificationTime
+                creationTime,
+                creationTime,
+                1
             );
         executeUpdate(sql.build());
     }
 
-    public static File readByIdAndStatus(UUID userId, UUID id, FileStatus status, boolean forUpdate) {
+    public static File readByIdAndStatus(UUID userId, UUID id, FileStatus status) {
         var sql = new Sql.Builder()
             .select()
             .from(File.TABLE)
@@ -36,9 +39,6 @@ public class FilePersistence extends Persistence {
                 and(),
                 eq(File.STATUS, status)
             );
-        if (forUpdate) {
-            sql.forUpdate();
-        }
         var result = executeQuery(sql.build(), File::fromResultSet);
         return singleResult(result);
     }
@@ -59,7 +59,7 @@ public class FilePersistence extends Persistence {
         return executeQuery(sql.build(), File::fromResultSet);
     }
 
-    public static List<File> readByDirectoryIdAndStatus(UUID userId, UUID directoryId, FileStatus status, boolean forUpdate) {
+    public static List<File> readByDirectoryIdAndStatus(UUID userId, UUID directoryId, FileStatus status) {
         var sql = new Sql.Builder()
             .select()
             .from(File.TABLE)
@@ -74,34 +74,32 @@ public class FilePersistence extends Persistence {
         } else {
             sql.eq(File.DIRECTORY_ID, directoryId);
         }
-        if (forUpdate) {
-            sql.forUpdate();
-        }
         return executeQuery(sql.build(), File::fromResultSet);
     }
 
-    public static List<File> readByStatus(FileStatus status, boolean forUpdate) {
+    public static List<File> readByStatus(FileStatus status) {
         var sql = new Sql.Builder()
             .select()
             .from(File.TABLE)
             .where(
                 eq(File.STATUS, status)
             );
-        if (forUpdate) {
-            sql.forUpdate();
-        }
         return executeQuery(sql.build(), File::fromResultSet);
     }
 
     public static boolean update(File file) {
+        var updates = file.consumeUpdates();
+        updates.put(File.MODIFICATION_TIME, InstantFactory.create());
+        updates.put(File.VERSION, file.version + 1);
         var sql = new Sql.Builder()
             .update(File.TABLE)
-            .set(
-                eq(File.STATUS, file.status),
-                eq(File.MODIFICATION_TIME, file.modificationTime)
-            )
+            .set(toSql(updates))
             .where(
-                eq(File.ID, file.id)
+                eq(File.ID, file.id),
+                and(),
+                eq(File.USER_ID, file.userId),
+                and(),
+                eq(File.VERSION, file.version)
             );
         var result = executeUpdate(sql.build());
         return boolResult(result);
@@ -112,7 +110,9 @@ public class FilePersistence extends Persistence {
             .delete()
             .from(File.TABLE)
             .where(
-                eq(File.ID, file.id)
+                eq(File.ID, file.id),
+                and(),
+                eq(File.USER_ID, file.userId)
             );
         var result = executeUpdate(sql.build());
         return boolResult(result);

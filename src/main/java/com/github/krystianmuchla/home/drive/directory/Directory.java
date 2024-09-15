@@ -1,31 +1,36 @@
 package com.github.krystianmuchla.home.drive.directory;
 
+import com.github.krystianmuchla.home.db.Entity;
 import com.github.krystianmuchla.home.exception.InternalException;
 import com.github.krystianmuchla.home.util.InstantFactory;
+import com.github.krystianmuchla.home.util.UUIDFactory;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.Instant;
 import java.util.UUID;
 
-public class Directory {
+public class Directory extends Entity {
     public static final String TABLE = "directory";
     public static final String ID = "id";
     public static final String USER_ID = "user_id";
     public static final String STATUS = "status";
     public static final String PARENT_ID = "parent_id";
     public static final String NAME = "name";
-    public static final int NAME_MAX_LENGTH = 255;
     public static final String CREATION_TIME = "creation_time";
     public static final String MODIFICATION_TIME = "modification_time";
+    public static final String VERSION = "version";
+    public static final int NAME_MAX_LENGTH = 255;
+    public static final int VERSION_MIN_VALUE = 1;
 
     public final UUID id;
     public final UUID userId;
-    public DirectoryStatus status;
+    public final DirectoryStatus status;
     public final UUID parentId;
     public final String name;
     public final Instant creationTime;
-    public Instant modificationTime;
+    public final Instant modificationTime;
+    public final Integer version;
 
     public Directory(
         UUID id,
@@ -34,72 +39,52 @@ public class Directory {
         UUID parentId,
         String name,
         Instant creationTime,
-        Instant modificationTime
+        Instant modificationTime,
+        Integer version
     ) {
-        if (id == null) {
-            throw new InternalException("Id cannot be null");
-        }
+        assert id != null;
+        assert userId != null;
+        assert status != null;
+        assert name != null && name.length() <= NAME_MAX_LENGTH;
+        assert version == null || version >= VERSION_MIN_VALUE;
         this.id = id;
-        if (userId == null) {
-            throw new InternalException("User id cannot be null");
-        }
         this.userId = userId;
-        if (status == null) {
-            throw new InternalException("Status cannot be null");
-        }
         this.status = status;
         this.parentId = parentId;
-        if (name == null) {
-            throw new InternalException("Name cannot be null");
-        }
-        if (name.length() > NAME_MAX_LENGTH) {
-            throw new InternalException("Name exceeded max length of " + NAME_MAX_LENGTH);
-        }
         this.name = name;
-        if (creationTime == null) {
-            throw new InternalException("Creation time cannot be null");
-        }
         this.creationTime = creationTime;
-        if (modificationTime == null) {
-            throw new InternalException("Modification time cannot be null");
-        }
-        this.modificationTime = creationTime;
+        this.modificationTime = modificationTime;
+        this.version = version;
     }
 
-    public Directory(
-        UUID id,
-        UUID userId,
-        DirectoryStatus status,
-        UUID parentId,
-        String name,
-        Instant creationTime
-    ) {
-        this(id, userId, status, parentId, name, creationTime, creationTime);
+    public Directory(UUID userId, UUID parentId, String name) {
+        this(UUID.randomUUID(), userId, DirectoryStatus.CREATED, parentId, name, null, null, null);
     }
 
     public boolean isRemoved() {
         return status == DirectoryStatus.REMOVED;
     }
 
-    public void remove() {
-        var status = DirectoryStatus.REMOVED;
-        if (this.status != DirectoryStatus.CREATED) {
-            throw new InternalException("Cannot change status to %s from %s".formatted(status, this.status));
+    public void updateStatus(DirectoryStatus status) {
+        switch (this.status) {
+            case CREATED, REMOVED -> {
+                assert status == DirectoryStatus.REMOVED;
+            }
         }
-        this.status = status;
+        updates.put(Directory.STATUS, status);
     }
 
     public static Directory fromResultSet(ResultSet resultSet) {
         try {
-            var parentId = resultSet.getString(PARENT_ID);
             return new Directory(
-                UUID.fromString(resultSet.getString(ID)),
-                UUID.fromString(resultSet.getString(USER_ID)),
+                UUIDFactory.create(resultSet.getString(ID)),
+                UUIDFactory.create(resultSet.getString(USER_ID)),
                 DirectoryStatus.valueOf(resultSet.getString(STATUS)),
-                parentId == null ? null : UUID.fromString(parentId),
+                UUIDFactory.create(resultSet.getString(PARENT_ID)),
                 resultSet.getString(NAME),
                 InstantFactory.create(resultSet.getTimestamp(CREATION_TIME)),
-                InstantFactory.create(resultSet.getTimestamp(MODIFICATION_TIME))
+                InstantFactory.create(resultSet.getTimestamp(MODIFICATION_TIME)),
+                resultSet.getInt(VERSION)
             );
         } catch (SQLException exception) {
             throw new InternalException(exception);

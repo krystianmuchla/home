@@ -5,7 +5,6 @@ import com.github.krystianmuchla.home.http.Controller;
 import com.github.krystianmuchla.home.http.RequestReader;
 import com.github.krystianmuchla.home.http.ResponseWriter;
 import com.github.krystianmuchla.home.note.Note;
-import com.github.krystianmuchla.home.note.NoteResponse;
 import com.sun.net.httpserver.HttpExchange;
 
 import java.io.IOException;
@@ -22,7 +21,7 @@ public class NoteSyncApiController extends Controller {
         var user = RequestReader.readUser(exchange);
         var syncNotesRequest = RequestReader.readJson(exchange, SyncNotesRequest.class);
         var notes = Transaction.run(
-            () -> NoteSyncService.sync(user.id(), map(user.id(), syncNotesRequest.notes()))
+            () -> NoteSyncService.sync(user.id, map(user.id, syncNotesRequest.notes()))
         );
         ResponseWriter.writeJson(exchange, 200, new NoteSyncResponse(map(notes)));
     }

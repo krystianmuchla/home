@@ -1,14 +1,12 @@
 package com.github.krystianmuchla.home.db;
 
 import com.github.krystianmuchla.home.exception.InternalException;
-import com.github.krystianmuchla.home.pagination.PaginatedResult;
-import com.github.krystianmuchla.home.pagination.Pagination;
-import com.github.krystianmuchla.home.pagination.PaginationResult;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.function.Function;
 
 public class Persistence {
@@ -17,8 +15,8 @@ public class Persistence {
     }
 
     public static <T> List<T> executeQuery(String sql, Function<ResultSet, T> mapper, Object... parameters) {
-        try (var borrowedConnection = ConnectionManager.borrowConnection()) {
-            var connection = borrowedConnection.connection();
+        try (var readConnection = ConnectionManager.getReadConnection()) {
+            var connection = readConnection.connection();
             try (var preparedStatement = connection.prepareStatement(sql)) {
                 for (int index = 0; index < parameters.length; index++) {
                     preparedStatement.setObject(index + 1, parameters[index]);
@@ -41,14 +39,12 @@ public class Persistence {
     }
 
     public static int executeUpdate(String sql, Object... parameters) {
-        try (var borrowedConnection = ConnectionManager.borrowConnection()) {
-            var connection = borrowedConnection.connection();
-            try (var preparedStatement = connection.prepareStatement(sql)) {
-                for (int index = 0; index < parameters.length; index++) {
-                    preparedStatement.setObject(index + 1, parameters[index]);
-                }
-                return preparedStatement.executeUpdate();
+        var connection = ConnectionManager.getWriteConnection();
+        try (var preparedStatement = connection.prepareStatement(sql)) {
+            for (int index = 0; index < parameters.length; index++) {
+                preparedStatement.setObject(index + 1, parameters[index]);
             }
+            return preparedStatement.executeUpdate();
         } catch (SQLException exception) {
             throw new InternalException(exception);
         }
@@ -68,21 +64,7 @@ public class Persistence {
         throw new InternalException("Could not resolve single result");
     }
 
-    protected static <T> PaginatedResult<T> paginatedResult(Pagination pagination, List<T> result) {
-        var fetchedElements = result.size();
-        var next = fetchedElements > pagination.pageSize();
-        if (next) {
-            result.removeLast();
-        }
-        var paginationResult = new PaginationResult(next, pagination.pageNumber() > 1);
-        return new PaginatedResult<>(result, paginationResult);
-    }
-
-    protected static int limit(int pageSize) {
-        return pageSize + 1;
-    }
-
-    protected static int offset(int pageNumber, int pageSize) {
-        return (pageNumber - 1) * pageSize;
+    protected static Sql[] toSql(Map<String, Object> updates) {
+        return updates.entrySet().stream().map(entry -> Sql.eq(entry.getKey(), entry.getValue())).toArray(Sql[]::new);
     }
 }

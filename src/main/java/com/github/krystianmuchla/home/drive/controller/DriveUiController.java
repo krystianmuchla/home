@@ -33,9 +33,9 @@ public class DriveUiController extends Controller {
     protected void get(HttpExchange exchange) throws IOException {
         var user = RequestReader.readUser(exchange);
         var request = RequestReader.readQuery(exchange, DriveFilterRequest::new);
-        var dirHierarchy = DirectoryService.getHierarchy(user.id(), request.dir());
-        var list = DriveService.listDirectory(user.id(), request.dir());
-        ResponseWriter.writeHtml(exchange, 200, html(user.name(), dirHierarchy, list));
+        var dirHierarchy = DirectoryService.getHierarchy(user.id, request.dir());
+        var list = DriveService.listDirectory(user.id, request.dir());
+        ResponseWriter.writeHtml(exchange, 200, html(user.name, dirHierarchy, list));
     }
 
     private Group html(String userName, List<Directory> dirHierarchy, List<Entry> list) {
