@@ -20,15 +20,6 @@
             for (let index = 0; index < files.length; index++) {
                 /** @type {File} */
                 let file = files[index];
-                /** @type {HTMLCollectionOf<HTMLDivElement>} */
-                let fileNames = document.getElementsByClassName('file-name');
-                if ([...fileNames].find((fName) => fName.textContent === file.name)) {
-                    let confirmed = confirm(`Are you sure you want do overwrite the existing ${file.name} file?`);
-                    if (!confirmed) {
-                        closeToast(toastId);
-                        return;
-                    }
-                }
                 setToastText(toastId, `Uploading ${index + 1} of ${files.length} files...`);
                 /** @type {Response} */
                 let response = await fetch(
@@ -37,7 +28,7 @@
                         method: 'PUT',
                         headers: {
                             'Content-Type': 'application/octet-stream',
-                            'File-Name': file.name
+                            'File-Name': encodeURI(file.name)
                         },
                         body: file
                     }

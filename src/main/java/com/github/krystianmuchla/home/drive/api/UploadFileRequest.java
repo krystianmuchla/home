@@ -6,6 +6,9 @@ import com.github.krystianmuchla.home.exception.ValidationError;
 import com.github.krystianmuchla.home.exception.http.BadRequestException;
 import com.sun.net.httpserver.Headers;
 
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
+
 public record UploadFileRequest(String fileName) implements RequestHeaders {
     public UploadFileRequest(Headers headers) {
         this(resolveFileName(headers));
@@ -22,6 +25,7 @@ public record UploadFileRequest(String fileName) implements RequestHeaders {
     }
 
     private static String resolveFileName(Headers headers) {
-        return headers.getFirst(Header.FILE_NAME);
+        var fileName = headers.getFirst(Header.FILE_NAME);
+        return URLDecoder.decode(fileName, StandardCharsets.UTF_8);
     }
 }
