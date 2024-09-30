@@ -52,8 +52,8 @@ function queueToast(level, text) {
  * @returns {void}
  */
 function setToastText(id, text) {
-    /** @type {HTMLDivElement} */
-    let toast = document.getElementById(id);
+    /** @type {HTMLDivElement | null | undefined} */
+    let toast = _findToast(id);
     if (!toast) {
         return;
     }
@@ -71,12 +71,20 @@ function setToastText(id, text) {
  * @returns {void}
  */
 function setToastLevel(id, level) {
-    /** @type {HTMLDivElement} */
-    let toast = document.getElementById(id);
+    /** @type {HTMLDivElement | null | undefined} */
+    let toast = _findToast(id);
     if (!toast) {
         return;
     }
     toast.className = `toast toast-${level}`;
+}
+
+/**
+ * @param {string} id
+ * @returns {HTMLDivElement | null | undefined}
+ */
+function _findToast(id) {
+    return document.getElementById(id) ?? _pendingToasts.find(toast => toast.id === id);
 }
 
 {
