@@ -31,7 +31,11 @@ public record ValidationError(String error, Map<String, Object> details) {
         return new ValidationError(Error.ABOVE_MAX_LENGTH, Map.of("maxLength", maxLength));
     }
 
+    public static ValidationError belowMinValue(int minValue) {
+        return new ValidationError(Error.BELOW_MIN_VALUE, Map.of("minValue", minValue));
+    }
+
     public enum Error {
-        NULL_VALUE, EMPTY_VALUE, WRONG_FORMAT, BELOW_MIN_LENGTH, ABOVE_MAX_LENGTH
+        NULL_VALUE, EMPTY_VALUE, WRONG_FORMAT, BELOW_MIN_LENGTH, ABOVE_MAX_LENGTH, BELOW_MIN_VALUE
     }
 }

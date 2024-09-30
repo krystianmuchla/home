@@ -9,6 +9,8 @@ import java.sql.SQLException;
 import java.time.Instant;
 import java.util.UUID;
 
+import static com.github.krystianmuchla.home.domain.id.IdValidator.*;
+
 public class User {
     public static final String TABLE = "user";
     public static final String ID = "id";
@@ -16,8 +18,6 @@ public class User {
     public static final String CREATION_TIME = "creation_time";
     public static final String MODIFICATION_TIME = "modification_time";
     public static final String VERSION = "version";
-    public static final int NAME_MAX_LENGTH = 100;
-    public static final int VERSION_MIN_VALUE = 1;
 
     public final UUID id;
     public final String name;
@@ -26,9 +26,11 @@ public class User {
     public final Integer version;
 
     public User(UUID id, String name, Instant creationTime, Instant modificationTime, Integer version) {
-        assert id != null;
-        assert name != null && name.length() <= NAME_MAX_LENGTH;
-        assert version == null || version >= VERSION_MIN_VALUE;
+        assert validateUserId(id).isEmpty();
+        assert validateUserName(name).isEmpty();
+        assert creationTime == null || validateCreationTime(creationTime).isEmpty();
+        assert modificationTime == null || validateModificationTime(modificationTime).isEmpty();
+        assert version == null || validateVersion(version).isEmpty();
         this.id = id;
         this.name = name;
         this.creationTime = creationTime;

@@ -1,6 +1,6 @@
 package com.github.krystianmuchla.home;
 
-import com.github.krystianmuchla.home.application.changelog.ChangelogService;
+import com.github.krystianmuchla.home.infrastructure.persistence.changelog.ChangelogService;
 import com.github.krystianmuchla.home.application.worker.Worker;
 import com.github.krystianmuchla.home.application.worker.WorkerConfig;
 import com.github.krystianmuchla.home.infrastructure.http.Http;

@@ -12,6 +12,9 @@ import java.sql.SQLException;
 import java.time.Instant;
 import java.util.UUID;
 
+import static com.github.krystianmuchla.home.domain.id.IdValidator.validateUserId;
+import static com.github.krystianmuchla.home.domain.note.NoteValidator.*;
+
 public class Note extends Entity {
     public static final String TABLE = "note";
     public static final String ID = "id";
@@ -22,9 +25,6 @@ public class Note extends Entity {
     public static final String CREATION_TIME = "creation_time";
     public static final String MODIFICATION_TIME = "modification_time";
     public static final String VERSION = "version";
-    public static final int TITLE_MAX_LENGTH = 255;
-    public static final int CONTENT_MAX_LENGTH = 65535;
-    public static final int VERSION_MIN_VALUE = 1;
 
     public final UUID id;
     public final UUID userId;
@@ -45,12 +45,14 @@ public class Note extends Entity {
         Instant modificationTime,
         Integer version
     ) {
-        assert id != null;
-        assert userId != null;
-        assert title == null || title.length() <= TITLE_MAX_LENGTH;
-        assert content == null || content.length() <= CONTENT_MAX_LENGTH;
-        assert contentsModificationTime != null;
-        assert version == null || version >= VERSION_MIN_VALUE;
+        assert validateNoteId(id).isEmpty();
+        assert validateUserId(userId).isEmpty();
+        assert title == null || validateNoteTitle(title).isEmpty();
+        assert content == null || validateNoteContent(content).isEmpty();
+        assert validateNoteContentsModificationTime(contentsModificationTime).isEmpty();
+        assert creationTime == null || validateCreationTime(creationTime).isEmpty();
+        assert modificationTime == null || validateModificationTime(modificationTime).isEmpty();
+        assert version == null || validateVersion(version).isEmpty();
         this.id = id;
         this.userId = userId;
         this.title = title;

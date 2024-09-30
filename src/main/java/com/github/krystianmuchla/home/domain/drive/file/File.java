@@ -10,6 +10,9 @@ import java.sql.SQLException;
 import java.time.Instant;
 import java.util.UUID;
 
+import static com.github.krystianmuchla.home.domain.drive.DriveValidator.*;
+import static com.github.krystianmuchla.home.domain.id.IdValidator.validateUserId;
+
 public class File extends Entity {
     public static final String TABLE = "file";
     public static final String ID = "id";
@@ -20,8 +23,6 @@ public class File extends Entity {
     public static final String CREATION_TIME = "creation_time";
     public static final String MODIFICATION_TIME = "modification_time";
     public static final String VERSION = "version";
-    public static final int NAME_MAX_LENGTH = 255;
-    public static final int VERSION_MIN_VALUE = 1;
 
     public final UUID id;
     public final UUID userId;
@@ -42,11 +43,14 @@ public class File extends Entity {
         Instant modificationTime,
         Integer version
     ) {
-        assert id != null;
-        assert userId != null;
-        assert status != null;
-        assert name != null && name.length() <= NAME_MAX_LENGTH;
-        assert version == null || version >= VERSION_MIN_VALUE;
+        assert validateFileId(id).isEmpty();
+        assert validateUserId(userId).isEmpty();
+        assert validateFileStatus(status).isEmpty();
+        assert directoryId == null || validateDirectoryId(directoryId).isEmpty();
+        assert validateFileName(name).isEmpty();
+        assert creationTime == null || validateCreationTime(creationTime).isEmpty();
+        assert modificationTime == null || validateModificationTime(modificationTime).isEmpty();
+        assert version == null || validateVersion(version).isEmpty();
         this.id = id;
         this.userId = userId;
         this.status = status;

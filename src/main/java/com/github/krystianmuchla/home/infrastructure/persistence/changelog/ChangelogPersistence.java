@@ -1,4 +1,4 @@
-package com.github.krystianmuchla.home.application.changelog;
+package com.github.krystianmuchla.home.infrastructure.persistence.changelog;
 
 import com.github.krystianmuchla.home.application.exception.InternalException;
 import com.github.krystianmuchla.home.infrastructure.persistence.Persistence;

@@ -13,6 +13,9 @@ public class MultiValueHashMap<K, V> extends HashMap<K, List<V>> implements Mult
 
     @Override
     public void addAll(K key, List<V> values) {
+        if (values.isEmpty()) {
+            return;
+        }
         this.computeIfAbsent(key, k -> new ArrayList<>()).addAll(values);
     }
 
@@ -39,7 +42,13 @@ public class MultiValueHashMap<K, V> extends HashMap<K, List<V>> implements Mult
     @SafeVarargs
     public static <T, S> MultiValueHashMap<T, S> of(T key, S... values) {
         return new MultiValueHashMap<>() {{
-            addAll(key, List.of(values));
+            addAll(key, values);
+        }};
+    }
+
+    public static <T, S> MultiValueHashMap<T, S> of(T key, List<S> values) {
+        return new MultiValueHashMap<>() {{
+            addAll(key, values);
         }};
     }
 }

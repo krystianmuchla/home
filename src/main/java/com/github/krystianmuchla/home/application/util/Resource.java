@@ -1,6 +1,5 @@
 package com.github.krystianmuchla.home.application.util;
 
-import com.github.krystianmuchla.home.application.changelog.ChangelogService;
 import com.github.krystianmuchla.home.application.exception.InternalException;
 
 import java.io.ByteArrayOutputStream;
@@ -21,6 +20,6 @@ public class Resource {
     }
 
     public static InputStream inputStream(String fileName) {
-        return ChangelogService.class.getClassLoader().getResourceAsStream(fileName);
+        return Resource.class.getClassLoader().getResourceAsStream(fileName);
     }
 }

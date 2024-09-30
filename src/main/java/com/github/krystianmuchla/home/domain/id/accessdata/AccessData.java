@@ -3,11 +3,14 @@ package com.github.krystianmuchla.home.domain.id.accessdata;
 import com.github.krystianmuchla.home.application.exception.InternalException;
 import com.github.krystianmuchla.home.application.util.InstantFactory;
 import com.github.krystianmuchla.home.application.util.UUIDFactory;
+import com.github.krystianmuchla.home.domain.id.user.Secret;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.Instant;
 import java.util.UUID;
+
+import static com.github.krystianmuchla.home.domain.id.IdValidator.*;
 
 public class AccessData {
     public static final String TABLE = "access_data";
@@ -19,8 +22,6 @@ public class AccessData {
     public static final String CREATION_TIME = "creation_time";
     public static final String MODIFICATION_TIME = "modification_time";
     public static final String VERSION = "version";
-    public static final int LOGIN_MAX_LENGTH = 50;
-    public static final int VERSION_MIN_VALUE = 1;
 
     public final UUID id;
     public final UUID userId;
@@ -41,12 +42,14 @@ public class AccessData {
         Instant modificationTime,
         Integer version
     ) {
-        assert id != null;
-        assert userId != null;
-        assert login != null && login.length() <= LOGIN_MAX_LENGTH;
-        assert salt != null;
-        assert secret != null;
-        assert version == null || version >= VERSION_MIN_VALUE;
+        assert validateAccessDataId(id).isEmpty();
+        assert validateUserId(userId).isEmpty();
+        assert validateLogin(login).isEmpty();
+        assert validateSalt(salt).isEmpty();
+        assert validateSecret(secret).isEmpty();
+        assert creationTime == null || validateCreationTime(creationTime).isEmpty();
+        assert modificationTime == null || validateModificationTime(modificationTime).isEmpty();
+        assert version == null || validateVersion(version).isEmpty();
         this.id = id;
         this.userId = userId;
         this.login = login;
@@ -57,8 +60,8 @@ public class AccessData {
         this.version = version;
     }
 
-    public AccessData(UUID userId, String login, byte[] salt, byte[] secret) {
-        this(UUID.randomUUID(), userId, login, salt, secret, null, null, null);
+    public AccessData(UUID userId, String login, Secret secret) {
+        this(UUID.randomUUID(), userId, login, secret.salt, secret.secret, null, null, null);
     }
 
     public static AccessData fromResultSet(ResultSet resultSet) {

@@ -11,6 +11,9 @@ import java.sql.SQLException;
 import java.time.Instant;
 import java.util.UUID;
 
+import static com.github.krystianmuchla.home.domain.id.IdValidator.validateUserId;
+import static com.github.krystianmuchla.home.domain.note.NoteValidator.*;
+
 public class RemovedNote extends Entity {
     public static final String TABLE = "removed_note";
     public static final String ID = "id";
@@ -19,7 +22,6 @@ public class RemovedNote extends Entity {
     public static final String CREATION_TIME = "creation_time";
     public static final String MODIFICATION_TIME = "modification_time";
     public static final String VERSION = "version";
-    public static final int VERSION_MIN_VALUE = 1;
 
     public final UUID id;
     public final UUID userId;
@@ -36,10 +38,12 @@ public class RemovedNote extends Entity {
         Instant modificationTime,
         Integer version
     ) {
-        assert id != null;
-        assert userId != null;
-        assert removalTime != null;
-        assert version == null || version >= VERSION_MIN_VALUE;
+        assert validateNoteId(id).isEmpty();
+        assert validateUserId(userId).isEmpty();
+        assert validateRemovalTime(removalTime).isEmpty();
+        assert creationTime == null || validateCreationTime(creationTime).isEmpty();
+        assert modificationTime == null || validateModificationTime(modificationTime).isEmpty();
+        assert version == null || validateVersion(version).isEmpty();
         this.id = id;
         this.userId = userId;
         this.removalTime = removalTime;

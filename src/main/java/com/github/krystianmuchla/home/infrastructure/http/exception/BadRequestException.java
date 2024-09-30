@@ -8,6 +8,7 @@ import com.github.krystianmuchla.home.infrastructure.http.api.ProblemResponseFac
 import com.sun.net.httpserver.HttpExchange;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -27,6 +28,10 @@ public class BadRequestException extends HttpException {
 
     public BadRequestException(String parameter, ValidationError error) {
         this(MultiValueHashMap.of(parameter, error));
+    }
+
+    public BadRequestException(String parameter, List<ValidationError> errors) {
+        this(MultiValueHashMap.of(parameter, errors));
     }
 
     public BadRequestException(MultiValueMap<String, ValidationError> errors) {
