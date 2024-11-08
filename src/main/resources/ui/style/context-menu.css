@@ -2,8 +2,8 @@
     position: fixed;
     z-index: 1;
     border-radius: 5px;
-    padding: 5px;
-    gap: 5px;
+    padding: 10px;
+    gap: 10px;
 }
 
 .context-menu-option {
