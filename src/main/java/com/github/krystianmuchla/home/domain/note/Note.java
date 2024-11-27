@@ -4,8 +4,8 @@ import com.github.krystianmuchla.home.application.exception.InternalException;
 import com.github.krystianmuchla.home.application.util.InstantFactory;
 import com.github.krystianmuchla.home.application.util.UUIDFactory;
 import com.github.krystianmuchla.home.domain.note.removed.RemovedNote;
-import com.github.krystianmuchla.home.domain.note.sync.api.NoteRequest;
-import com.github.krystianmuchla.home.infrastructure.persistence.Entity;
+import com.github.krystianmuchla.home.infrastructure.http.note.sync.NoteRequest;
+import com.github.krystianmuchla.home.infrastructure.persistence.core.Entity;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;

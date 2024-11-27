@@ -1,8 +1,8 @@
 package com.github.krystianmuchla.home.domain.id.user;
 
 import com.github.krystianmuchla.home.application.util.InstantFactory;
-import com.github.krystianmuchla.home.infrastructure.persistence.Persistence;
-import com.github.krystianmuchla.home.infrastructure.persistence.Sql;
+import com.github.krystianmuchla.home.infrastructure.persistence.core.Persistence;
+import com.github.krystianmuchla.home.infrastructure.persistence.core.Sql;
 
 import java.util.UUID;
 

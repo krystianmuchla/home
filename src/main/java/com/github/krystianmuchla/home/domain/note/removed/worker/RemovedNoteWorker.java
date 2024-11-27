@@ -2,8 +2,8 @@ package com.github.krystianmuchla.home.domain.note.removed.worker;
 
 import com.github.krystianmuchla.home.application.util.InstantFactory;
 import com.github.krystianmuchla.home.application.worker.Worker;
-import com.github.krystianmuchla.home.domain.note.removed.RemovedNotePersistence;
-import com.github.krystianmuchla.home.infrastructure.persistence.Transaction;
+import com.github.krystianmuchla.home.infrastructure.persistence.note.RemovedNotePersistence;
+import com.github.krystianmuchla.home.infrastructure.persistence.core.Transaction;
 
 import java.time.Duration;
 import java.time.temporal.ChronoUnit;

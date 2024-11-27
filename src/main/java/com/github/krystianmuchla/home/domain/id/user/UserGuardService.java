@@ -1,6 +1,6 @@
 package com.github.krystianmuchla.home.domain.id.user;
 
-import com.github.krystianmuchla.home.infrastructure.http.exception.TooManyRequestsException;
+import com.github.krystianmuchla.home.infrastructure.http.core.exception.TooManyRequestsException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

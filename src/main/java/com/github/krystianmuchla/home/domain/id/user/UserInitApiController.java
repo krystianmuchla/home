@@ -1,8 +1,8 @@
 package com.github.krystianmuchla.home.domain.id.user;
 
 import com.github.krystianmuchla.home.domain.id.SignUpToken;
-import com.github.krystianmuchla.home.infrastructure.http.Controller;
-import com.github.krystianmuchla.home.infrastructure.http.ResponseWriter;
+import com.github.krystianmuchla.home.infrastructure.http.core.Controller;
+import com.github.krystianmuchla.home.infrastructure.http.core.ResponseWriter;
 import com.sun.net.httpserver.HttpExchange;
 
 import java.io.IOException;

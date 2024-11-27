@@ -1,7 +1,7 @@
 package com.github.krystianmuchla.home.domain.id.session;
 
 import com.github.krystianmuchla.home.application.exception.InternalException;
-import com.github.krystianmuchla.home.infrastructure.http.Cookie;
+import com.github.krystianmuchla.home.infrastructure.http.core.Cookie;
 
 import java.util.ArrayList;
 import java.util.List;

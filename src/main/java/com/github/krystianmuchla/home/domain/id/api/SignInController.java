@@ -1,14 +1,14 @@
 package com.github.krystianmuchla.home.domain.id.api;
 
-import com.github.krystianmuchla.home.infrastructure.http.Controller;
-import com.github.krystianmuchla.home.infrastructure.http.ResponseWriter;
+import com.github.krystianmuchla.home.infrastructure.http.core.Controller;
+import com.github.krystianmuchla.home.infrastructure.http.core.ResponseWriter;
 import com.sun.net.httpserver.HttpExchange;
 
 import java.io.IOException;
 
-import static com.github.krystianmuchla.home.application.html.Attribute.*;
-import static com.github.krystianmuchla.home.application.html.Tag.*;
 import static com.github.krystianmuchla.home.application.util.Resource.*;
+import static com.github.krystianmuchla.home.infrastructure.http.core.html.Attribute.*;
+import static com.github.krystianmuchla.home.infrastructure.http.core.html.Tag.*;
 
 public class SignInController extends Controller {
     public static final SignInController INSTANCE = new SignInController();

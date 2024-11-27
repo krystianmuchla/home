@@ -2,13 +2,13 @@ package com.github.krystianmuchla.home.domain.drive;
 
 import com.github.krystianmuchla.home.application.exception.InternalException;
 import com.github.krystianmuchla.home.application.util.StreamService;
-import com.github.krystianmuchla.home.domain.drive.directory.DirectoryPersistence;
+import com.github.krystianmuchla.home.infrastructure.persistence.drive.DirectoryPersistence;
 import com.github.krystianmuchla.home.domain.drive.directory.DirectoryStatus;
 import com.github.krystianmuchla.home.domain.drive.file.FileDto;
-import com.github.krystianmuchla.home.domain.drive.file.FilePersistence;
+import com.github.krystianmuchla.home.infrastructure.persistence.drive.FilePersistence;
 import com.github.krystianmuchla.home.domain.drive.file.FileService;
 import com.github.krystianmuchla.home.domain.drive.file.FileStatus;
-import com.github.krystianmuchla.home.infrastructure.http.exception.NotFoundException;
+import com.github.krystianmuchla.home.infrastructure.http.core.exception.NotFoundException;
 
 import java.io.File;
 import java.io.FileOutputStream;

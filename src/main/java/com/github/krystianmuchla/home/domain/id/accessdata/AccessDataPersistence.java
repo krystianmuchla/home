@@ -1,13 +1,13 @@
 package com.github.krystianmuchla.home.domain.id.accessdata;
 
 import com.github.krystianmuchla.home.application.util.InstantFactory;
-import com.github.krystianmuchla.home.infrastructure.persistence.Persistence;
-import com.github.krystianmuchla.home.infrastructure.persistence.Sql;
+import com.github.krystianmuchla.home.infrastructure.persistence.core.Persistence;
+import com.github.krystianmuchla.home.infrastructure.persistence.core.Sql;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import static com.github.krystianmuchla.home.infrastructure.persistence.Sql.eq;
+import static com.github.krystianmuchla.home.infrastructure.persistence.core.Sql.eq;
 
 public class AccessDataPersistence extends Persistence {
     private static final Map<String, AccessData> READ_CACHE = new ConcurrentHashMap<>();

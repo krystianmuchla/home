@@ -3,11 +3,11 @@ package com.github.krystianmuchla.home.domain.id.user;
 import com.github.krystianmuchla.home.domain.id.SignUpToken;
 import com.github.krystianmuchla.home.domain.id.api.SignUpRequest;
 import com.github.krystianmuchla.home.domain.id.session.SessionService;
-import com.github.krystianmuchla.home.infrastructure.http.Controller;
-import com.github.krystianmuchla.home.infrastructure.http.RequestReader;
-import com.github.krystianmuchla.home.infrastructure.http.ResponseWriter;
-import com.github.krystianmuchla.home.infrastructure.http.exception.UnauthorizedException;
-import com.github.krystianmuchla.home.infrastructure.persistence.Transaction;
+import com.github.krystianmuchla.home.infrastructure.http.core.Controller;
+import com.github.krystianmuchla.home.infrastructure.http.core.RequestReader;
+import com.github.krystianmuchla.home.infrastructure.http.core.ResponseWriter;
+import com.github.krystianmuchla.home.infrastructure.http.core.exception.UnauthorizedException;
+import com.github.krystianmuchla.home.infrastructure.persistence.core.Transaction;
 import com.sun.net.httpserver.HttpExchange;
 
 import java.io.IOException;

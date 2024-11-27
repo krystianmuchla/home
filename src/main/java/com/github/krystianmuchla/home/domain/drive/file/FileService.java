@@ -2,7 +2,8 @@ package com.github.krystianmuchla.home.domain.drive.file;
 
 import com.github.krystianmuchla.home.application.exception.InternalException;
 import com.github.krystianmuchla.home.domain.drive.directory.DirectoryService;
-import com.github.krystianmuchla.home.infrastructure.http.exception.NotFoundException;
+import com.github.krystianmuchla.home.infrastructure.http.core.exception.NotFoundException;
+import com.github.krystianmuchla.home.infrastructure.persistence.drive.FilePersistence;
 
 import java.util.UUID;
 

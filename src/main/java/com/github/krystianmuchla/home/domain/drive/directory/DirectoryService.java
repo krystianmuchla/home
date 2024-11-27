@@ -1,7 +1,8 @@
 package com.github.krystianmuchla.home.domain.drive.directory;
 
 import com.github.krystianmuchla.home.application.exception.InternalException;
-import com.github.krystianmuchla.home.infrastructure.http.exception.NotFoundException;
+import com.github.krystianmuchla.home.infrastructure.http.core.exception.NotFoundException;
+import com.github.krystianmuchla.home.infrastructure.persistence.drive.DirectoryPersistence;
 
 import java.util.LinkedList;
 import java.util.List;

@@ -4,7 +4,7 @@ import com.github.krystianmuchla.home.domain.id.SecureRandomFactory;
 import com.github.krystianmuchla.home.domain.id.accessdata.AccessDataPersistence;
 import com.github.krystianmuchla.home.domain.id.user.User;
 import com.github.krystianmuchla.home.domain.id.user.UserGuardService;
-import com.github.krystianmuchla.home.infrastructure.http.exception.UnauthorizedException;
+import com.github.krystianmuchla.home.infrastructure.http.core.exception.UnauthorizedException;
 
 import java.util.Base64;
 import java.util.Map;

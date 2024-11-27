@@ -3,10 +3,10 @@ package com.github.krystianmuchla.home.domain.id.session;
 import com.github.krystianmuchla.home.application.exception.ValidationError;
 import com.github.krystianmuchla.home.domain.id.api.SignInRequest;
 import com.github.krystianmuchla.home.domain.id.user.UserService;
-import com.github.krystianmuchla.home.infrastructure.http.Controller;
-import com.github.krystianmuchla.home.infrastructure.http.RequestReader;
-import com.github.krystianmuchla.home.infrastructure.http.ResponseWriter;
-import com.github.krystianmuchla.home.infrastructure.http.exception.BadRequestException;
+import com.github.krystianmuchla.home.infrastructure.http.core.Controller;
+import com.github.krystianmuchla.home.infrastructure.http.core.RequestReader;
+import com.github.krystianmuchla.home.infrastructure.http.core.ResponseWriter;
+import com.github.krystianmuchla.home.infrastructure.http.core.exception.BadRequestException;
 import com.sun.net.httpserver.HttpExchange;
 
 import java.io.IOException;

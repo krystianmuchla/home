@@ -2,8 +2,8 @@ package com.github.krystianmuchla.home.domain.id.api;
 
 import com.github.krystianmuchla.home.application.exception.ValidationError;
 import com.github.krystianmuchla.home.application.util.MultiValueHashMap;
-import com.github.krystianmuchla.home.infrastructure.http.api.RequestBody;
-import com.github.krystianmuchla.home.infrastructure.http.exception.BadRequestException;
+import com.github.krystianmuchla.home.infrastructure.http.core.RequestBody;
+import com.github.krystianmuchla.home.infrastructure.http.core.exception.BadRequestException;
 
 import static com.github.krystianmuchla.home.domain.id.IdValidator.*;
 

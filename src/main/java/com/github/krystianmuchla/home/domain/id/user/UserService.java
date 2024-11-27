@@ -3,9 +3,9 @@ package com.github.krystianmuchla.home.domain.id.user;
 import com.github.krystianmuchla.home.application.util.StringService;
 import com.github.krystianmuchla.home.domain.id.accessdata.AccessData;
 import com.github.krystianmuchla.home.domain.id.accessdata.AccessDataPersistence;
-import com.github.krystianmuchla.home.infrastructure.http.exception.ConflictException;
-import com.github.krystianmuchla.home.infrastructure.http.exception.NotFoundException;
-import com.github.krystianmuchla.home.infrastructure.http.exception.UnauthorizedException;
+import com.github.krystianmuchla.home.infrastructure.http.core.exception.ConflictException;
+import com.github.krystianmuchla.home.infrastructure.http.core.exception.NotFoundException;
+import com.github.krystianmuchla.home.infrastructure.http.core.exception.UnauthorizedException;
 
 import java.util.Arrays;
 import java.util.UUID;

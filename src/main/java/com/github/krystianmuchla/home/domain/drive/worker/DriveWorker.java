@@ -2,13 +2,13 @@ package com.github.krystianmuchla.home.domain.drive.worker;
 
 import com.github.krystianmuchla.home.application.worker.Worker;
 import com.github.krystianmuchla.home.domain.drive.DriveService;
-import com.github.krystianmuchla.home.domain.drive.directory.DirectoryPersistence;
+import com.github.krystianmuchla.home.infrastructure.persistence.drive.DirectoryPersistence;
 import com.github.krystianmuchla.home.domain.drive.directory.DirectoryService;
 import com.github.krystianmuchla.home.domain.drive.directory.DirectoryStatus;
-import com.github.krystianmuchla.home.domain.drive.file.FilePersistence;
+import com.github.krystianmuchla.home.infrastructure.persistence.drive.FilePersistence;
 import com.github.krystianmuchla.home.domain.drive.file.FileService;
 import com.github.krystianmuchla.home.domain.drive.file.FileStatus;
-import com.github.krystianmuchla.home.infrastructure.persistence.Transaction;
+import com.github.krystianmuchla.home.infrastructure.persistence.core.Transaction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
