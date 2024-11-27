@@ -8,10 +8,10 @@ import com.sun.net.httpserver.HttpExchange;
 import java.io.IOException;
 
 public class UserInitApiController extends Controller {
-    public static final String PATH = "/api/users/init";
+    public static final UserInitApiController INSTANCE = new UserInitApiController();
 
     public UserInitApiController() {
-        super(PATH);
+        super("/api/users/init");
     }
 
     @Override

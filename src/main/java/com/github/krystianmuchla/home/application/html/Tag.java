@@ -6,6 +6,8 @@ import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import static com.github.krystianmuchla.home.application.html.Attribute.*;
+
 public class Tag {
     private final String tag;
     public final Map<String, Object> attributes;
@@ -41,6 +43,10 @@ public class Tag {
         return new Tag("html", attributes, Arrays.stream(content));
     }
 
+    public static Tag img(Map<String, Object> attributes) {
+        return new Tag("img", attributes, null);
+    }
+
     public static Tag input(Map<String, Object> attributes) {
         return new Tag("input", attributes, null);
     }
@@ -49,12 +55,25 @@ public class Tag {
         return new Tag("label", attributes, Arrays.stream(content));
     }
 
+    public static Tag labeledTextInput(String label, String id, String type) {
+        return div(attrs(clazz("labeled-text-input")),
+            label(attrs(fur(id)),
+                label
+            ),
+            input(attrs(id(id), clazz("text-input"), type(type)))
+        );
+    }
+
+    public static Tag link(Map<String, Object> attributes) {
+        return new Tag("link", attributes, null);
+    }
+
     public static Tag meta(Map<String, Object> attributes) {
         return new Tag("meta", attributes, null);
     }
 
-    public static Tag script(Object... content) {
-        return new Tag("script", new HashMap<>(), Arrays.stream(content));
+    public static Tag script(Map<String, Object> attributes, Object... content) {
+        return new Tag("script", attributes, Arrays.stream(content));
     }
 
     public static Tag span(Map<String, Object> attributes, Object... content) {

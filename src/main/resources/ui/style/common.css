@@ -1,0 +1,158 @@
+.background {
+    display: grid;
+    position: fixed;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+}
+
+body {
+    margin: 0;
+    font-family: "home-font";
+}
+
+.column {
+    display: flex;
+    flex-direction: column;
+}
+
+#context-menu {
+    position: fixed;
+    z-index: 1;
+    border-radius: 5px;
+    padding: 10px;
+    gap: 10px;
+}
+
+.context-menu-option {
+    cursor: pointer;
+}
+
+@font-face {
+    font-family: home-font;
+    src: url('/ui/font/Rubik-Regular.ttf');
+}
+
+.labeled-text-input {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.left-top {
+    align-self: start;
+    justify-self: start;
+}
+
+.main-button {
+    background-color: black;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    color: white;
+    font-family: "home-font";
+    font-size: 16px;
+    padding: 5px;
+}
+
+.main-button:disabled {
+    background-color: dimgray;
+}
+
+.modal {
+    align-self: start;
+    justify-self: center;
+    padding: 5px;
+    margin-top: 30px;
+}
+
+@media (min-width: 576px) {
+    .modal {
+        margin-top: 60px;
+    }
+}
+
+@media (min-width: 768px) {
+    .modal {
+        margin-top: 90px;
+    }
+}
+
+@media (min-width: 992px) {
+    .modal {
+        margin-top: 120px;
+    }
+}
+
+@media (min-width: 1200px) {
+    .modal {
+        margin-top: 150px;
+    }
+}
+
+.on-top {
+    background-color: white;
+    box-shadow: 0 0 5px grey;
+}
+
+.row {
+    display: flex;
+    flex-direction: row;
+}
+
+.text-input {
+    border: 1px solid black;
+    border-radius: 5px;
+    font-family: "home-font";
+    padding: 5px;
+    box-sizing: border-box;
+}
+
+.text-input:focus {
+    outline: 2px solid dodgerblue;
+}
+
+.toast {
+    max-width: 500px;
+    padding: 5px 10px;
+    line-height: 24px;
+    border-width: 2px;
+    border-style: solid;
+    border-radius: 10px;
+    background-color: white;
+}
+
+.toast-info {
+    border-color: dodgerblue;
+}
+
+.toast-success {
+    border-color: green;
+}
+
+.toast-warn {
+    border-color: darkorange;
+}
+
+.toast-error {
+    border-color: crimson;
+}
+
+.toast-text {
+    font-weight: bold;
+}
+
+.toast-close {
+    float: right;
+    margin-left: 10px;
+    text-decoration: underline;
+    cursor: pointer;
+}
+
+#toasts-container {
+    position: fixed;
+    bottom: 0;
+    right: 0;
+    padding: 5px;
+    gap: 5px;
+}

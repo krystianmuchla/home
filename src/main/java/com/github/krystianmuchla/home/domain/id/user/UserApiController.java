@@ -13,10 +13,10 @@ import com.sun.net.httpserver.HttpExchange;
 import java.io.IOException;
 
 public class UserApiController extends Controller {
-    public static final String PATH = "/api/users";
+    public static final UserApiController INSTANCE = new UserApiController();
 
     public UserApiController() {
-        super(PATH);
+        super("/api/users");
     }
 
     @Override

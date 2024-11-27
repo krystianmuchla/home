@@ -4,9 +4,6 @@ import com.github.krystianmuchla.home.infrastructure.http.ResponseWriter;
 import com.sun.net.httpserver.HttpExchange;
 
 import java.io.IOException;
-import java.util.Set;
-
-import static com.github.krystianmuchla.home.application.html.Html.document;
 
 public class HttpException extends RuntimeException {
     public HttpException() {
@@ -41,12 +38,6 @@ public class HttpException extends RuntimeException {
     }
 
     public void handleWeb(HttpExchange exchange) throws IOException {
-        var html = document(
-            Set.of(),
-            Set.of(),
-            Set.of(),
-            "Something went wrong."
-        );
-        ResponseWriter.writeHtml(exchange, 500, html);
+        ResponseWriter.writeText(exchange, 500, "Something went wrong.");
     }
 }

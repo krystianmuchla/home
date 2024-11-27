@@ -17,8 +17,8 @@ import java.io.IOException;
 public class AuthFilter extends Filter {
     private static final Logger LOG = LoggerFactory.getLogger(AuthFilter.class);
 
-    private final MultiValueMap<String, Method> optionalUserRoutes = HttpConfig.OPTIONAL_USER_ROUTES;
-    private final MultiValueMap<String, Method> noUserRoutes = HttpConfig.NO_USER_ROUTES;
+    private final MultiValueMap<String, Method> optionalUserRoutes = ControllerConfig.OPTIONAL_USER_ROUTES;
+    private final MultiValueMap<String, Method> noUserRoutes = ControllerConfig.NO_USER_ROUTES;
 
     @Override
     public void doFilter(HttpExchange exchange, Chain chain) throws IOException {
@@ -33,7 +33,7 @@ public class AuthFilter extends Filter {
                 LOG.warn("{}", exception.getMessage(), exception);
                 HttpErrorHandler.handle(exchange, exception);
             }
-            ResponseWriter.writeLocation(exchange, 302, HttpConfig.DEFAULT_PATH);
+            ResponseWriter.writeLocation(exchange, 302, ControllerConfig.DEFAULT_PATH);
         } else {
             try {
                 var user = user(exchange);

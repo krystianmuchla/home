@@ -11,12 +11,10 @@ import java.io.IOException;
 public class HttpHandlerImpl implements HttpHandler {
     private static final Logger LOG = LoggerFactory.getLogger(HttpHandlerImpl.class);
 
-    private final Routes routes = new Routes(HttpConfig.CONTROLLERS);
-
     @Override
     public void handle(HttpExchange exchange) throws IOException {
-        var uri = exchange.getRequestURI();
-        var controller = routes.findController(uri.getPath());
+        var path = getPath(exchange);
+        var controller = Controllers.get(path);
         try {
             if (controller == null) {
                 throw new NotFoundException();
@@ -27,5 +25,10 @@ public class HttpHandlerImpl implements HttpHandler {
             LOG.warn("{}", exception.getMessage(), exception);
             HttpErrorHandler.handle(exchange, exception);
         }
+    }
+
+    private String getPath(HttpExchange exchange) {
+        var uri = exchange.getRequestURI();
+        return uri.getPath();
     }
 }

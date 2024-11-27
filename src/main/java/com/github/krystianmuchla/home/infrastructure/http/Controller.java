@@ -4,13 +4,24 @@ import com.github.krystianmuchla.home.infrastructure.http.exception.MethodNotAll
 import com.sun.net.httpserver.HttpExchange;
 
 import java.io.IOException;
-import java.util.List;
+import java.util.Set;
 
 public abstract class Controller {
-    public final List<String> segments;
+    public final Set<String> paths;
 
     protected Controller(String path) {
-        segments = Segment.segments(path);
+        paths = Set.of(path);
+    }
+
+    protected Controller(Set<String> paths) {
+        this.paths = paths;
+    }
+
+    public String getPath() {
+        if (paths.size() != 1) {
+            throw new UnsupportedOperationException();
+        }
+        return paths.iterator().next();
     }
 
     public void handle(HttpExchange exchange) throws IOException {
@@ -39,4 +50,3 @@ public abstract class Controller {
         throw new MethodNotAllowedException();
     }
 }
-

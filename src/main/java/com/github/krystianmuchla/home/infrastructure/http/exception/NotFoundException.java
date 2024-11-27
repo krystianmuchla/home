@@ -4,9 +4,6 @@ import com.github.krystianmuchla.home.infrastructure.http.ResponseWriter;
 import com.sun.net.httpserver.HttpExchange;
 
 import java.io.IOException;
-import java.util.Set;
-
-import static com.github.krystianmuchla.home.application.html.Html.document;
 
 public class NotFoundException extends HttpException {
     @Override
@@ -16,12 +13,6 @@ public class NotFoundException extends HttpException {
 
     @Override
     public void handleWeb(HttpExchange exchange) throws IOException {
-        var html = document(
-            Set.of(),
-            Set.of(),
-            Set.of(),
-            "Selected page doesn't exist."
-        );
-        ResponseWriter.writeHtml(exchange, 404, html);
+        ResponseWriter.writeText(exchange, 404, "Selected page doesn't exist.");
     }
 }

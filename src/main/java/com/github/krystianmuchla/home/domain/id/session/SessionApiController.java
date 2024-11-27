@@ -12,10 +12,10 @@ import com.sun.net.httpserver.HttpExchange;
 import java.io.IOException;
 
 public class SessionApiController extends Controller {
-    public static final String PATH = "/api/sessions";
+    public static final SessionApiController INSTANCE = new SessionApiController();
 
     public SessionApiController() {
-        super(PATH);
+        super("/api/sessions");
     }
 
     @Override

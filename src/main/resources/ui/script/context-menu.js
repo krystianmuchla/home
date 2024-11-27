@@ -21,7 +21,7 @@ document.onkeydown = (event) => {
  * @param {ContextMenuOption[]} options
  * @returns {void}
  */
-function showContextMenu(event, options) {
+export function showContextMenu(event, options) {
     /** @type {HTMLDivElement | null} */
     let menu = document.getElementById('context-menu');
     if (menu) {

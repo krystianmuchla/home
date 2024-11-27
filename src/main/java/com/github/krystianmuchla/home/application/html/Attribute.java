@@ -20,6 +20,10 @@ public class Attribute {
         return Map.entry("content", content);
     }
 
+    public static Map.Entry<String, Object> defer() {
+        return Map.entry("defer", "");
+    }
+
     public static Map.Entry<String, Object> fur(Object fur) {
         return Map.entry("for", fur);
     }
@@ -38,6 +42,14 @@ public class Attribute {
 
     public static Map.Entry<String, Object> name(Object name) {
         return Map.entry("name", name);
+    }
+
+    public static Map.Entry<String, Object> rel(Object rel) {
+        return Map.entry("rel", rel);
+    }
+
+    public static Map.Entry<String, Object> src(Object src) {
+        return Map.entry("src", src);
     }
 
     public static Map.Entry<String, Object> style(Object style) {

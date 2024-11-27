@@ -7,10 +7,10 @@ import com.sun.net.httpserver.HttpExchange;
 import java.io.IOException;
 
 public class HealthApiController extends Controller {
-    public static final String PATH = "/api/health";
+    public static final HealthApiController INSTANCE = new HealthApiController();
 
     public HealthApiController() {
-        super(PATH);
+        super("/api/health");
     }
 
     @Override

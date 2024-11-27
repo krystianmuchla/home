@@ -27,11 +27,17 @@ public class ResponseWriter {
         write(exchange, status);
     }
 
+    public static void writeText(HttpExchange exchange, int status, String string) throws IOException {
+        writeString(exchange, status, "text/plain", string);
+    }
+
     public static void writeHtml(HttpExchange exchange, int status, Object object) throws IOException {
         var string = object.toString();
-        headers(exchange).add("Content-Type", "text/html");
-        var bytes = string.getBytes();
-        writeBytes(exchange, status, bytes);
+        writeHtml(exchange, status, string);
+    }
+
+    public static void writeHtml(HttpExchange exchange, int status, String string) throws IOException {
+        writeString(exchange, status, "text/html", string);
     }
 
     public static void writeJson(HttpExchange exchange, int status, Object object) throws IOException {
@@ -40,16 +46,12 @@ public class ResponseWriter {
     }
 
     public static void writeJson(HttpExchange exchange, int status, String string) throws IOException {
-        headers(exchange).add("Content-Type", "application/json");
-        var bytes = string.getBytes();
-        writeBytes(exchange, status, bytes);
+        writeString(exchange, status, "application/json", string);
     }
 
     public static void writeProblemJson(HttpExchange exchange, int status, Object object) throws IOException {
-        headers(exchange).add("Content-Type", "application/problem+json");
         var string = GsonHolder.INSTANCE.toJson(object);
-        var bytes = string.getBytes();
-        writeBytes(exchange, status, bytes);
+        writeString(exchange, status, "application/problem+json", string);
     }
 
     public static void writeFile(HttpExchange exchange, int status, String name, File file) throws IOException {
@@ -70,6 +72,26 @@ public class ResponseWriter {
         try (var outputStream = exchange.getResponseBody()) {
             StreamService.copy(inputStream, outputStream);
         }
+    }
+
+    public static void writeString(
+        HttpExchange exchange,
+        int status,
+        String contentType,
+        String string
+    ) throws IOException {
+        var bytes = string.getBytes();
+        writeBytes(exchange, status, contentType, bytes);
+    }
+
+    public static void writeBytes(
+        HttpExchange exchange,
+        int status,
+        String contentType,
+        byte[] bytes
+    ) throws IOException {
+        headers(exchange).add("Content-Type", contentType);
+        writeBytes(exchange, status, bytes);
     }
 
     private static void writeBytes(HttpExchange exchange, int status, byte[] bytes) throws IOException {

@@ -1,7 +1,6 @@
 package com.github.krystianmuchla.home.domain.drive.api;
 
-import com.github.krystianmuchla.home.application.html.Group;
-import com.github.krystianmuchla.home.application.html.Image;
+import com.github.krystianmuchla.home.application.html.Tags;
 import com.github.krystianmuchla.home.application.html.Tag;
 import com.github.krystianmuchla.home.application.util.CollectionService;
 import com.github.krystianmuchla.home.domain.drive.DriveService;
@@ -19,11 +18,13 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static com.github.krystianmuchla.home.application.html.Attribute.*;
-import static com.github.krystianmuchla.home.application.html.Group.group;
-import static com.github.krystianmuchla.home.application.html.Tag.div;
-import static com.github.krystianmuchla.home.application.html.Tag.span;
+import static com.github.krystianmuchla.home.application.html.Tags.tags;
+import static com.github.krystianmuchla.home.application.html.Tag.*;
+import static com.github.krystianmuchla.home.application.util.Resource.CONTEXT_MENU_IMAGE;
 
 public class DriveUiController extends Controller {
+    public static final DriveUiController INSTANCE = new DriveUiController();
+
     public DriveUiController() {
         super("/ui/drive/main");
     }
@@ -37,11 +38,11 @@ public class DriveUiController extends Controller {
         ResponseWriter.writeHtml(exchange, 200, html(user.name, dirHierarchy, list));
     }
 
-    private Group html(String userName, List<Directory> dirHierarchy, List<Entry> list) {
-        return group(
+    private Tags html(String userName, List<Directory> dirHierarchy, List<Entry> list) {
+        return tags(
             div(attrs(id("path")), path(userName, dirHierarchy)),
             div(attrs(id("list"), clazz("column")),
-                group(list.stream().map(entry ->
+                Tags.tags(list.stream().map(entry ->
                     div(attrs(id(entry.id()), clazz("row " + entry.type().asClass())),
                         entryName(entry),
                         entryMenu(entry)
@@ -82,7 +83,7 @@ public class DriveUiController extends Controller {
             case EntryType.FILE -> "file-menu";
         };
         return div(attrs(clazz(clazz)),
-            Image.CONTEXT_MENU
+            img(attrs(src(CONTEXT_MENU_IMAGE.urlPath)))
         );
     }
 }

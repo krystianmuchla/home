@@ -13,6 +13,8 @@ import com.sun.net.httpserver.HttpExchange;
 import java.io.IOException;
 
 public class DriveApiController extends Controller {
+    public static final DriveApiController INSTANCE = new DriveApiController();
+
     public DriveApiController() {
         super("/api/drive");
     }

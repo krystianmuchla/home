@@ -1,14 +1,14 @@
 /** @type {number} */
-let _toastId = 0;
+let toastId = 0;
 
 /** @type {HTMLDivElement[]} */
-let _pendingToasts = [];
+let pendingToasts = [];
 
 /** 
  * @param {string} id
  * @returns {void}
  */
-function closeToast(id) {
+export function closeToast(id) {
     /** @type {HTMLDivElement} */
     let toast = document.getElementById(id);
     if (!toast) {
@@ -16,7 +16,7 @@ function closeToast(id) {
     }
     toast.remove();
     /** @type {HTMLDivElement | undefined} */
-    let pendingToast = _pendingToasts.shift();
+    let pendingToast = pendingToasts.shift();
     if (pendingToast) {
         let container = document.getElementById('toasts-container');
         container.appendChild(pendingToast);
@@ -28,16 +28,26 @@ function closeToast(id) {
  * @param {string} text
  * @returns {string}
  */
-function queueToast(level, text) {
+export function queueToast(level, text) {
     /** @type {HTMLDivElement} */
     let toast = document.createElement('div');
-    toast.id = ++_toastId;
+    toast.id = ++toastId;
     toast.className = `toast toast-${level}`;
-    toast.innerHTML = `<span class="toast-text">${text}</span><div class="toast-close" onmousedown="closeToast(${toast.id})">close</div>`;
+    /** @type {HTMLSpanElement} */
+    let toastText = document.createElement('span');
+    toastText.className = 'toast-text';
+    toastText.textContent = text;
+    toast.appendChild(toastText);
+    /** @type {HTMLDivElement} */
+    let toastClose = document.createElement('div');
+    toastClose.className = 'toast-close';
+    toastClose.onmousedown = () => closeToast(toast.id);
+    toastClose.textContent = 'close';
+    toast.appendChild(toastClose);
     /** @type {HTMLCollectionOf<HTMLDivElement>} */
     let toasts = document.getElementsByClassName('toast');
     if (toasts.length > 1) {
-        _pendingToasts.push(toast);
+        pendingToasts.push(toast);
     } else {
         /** @type {HTMLDivElement} */
         let container = document.getElementById('toasts-container');
@@ -51,9 +61,9 @@ function queueToast(level, text) {
  * @param {string} text
  * @returns {void}
  */
-function setToastText(id, text) {
+export function setToastText(id, text) {
     /** @type {HTMLDivElement | null | undefined} */
-    let toast = _findToast(id);
+    let toast = findToast(id);
     if (!toast) {
         return;
     }
@@ -70,9 +80,9 @@ function setToastText(id, text) {
  * @param {string} level
  * @returns {void}
  */
-function setToastLevel(id, level) {
+export function setToastLevel(id, level) {
     /** @type {HTMLDivElement | null | undefined} */
-    let toast = _findToast(id);
+    let toast = findToast(id);
     if (!toast) {
         return;
     }
@@ -83,14 +93,12 @@ function setToastLevel(id, level) {
  * @param {string} id
  * @returns {HTMLDivElement | null | undefined}
  */
-function _findToast(id) {
-    return document.getElementById(id) ?? _pendingToasts.find(toast => toast.id === id);
+function findToast(id) {
+    return document.getElementById(id) ?? pendingToasts.find(toast => toast.id === id);
 }
 
-{
-    /** @type {HTMLDivElement} */
-    let container = document.createElement('div');
-    container.id = 'toasts-container';
-    container.className = 'column';
-    document.body.appendChild(container);
-}
+/** @type {HTMLDivElement} */
+let container = document.createElement('div');
+container.id = 'toasts-container';
+container.className = 'column';
+document.body.appendChild(container);

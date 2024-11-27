@@ -13,6 +13,8 @@ import java.util.List;
 import java.util.UUID;
 
 public class NoteSyncApiController extends Controller {
+    public static final NoteSyncApiController INSTANCE = new NoteSyncApiController();
+
     public NoteSyncApiController() {
         super("/api/notes/sync");
     }

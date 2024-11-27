@@ -1,53 +1,49 @@
 package com.github.krystianmuchla.home.domain.drive.api;
 
-import com.github.krystianmuchla.home.application.html.Script;
-import com.github.krystianmuchla.home.application.html.Style;
-import com.github.krystianmuchla.home.application.html.component.Component;
 import com.github.krystianmuchla.home.infrastructure.http.Controller;
 import com.github.krystianmuchla.home.infrastructure.http.ResponseWriter;
 import com.sun.net.httpserver.HttpExchange;
 
 import java.io.IOException;
-import java.util.Set;
 
+import static com.github.krystianmuchla.home.application.html.Attribute.style;
 import static com.github.krystianmuchla.home.application.html.Attribute.*;
-import static com.github.krystianmuchla.home.application.html.Html.document;
-import static com.github.krystianmuchla.home.application.html.Tag.div;
+import static com.github.krystianmuchla.home.application.html.Tag.*;
+import static com.github.krystianmuchla.home.application.util.Resource.*;
 
 public class DriveController extends Controller {
-    public static final String PATH = "/drive";
+    public static final DriveController INSTANCE = new DriveController();
 
     public DriveController() {
-        super(PATH);
+        super("/drive");
     }
 
     @Override
     protected void get(HttpExchange exchange) throws IOException {
-        ResponseWriter.writeHtml(exchange, 200, html());
+        ResponseWriter.writeHtml(exchange, 200, response());
     }
 
-    private String html() {
-        return document(
-            Set.of(
-                Style.BACKGROUND,
-                Style.COLUMN,
-                Style.DRIVE,
-                Style.LEFT_TOP,
-                Style.MAIN_BUTTON,
-                Style.ROW
+    private String response() {
+        return "<!DOCTYPE html>" + html(attrs(lang("en")),
+            head(
+                title("Home"),
+                meta(attrs(name("viewport"), content("width=device-width, initial-scale=1.0"))),
+                link(attrs(rel("stylesheet"), href(COMMON_STYLE.urlPath))),
+                link(attrs(rel("stylesheet"), href(DRIVE_STYLE.urlPath))),
+                script(attrs(type("module"), src(DRIVE_SCRIPT.urlPath), defer()))
             ),
-            Set.of(Script.DRIVE),
-            Set.of(Component.CONTEXT_MENU, Component.TOAST),
-            div(attrs(clazz("background"), style("grid-template-rows: auto 1fr;")),
-                div(attrs(clazz("left-top row"), style("padding: 10px; gap: 10px;")),
-                    div(attrs(id("upload-file"), clazz("main-button")),
-                        "Upload file"
+            body(
+                div(attrs(clazz("background"), style("grid-template-rows: auto 1fr;")),
+                    div(attrs(clazz("left-top row"), style("padding: 10px; gap: 10px;")),
+                        div(attrs(id("upload-file"), clazz("main-button")),
+                            "Upload file"
+                        ),
+                        div(attrs(id("create-dir"), clazz("main-button")),
+                            "Create directory"
+                        )
                     ),
-                    div(attrs(id("create-dir"), clazz("main-button")),
-                        "Create directory"
-                    )
-                ),
-                div(attrs(id("main"), clazz("left-top column")))
+                    div(attrs(id("router"), clazz("left-top column")))
+                )
             )
         );
     }

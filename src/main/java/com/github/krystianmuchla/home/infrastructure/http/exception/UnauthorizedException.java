@@ -32,6 +32,6 @@ public class UnauthorizedException extends HttpException {
         if (userId != null) {
             UserGuardService.incrementAuthFailures(userId);
         }
-        ResponseWriter.writeLocation(exchange, 302, SignInController.PATH);
+        ResponseWriter.writeLocation(exchange, 302, SignInController.INSTANCE.getPath());
     }
 }
