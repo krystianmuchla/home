@@ -1,6 +1,7 @@
-package com.github.krystianmuchla.home.domain.id.accessdata;
+package com.github.krystianmuchla.home.infrastructure.persistence.id;
 
 import com.github.krystianmuchla.home.application.util.InstantFactory;
+import com.github.krystianmuchla.home.domain.id.AccessData;
 import com.github.krystianmuchla.home.infrastructure.persistence.core.Persistence;
 import com.github.krystianmuchla.home.infrastructure.persistence.core.Sql;
 

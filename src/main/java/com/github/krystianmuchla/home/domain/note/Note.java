@@ -4,7 +4,6 @@ import com.github.krystianmuchla.home.application.exception.InternalException;
 import com.github.krystianmuchla.home.application.util.InstantFactory;
 import com.github.krystianmuchla.home.application.util.UUIDFactory;
 import com.github.krystianmuchla.home.domain.note.removed.RemovedNote;
-import com.github.krystianmuchla.home.infrastructure.http.note.sync.NoteRequest;
 import com.github.krystianmuchla.home.infrastructure.persistence.core.Entity;
 
 import java.sql.ResultSet;
@@ -69,16 +68,6 @@ public class Note extends Entity {
 
     public Note(UUID id, UUID userId, Instant contentsModificationTime) {
         this(id, userId, null, null, contentsModificationTime);
-    }
-
-    public Note(UUID userId, NoteRequest request) {
-        this(
-            request.id(),
-            userId,
-            request.title(),
-            request.content(),
-            request.contentsModificationTime()
-        );
     }
 
     public void updateTitle(String title) {

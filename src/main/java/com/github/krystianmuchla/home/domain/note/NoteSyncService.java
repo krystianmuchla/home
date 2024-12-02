@@ -1,10 +1,11 @@
 package com.github.krystianmuchla.home.domain.note;
 
 import com.github.krystianmuchla.home.application.util.CollectionService;
-import com.github.krystianmuchla.home.infrastructure.persistence.note.NotePersistence;
+import com.github.krystianmuchla.home.domain.note.exception.NoteNotUpdatedException;
 import com.github.krystianmuchla.home.domain.note.removed.RemovedNote;
-import com.github.krystianmuchla.home.infrastructure.persistence.note.RemovedNotePersistence;
 import com.github.krystianmuchla.home.domain.note.removed.RemovedNoteService;
+import com.github.krystianmuchla.home.infrastructure.persistence.note.NotePersistence;
+import com.github.krystianmuchla.home.infrastructure.persistence.note.RemovedNotePersistence;
 
 import java.util.*;
 import java.util.stream.Stream;
@@ -21,25 +22,45 @@ public class NoteSyncService {
         return notesToUpdate(notes.values(), removedNotes.values());
     }
 
-    private static List<UUID> syncNotes(Map<UUID, Note> notes, Map<UUID, RemovedNote> removedNotes, List<Note> externalNotes) {
+    private static List<UUID> syncNotes(
+        Map<UUID, Note> notes,
+        Map<UUID, RemovedNote> removedNotes,
+        List<Note> externalNotes
+    ) {
         var excludedNotes = new ArrayList<UUID>();
         for (var externalNote : externalNotes) {
             var id = externalNote.id;
-            syncNote(notes.get(id), removedNotes.get(id), externalNote).ifPresent(excludedNotes::add);
+            try {
+                syncNote(notes.get(id), removedNotes.get(id), externalNote).ifPresent(excludedNotes::add);
+            } catch (NoteNotUpdatedException exception) {
+                throw new RuntimeException(exception);
+            }
         }
         return excludedNotes;
     }
 
-    private static List<UUID> syncRemovedNotes(Map<UUID, RemovedNote> removedNotes, Map<UUID, Note> notes, List<Note> externalNotes) {
+    private static List<UUID> syncRemovedNotes(
+        Map<UUID, RemovedNote> removedNotes,
+        Map<UUID, Note> notes,
+        List<Note> externalNotes
+    ) {
         var excludedRemovedNotes = new ArrayList<UUID>();
         for (var externalNote : externalNotes) {
             var id = externalNote.id;
-            syncRemovedNote(removedNotes.get(id), notes.get(id), externalNote).ifPresent(excludedRemovedNotes::add);
+            try {
+                syncRemovedNote(removedNotes.get(id), notes.get(id), externalNote).ifPresent(excludedRemovedNotes::add);
+            } catch (NoteNotUpdatedException exception) {
+                throw new RuntimeException(exception);
+            }
         }
         return excludedRemovedNotes;
     }
 
-    private static Optional<UUID> syncNote(Note note, RemovedNote removedNote, Note externalNote) {
+    private static Optional<UUID> syncNote(
+        Note note,
+        RemovedNote removedNote,
+        Note externalNote
+    ) throws NoteNotUpdatedException {
         if (note == null) {
             if (externalNote.hasContent()) {
                 if (removedNote == null) {
@@ -63,7 +84,11 @@ public class NoteSyncService {
         return Optional.empty();
     }
 
-    private static Optional<UUID> syncRemovedNote(RemovedNote removedNote, Note note, Note externalNote) {
+    private static Optional<UUID> syncRemovedNote(
+        RemovedNote removedNote,
+        Note note,
+        Note externalNote
+    ) throws NoteNotUpdatedException {
         if (removedNote == null) {
             if (!externalNote.hasContent()) {
                 if (note == null) {
@@ -87,7 +112,7 @@ public class NoteSyncService {
         return Optional.empty();
     }
 
-    private static void update(Note note, Note externalNote) {
+    private static void update(Note note, Note externalNote) throws NoteNotUpdatedException {
         if (!Objects.equals(note.title, externalNote.title)) {
             note.updateTitle(externalNote.title);
         }
@@ -98,7 +123,7 @@ public class NoteSyncService {
         NoteService.update(note);
     }
 
-    private static void update(RemovedNote removedNote, Note externalNote) {
+    private static void update(RemovedNote removedNote, Note externalNote) throws NoteNotUpdatedException {
         removedNote.updateRemovalTime(externalNote.contentsModificationTime);
         RemovedNoteService.update(removedNote);
     }

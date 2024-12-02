@@ -1,6 +1,6 @@
 package com.github.krystianmuchla.home.domain.id.user;
 
-import com.github.krystianmuchla.home.infrastructure.http.core.exception.TooManyRequestsException;
+import com.github.krystianmuchla.home.domain.id.user.exception.UserBlockedException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -11,16 +11,16 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public class UserGuardService {
     private static final Logger LOG = LoggerFactory.getLogger(UserGuardService.class);
-    private static final int MAX_FAILURES = 3;
+    private static final int MAX_FAILURES = 20;
     private static final Map<UUID, Integer> FAILURES = new ConcurrentHashMap<>();
 
-    public static void inspect(UUID userId) {
+    public static void inspect(UUID userId) throws UserBlockedException {
         var failures = FAILURES.get(userId);
         if (failures == null) {
             return;
         }
         if (failures >= MAX_FAILURES) {
-            throw new TooManyRequestsException();
+            throw new UserBlockedException();
         }
     }
 

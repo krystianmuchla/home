@@ -1,4 +1,4 @@
-package com.github.krystianmuchla.home.domain.id.api;
+package com.github.krystianmuchla.home.infrastructure.http.id;
 
 import com.github.krystianmuchla.home.application.exception.ValidationError;
 import com.github.krystianmuchla.home.application.util.MultiValueHashMap;

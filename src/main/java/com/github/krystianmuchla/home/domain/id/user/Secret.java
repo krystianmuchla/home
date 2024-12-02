@@ -20,7 +20,7 @@ public class Secret {
         try {
             SECRET_KEY_FACTORY = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA256");
         } catch (NoSuchAlgorithmException exception) {
-            throw new InternalException(exception);
+            throw new IllegalArgumentException(exception);
         }
     }
 

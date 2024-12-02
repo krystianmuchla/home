@@ -1,6 +1,5 @@
 package com.github.krystianmuchla.home.domain.id.user;
 
-import com.github.krystianmuchla.home.application.exception.InternalException;
 import com.github.krystianmuchla.home.application.util.InstantFactory;
 import com.github.krystianmuchla.home.application.util.UUIDFactory;
 
@@ -52,7 +51,7 @@ public class User {
                 resultSet.getInt(VERSION)
             );
         } catch (SQLException exception) {
-            throw new InternalException(exception);
+            throw new RuntimeException(exception);
         }
     }
 }

@@ -1,10 +1,11 @@
 package com.github.krystianmuchla.home.domain.id.session;
 
 import com.github.krystianmuchla.home.domain.id.SecureRandomFactory;
-import com.github.krystianmuchla.home.domain.id.accessdata.AccessDataPersistence;
+import com.github.krystianmuchla.home.domain.id.exception.UnauthenticatedException;
 import com.github.krystianmuchla.home.domain.id.user.User;
 import com.github.krystianmuchla.home.domain.id.user.UserGuardService;
-import com.github.krystianmuchla.home.infrastructure.http.core.exception.UnauthorizedException;
+import com.github.krystianmuchla.home.domain.id.user.exception.UserBlockedException;
+import com.github.krystianmuchla.home.infrastructure.persistence.id.AccessDataPersistence;
 
 import java.util.Base64;
 import java.util.Map;
@@ -21,15 +22,16 @@ public class SessionService {
         return sessionId;
     }
 
-    public static Session getSession(SessionId sessionId) {
+    public static Session getSession(SessionId sessionId) throws UnauthenticatedException, UserBlockedException {
         var accessData = AccessDataPersistence.read(sessionId.login());
         if (accessData == null) {
-            throw new UnauthorizedException();
+            throw new UnauthenticatedException();
         }
         UserGuardService.inspect(accessData.userId);
         var session = SESSIONS.get(sessionId);
         if (session == null) {
-            throw new UnauthorizedException(accessData.userId);
+            UserGuardService.incrementAuthFailures(accessData.userId);
+            throw new UnauthenticatedException();
         }
         return session;
     }

@@ -1,6 +1,5 @@
-package com.github.krystianmuchla.home.domain.id.accessdata;
+package com.github.krystianmuchla.home.domain.id;
 
-import com.github.krystianmuchla.home.application.exception.InternalException;
 import com.github.krystianmuchla.home.application.util.InstantFactory;
 import com.github.krystianmuchla.home.application.util.UUIDFactory;
 import com.github.krystianmuchla.home.domain.id.user.Secret;
@@ -77,7 +76,7 @@ public class AccessData {
                 resultSet.getInt(VERSION)
             );
         } catch (SQLException exception) {
-            throw new InternalException(exception);
+            throw new RuntimeException(exception);
         }
     }
 }

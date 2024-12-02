@@ -1,9 +1,8 @@
 package com.github.krystianmuchla.home.infrastructure.http.core;
 
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Objects;
+import com.github.krystianmuchla.home.domain.id.session.SessionId;
+
+import java.util.*;
 
 public class Cookie {
     public static String create(String key, String value) {
@@ -32,6 +31,13 @@ public class Cookie {
             var entry = entries.get(index);
             cookies.put(entry.getKey(), entry.getValue());
         }
+        return cookies;
+    }
+
+    public static List<String> fromSessionId(SessionId sessionId) {
+        var cookies = new ArrayList<String>(2);
+        cookies.add(Cookie.create("login", sessionId.login()));
+        cookies.add(Cookie.create("token", sessionId.token()));
         return cookies;
     }
 }

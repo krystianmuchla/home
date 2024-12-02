@@ -30,7 +30,9 @@ public class NoteSyncApiController extends Controller {
     }
 
     private static List<Note> map(UUID userId, List<NoteRequest> notes) {
-        return notes.stream().map(noteRequest -> new Note(userId, noteRequest)).toList();
+        return notes.stream().map(note -> {
+            return new Note(note.id(), userId, note.title(), note.content(), note.contentsModificationTime());
+        }).toList();
     }
 
     private static List<NoteResponse> map(List<Note> notes) {

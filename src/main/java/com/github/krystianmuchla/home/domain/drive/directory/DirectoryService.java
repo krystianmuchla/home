@@ -1,7 +1,8 @@
 package com.github.krystianmuchla.home.domain.drive.directory;
 
-import com.github.krystianmuchla.home.application.exception.InternalException;
-import com.github.krystianmuchla.home.infrastructure.http.core.exception.NotFoundException;
+import com.github.krystianmuchla.home.domain.drive.directory.exception.DirectoryNotFoundException;
+import com.github.krystianmuchla.home.domain.drive.directory.exception.DirectoryNotUpdatedException;
+import com.github.krystianmuchla.home.domain.drive.directory.exception.IllegalDirectoryStatusException;
 import com.github.krystianmuchla.home.infrastructure.persistence.drive.DirectoryPersistence;
 
 import java.util.LinkedList;
@@ -15,15 +16,15 @@ public class DirectoryService {
         return directory.id;
     }
 
-    public static Directory get(UUID userId, UUID directoryId) {
+    public static Directory get(UUID userId, UUID directoryId) throws DirectoryNotFoundException {
         var directory = DirectoryPersistence.readByIdAndStatus(userId, directoryId, DirectoryStatus.CREATED);
         if (directory == null) {
-            throw new NotFoundException();
+            throw new DirectoryNotFoundException();
         }
         return directory;
     }
 
-    public static List<Directory> getHierarchy(UUID userId, UUID directoryId) {
+    public static List<Directory> getHierarchy(UUID userId, UUID directoryId) throws DirectoryNotFoundException {
         var path = new LinkedList<Directory>();
         while (directoryId != null) {
             var directory = get(userId, directoryId);
@@ -33,37 +34,38 @@ public class DirectoryService {
         return path;
     }
 
-    public static void remove(UUID userId, UUID directoryId) {
+    public static void remove(
+        UUID userId,
+        UUID directoryId
+    ) throws DirectoryNotFoundException, DirectoryNotUpdatedException {
         var directory = DirectoryPersistence.readByIdAndStatus(userId, directoryId, DirectoryStatus.CREATED);
         if (directory == null) {
-            throw new NotFoundException();
+            throw new DirectoryNotFoundException();
         }
         remove(directory);
     }
 
-    public static void remove(Directory directory) {
+    public static void remove(Directory directory) throws DirectoryNotUpdatedException {
         if (!directory.isRemoved()) {
             directory.updateStatus(DirectoryStatus.REMOVED);
             update(directory);
         }
     }
 
-    public static void update(Directory directory) {
+    public static void update(Directory directory) throws DirectoryNotUpdatedException {
         var result = DirectoryPersistence.update(directory);
         if (!result) {
-            throw new NotFoundException();
+            throw new DirectoryNotUpdatedException();
         }
     }
 
-    public static void delete(Directory directory) {
+    public static void delete(Directory directory) throws IllegalDirectoryStatusException, DirectoryNotFoundException {
         if (!directory.isRemoved()) {
-            throw new InternalException(
-                "Attempting to delete directory %s in wrong status %s".formatted(directory.id, directory.status)
-            );
+            throw new IllegalDirectoryStatusException(directory.status);
         }
         var result = DirectoryPersistence.delete(directory);
         if (!result) {
-            throw new NotFoundException();
+            throw new DirectoryNotFoundException();
         }
     }
 }

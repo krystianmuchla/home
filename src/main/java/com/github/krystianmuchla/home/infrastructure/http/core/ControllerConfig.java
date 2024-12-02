@@ -6,11 +6,11 @@ import com.github.krystianmuchla.home.application.util.MultiValueMap;
 import com.github.krystianmuchla.home.infrastructure.http.drive.DriveApiController;
 import com.github.krystianmuchla.home.infrastructure.http.drive.DriveController;
 import com.github.krystianmuchla.home.infrastructure.http.drive.DriveUiController;
-import com.github.krystianmuchla.home.domain.id.api.SignInController;
-import com.github.krystianmuchla.home.domain.id.api.SignUpController;
-import com.github.krystianmuchla.home.domain.id.session.SessionApiController;
-import com.github.krystianmuchla.home.domain.id.user.UserApiController;
-import com.github.krystianmuchla.home.domain.id.user.UserInitApiController;
+import com.github.krystianmuchla.home.infrastructure.http.id.SignInController;
+import com.github.krystianmuchla.home.infrastructure.http.id.SignUpController;
+import com.github.krystianmuchla.home.infrastructure.http.id.SessionApiController;
+import com.github.krystianmuchla.home.infrastructure.http.id.UserApiController;
+import com.github.krystianmuchla.home.infrastructure.http.id.UserInitApiController;
 import com.github.krystianmuchla.home.infrastructure.http.note.sync.NoteSyncApiController;
 
 import java.util.ArrayList;

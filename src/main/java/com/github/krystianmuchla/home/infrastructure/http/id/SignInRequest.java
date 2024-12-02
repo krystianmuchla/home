@@ -1,4 +1,4 @@
-package com.github.krystianmuchla.home.domain.id.api;
+package com.github.krystianmuchla.home.infrastructure.http.id;
 
 import com.github.krystianmuchla.home.infrastructure.http.core.RequestBody;
 import com.github.krystianmuchla.home.infrastructure.http.core.exception.BadRequestException;

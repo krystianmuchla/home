@@ -6,9 +6,11 @@ import com.github.krystianmuchla.home.domain.drive.Entry;
 import com.github.krystianmuchla.home.domain.drive.EntryType;
 import com.github.krystianmuchla.home.domain.drive.directory.Directory;
 import com.github.krystianmuchla.home.domain.drive.directory.DirectoryService;
+import com.github.krystianmuchla.home.domain.drive.directory.exception.DirectoryNotFoundException;
 import com.github.krystianmuchla.home.infrastructure.http.core.Controller;
 import com.github.krystianmuchla.home.infrastructure.http.core.RequestReader;
 import com.github.krystianmuchla.home.infrastructure.http.core.ResponseWriter;
+import com.github.krystianmuchla.home.infrastructure.http.core.exception.NotFoundException;
 import com.github.krystianmuchla.home.infrastructure.http.core.html.Tag;
 import com.github.krystianmuchla.home.infrastructure.http.core.html.Tags;
 import com.sun.net.httpserver.HttpExchange;
@@ -33,7 +35,12 @@ public class DriveUiController extends Controller {
     protected void get(HttpExchange exchange) throws IOException {
         var user = RequestReader.readUser(exchange);
         var request = RequestReader.readQuery(exchange, DriveFilterRequest::new);
-        var dirHierarchy = DirectoryService.getHierarchy(user.id, request.dir());
+        List<Directory> dirHierarchy;
+        try {
+            dirHierarchy = DirectoryService.getHierarchy(user.id, request.dir());
+        } catch (DirectoryNotFoundException exception) {
+            throw new NotFoundException();
+        }
         var list = DriveService.listDirectory(user.id, request.dir());
         ResponseWriter.writeHtml(exchange, 200, html(user.name, dirHierarchy, list));
     }

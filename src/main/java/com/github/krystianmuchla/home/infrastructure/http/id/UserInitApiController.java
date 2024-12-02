@@ -1,4 +1,4 @@
-package com.github.krystianmuchla.home.domain.id.user;
+package com.github.krystianmuchla.home.infrastructure.http.id;
 
 import com.github.krystianmuchla.home.domain.id.SignUpToken;
 import com.github.krystianmuchla.home.infrastructure.http.core.Controller;

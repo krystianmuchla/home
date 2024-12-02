@@ -4,16 +4,17 @@ import com.github.krystianmuchla.home.AppContext;
 import com.github.krystianmuchla.home.domain.id.session.SessionId;
 import com.github.krystianmuchla.home.domain.id.session.SessionService;
 import com.github.krystianmuchla.home.domain.id.user.User;
-import com.github.krystianmuchla.home.domain.id.user.UserPersistence;
 import com.github.krystianmuchla.home.domain.id.user.UserService;
+import com.github.krystianmuchla.home.domain.id.user.exception.UserAlreadyExistsException;
 import com.github.krystianmuchla.home.domain.note.Note;
-import com.github.krystianmuchla.home.infrastructure.persistence.note.NotePersistence;
 import com.github.krystianmuchla.home.domain.note.removed.RemovedNote;
-import com.github.krystianmuchla.home.infrastructure.persistence.note.RemovedNotePersistence;
 import com.github.krystianmuchla.home.infrastructure.http.core.GsonHolder;
 import com.github.krystianmuchla.home.infrastructure.http.note.sync.NoteResponse;
 import com.github.krystianmuchla.home.infrastructure.persistence.core.Persistence;
 import com.github.krystianmuchla.home.infrastructure.persistence.core.Transaction;
+import com.github.krystianmuchla.home.infrastructure.persistence.id.UserPersistence;
+import com.github.krystianmuchla.home.infrastructure.persistence.note.NotePersistence;
+import com.github.krystianmuchla.home.infrastructure.persistence.note.RemovedNotePersistence;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import org.junit.jupiter.api.AfterAll;
@@ -43,9 +44,21 @@ class NoteSyncApiControllerTest {
         AppContext.init();
         gson = GsonHolder.INSTANCE;
         var login = "note_sync_controller_user";
-        var userId = Transaction.run(() -> UserService.create("User name", login, "zaq1@WSX"));
+        var userId = Transaction.run(() -> {
+            try {
+                return UserService.create("User name", login, "zaq1@WSX");
+            } catch (UserAlreadyExistsException exception) {
+                throw new RuntimeException(exception);
+            }
+        });
         user = UserPersistence.read(userId);
-        var otherUserId = Transaction.run(() -> UserService.create("Other user name", "other_user_login", "zaq1@WSX"));
+        var otherUserId = Transaction.run(() -> {
+            try {
+                return UserService.create("Other user name", "other_user_login", "zaq1@WSX");
+            } catch (UserAlreadyExistsException exception) {
+                throw new RuntimeException(exception);
+            }
+        });
         otherUser = UserPersistence.read(otherUserId);
         sessionId = SessionService.createSession(login, user);
         cookie = "login=%s; token=%s".formatted(sessionId.login(), sessionId.token());

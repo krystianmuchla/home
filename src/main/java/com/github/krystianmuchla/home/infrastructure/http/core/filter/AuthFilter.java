@@ -1,11 +1,14 @@
 package com.github.krystianmuchla.home.infrastructure.http.core.filter;
 
 import com.github.krystianmuchla.home.application.util.MultiValueMap;
+import com.github.krystianmuchla.home.domain.id.exception.UnauthenticatedException;
 import com.github.krystianmuchla.home.domain.id.session.Session;
 import com.github.krystianmuchla.home.domain.id.session.SessionId;
 import com.github.krystianmuchla.home.domain.id.session.SessionService;
 import com.github.krystianmuchla.home.domain.id.user.User;
+import com.github.krystianmuchla.home.domain.id.user.exception.UserBlockedException;
 import com.github.krystianmuchla.home.infrastructure.http.core.*;
+import com.github.krystianmuchla.home.infrastructure.http.core.exception.TooManyRequestsException;
 import com.github.krystianmuchla.home.infrastructure.http.core.exception.UnauthorizedException;
 import com.sun.net.httpserver.Filter;
 import com.sun.net.httpserver.HttpExchange;
@@ -62,7 +65,15 @@ public class AuthFilter extends Filter {
     private User user(HttpExchange exchange) {
         var cookies = RequestReader.readCookies(exchange);
         return SessionId.fromCookies(cookies)
-            .map(SessionService::getSession)
+            .map(sessionId -> {
+                try {
+                    return SessionService.getSession(sessionId);
+                } catch (UnauthenticatedException exception) {
+                    throw new UnauthorizedException();
+                } catch (UserBlockedException exception) {
+                    throw new TooManyRequestsException();
+                }
+            })
             .map(Session::user)
             .orElseThrow(UnauthorizedException::new);
     }
