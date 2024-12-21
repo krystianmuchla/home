@@ -1,17 +1,20 @@
 package com.github.krystianmuchla.home.domain.drive.file;
 
 import com.github.krystianmuchla.home.domain.drive.directory.DirectoryService;
-import com.github.krystianmuchla.home.domain.drive.directory.exception.DirectoryNotFoundException;
-import com.github.krystianmuchla.home.domain.drive.file.exception.FileNotFoundException;
-import com.github.krystianmuchla.home.domain.drive.file.exception.FileNotUpdatedException;
-import com.github.krystianmuchla.home.domain.drive.file.exception.IllegalFileStatusException;
+import com.github.krystianmuchla.home.domain.drive.directory.error.DirectoryNotFoundException;
+import com.github.krystianmuchla.home.domain.drive.file.error.FileNotFoundException;
+import com.github.krystianmuchla.home.domain.drive.file.error.FileNotUpdatedException;
+import com.github.krystianmuchla.home.domain.drive.file.error.FileValidationException;
+import com.github.krystianmuchla.home.domain.drive.file.error.IllegalFileStatusException;
 import com.github.krystianmuchla.home.infrastructure.persistence.drive.FilePersistence;
 
 import java.util.UUID;
 
 public class FileService {
-    public static UUID create(UUID userId, UUID directoryId, String name) throws DirectoryNotFoundException {
-        checkDirectoryExistence(userId, directoryId);
+    public static UUID create(UUID userId, UUID directoryId, String name) throws DirectoryNotFoundException, FileValidationException {
+        if (directoryId != null) {
+            DirectoryService.checkExistence(userId, directoryId);
+        }
         var file = new File(userId, directoryId, name);
         FilePersistence.create(file);
         return file.id;
@@ -69,12 +72,6 @@ public class FileService {
         var result = FilePersistence.delete(file);
         if (!result) {
             throw new FileNotUpdatedException();
-        }
-    }
-
-    private static void checkDirectoryExistence(UUID userId, UUID directoryId) throws DirectoryNotFoundException {
-        if (directoryId != null) {
-            DirectoryService.get(userId, directoryId);
         }
     }
 }

@@ -1,6 +1,6 @@
 package com.github.krystianmuchla.home.domain.note;
 
-import com.github.krystianmuchla.home.domain.note.exception.NoteNotUpdatedException;
+import com.github.krystianmuchla.home.domain.note.error.NoteNotUpdatedException;
 import com.github.krystianmuchla.home.infrastructure.persistence.note.NotePersistence;
 
 public class NoteService {

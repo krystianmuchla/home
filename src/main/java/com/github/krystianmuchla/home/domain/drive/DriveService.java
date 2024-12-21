@@ -6,7 +6,7 @@ import com.github.krystianmuchla.home.domain.drive.directory.DirectoryStatus;
 import com.github.krystianmuchla.home.domain.drive.file.FileDto;
 import com.github.krystianmuchla.home.domain.drive.file.FileService;
 import com.github.krystianmuchla.home.domain.drive.file.FileStatus;
-import com.github.krystianmuchla.home.domain.drive.file.exception.FileNotFoundException;
+import com.github.krystianmuchla.home.domain.drive.file.error.FileNotFoundException;
 import com.github.krystianmuchla.home.infrastructure.persistence.drive.DirectoryPersistence;
 import com.github.krystianmuchla.home.infrastructure.persistence.drive.FilePersistence;
 

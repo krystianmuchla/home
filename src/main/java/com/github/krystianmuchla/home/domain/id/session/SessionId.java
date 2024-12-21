@@ -3,6 +3,7 @@ package com.github.krystianmuchla.home.domain.id.session;
 import java.util.Map;
 import java.util.Optional;
 
+// todo
 public record SessionId(String login, String token) {
     public SessionId {
         if (login == null) {

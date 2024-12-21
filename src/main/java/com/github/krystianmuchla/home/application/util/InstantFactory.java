@@ -5,6 +5,7 @@ import java.time.Instant;
 import java.time.ZoneOffset;
 import java.time.temporal.ChronoUnit;
 
+// todo
 public class InstantFactory {
     public static Instant create() {
         return create(Instant.now());

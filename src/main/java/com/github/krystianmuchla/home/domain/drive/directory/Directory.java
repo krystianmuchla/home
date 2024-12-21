@@ -3,15 +3,13 @@ package com.github.krystianmuchla.home.domain.drive.directory;
 import com.github.krystianmuchla.home.application.exception.InternalException;
 import com.github.krystianmuchla.home.application.util.InstantFactory;
 import com.github.krystianmuchla.home.application.util.UUIDFactory;
+import com.github.krystianmuchla.home.domain.drive.directory.error.DirectoryValidationException;
 import com.github.krystianmuchla.home.infrastructure.persistence.core.Entity;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.Instant;
 import java.util.UUID;
-
-import static com.github.krystianmuchla.home.domain.drive.DriveValidator.*;
-import static com.github.krystianmuchla.home.domain.id.IdValidator.validateUserId;
 
 public class Directory extends Entity {
     public static final String TABLE = "directory";
@@ -42,15 +40,7 @@ public class Directory extends Entity {
         Instant creationTime,
         Instant modificationTime,
         Integer version
-    ) {
-        assert validateDirectoryId(id).isEmpty();
-        assert validateUserId(userId).isEmpty();
-        assert validateDirectoryStatus(status).isEmpty();
-        assert validateDirectoryId(parentId).isEmpty();
-        assert validateDirectoryName(name).isEmpty();
-        assert creationTime == null || validateCreationTime(creationTime).isEmpty();
-        assert modificationTime == null || validateModificationTime(modificationTime).isEmpty();
-        assert version == null || validateVersion(version).isEmpty();
+    ) throws DirectoryValidationException {
         this.id = id;
         this.userId = userId;
         this.status = status;
@@ -59,9 +49,10 @@ public class Directory extends Entity {
         this.creationTime = creationTime;
         this.modificationTime = modificationTime;
         this.version = version;
+        DirectoryValidator.validate(this);
     }
 
-    public Directory(UUID userId, UUID parentId, String name) {
+    public Directory(UUID userId, UUID parentId, String name) throws DirectoryValidationException {
         this(UUID.randomUUID(), userId, DirectoryStatus.CREATED, parentId, name, null, null, null);
     }
 
@@ -90,7 +81,7 @@ public class Directory extends Entity {
                 InstantFactory.create(resultSet.getTimestamp(MODIFICATION_TIME)),
                 resultSet.getInt(VERSION)
             );
-        } catch (SQLException exception) {
+        } catch (SQLException | DirectoryValidationException exception) {
             throw new InternalException(exception);
         }
     }

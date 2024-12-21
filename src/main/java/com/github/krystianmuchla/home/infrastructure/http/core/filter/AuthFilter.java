@@ -1,12 +1,11 @@
 package com.github.krystianmuchla.home.infrastructure.http.core.filter;
 
 import com.github.krystianmuchla.home.application.util.MultiValueMap;
-import com.github.krystianmuchla.home.domain.id.exception.UnauthenticatedException;
-import com.github.krystianmuchla.home.domain.id.session.Session;
+import com.github.krystianmuchla.home.domain.id.error.UnauthenticatedException;
 import com.github.krystianmuchla.home.domain.id.session.SessionId;
 import com.github.krystianmuchla.home.domain.id.session.SessionService;
 import com.github.krystianmuchla.home.domain.id.user.User;
-import com.github.krystianmuchla.home.domain.id.user.exception.UserBlockedException;
+import com.github.krystianmuchla.home.domain.id.user.error.UserBlockedException;
 import com.github.krystianmuchla.home.infrastructure.http.core.*;
 import com.github.krystianmuchla.home.infrastructure.http.core.exception.TooManyRequestsException;
 import com.github.krystianmuchla.home.infrastructure.http.core.exception.UnauthorizedException;
@@ -74,7 +73,7 @@ public class AuthFilter extends Filter {
                     throw new TooManyRequestsException();
                 }
             })
-            .map(Session::user)
+            .map(session -> session.user)
             .orElseThrow(UnauthorizedException::new);
     }
 }

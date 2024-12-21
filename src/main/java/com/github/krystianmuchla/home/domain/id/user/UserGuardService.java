@@ -1,6 +1,6 @@
 package com.github.krystianmuchla.home.domain.id.user;
 
-import com.github.krystianmuchla.home.domain.id.user.exception.UserBlockedException;
+import com.github.krystianmuchla.home.domain.id.user.error.UserBlockedException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

@@ -1,13 +1,11 @@
 package com.github.krystianmuchla.home.infrastructure.http.drive;
 
+import com.github.krystianmuchla.home.application.exception.ValidationError;
 import com.github.krystianmuchla.home.application.util.MultiValueMap;
 import com.github.krystianmuchla.home.infrastructure.http.core.RequestQuery;
 import com.github.krystianmuchla.home.infrastructure.http.core.exception.BadRequestException;
 
 import java.util.UUID;
-
-import static com.github.krystianmuchla.home.domain.drive.DriveValidator.validateDirectoryId;
-import static com.github.krystianmuchla.home.domain.drive.DriveValidator.validateFileId;
 
 public record DriveFilterRequest(UUID dir, UUID file) implements RequestQuery {
     public DriveFilterRequest(MultiValueMap<String, String> query) {
@@ -16,21 +14,21 @@ public record DriveFilterRequest(UUID dir, UUID file) implements RequestQuery {
 
     private static UUID resolveDir(MultiValueMap<String, String> query) {
         return query.getFirst("dir").map(dir -> {
-            var errors = validateDirectoryId(dir);
-            if (!errors.isEmpty()) {
-                throw new BadRequestException("dir", errors);
+            try {
+                return UUID.fromString(dir);
+            } catch (IllegalArgumentException exception) {
+                throw new BadRequestException("dir", ValidationError.wrongFormat());
             }
-            return UUID.fromString(dir);
         }).orElse(null);
     }
 
     private static UUID resolveFile(MultiValueMap<String, String> query) {
         return query.getFirst("file").map(file -> {
-            var errors = validateFileId(file);
-            if (!errors.isEmpty()) {
-                throw new BadRequestException("file", errors);
+            try {
+                return UUID.fromString(file);
+            } catch (IllegalArgumentException exception) {
+                throw new BadRequestException("file", ValidationError.wrongFormat());
             }
-            return UUID.fromString(file);
         }).orElse(null);
     }
 }

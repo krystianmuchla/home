@@ -1,9 +1,11 @@
 package com.github.krystianmuchla.home.domain.note;
 
+import com.github.krystianmuchla.home.application.exception.InternalException;
 import com.github.krystianmuchla.home.application.util.CollectionService;
-import com.github.krystianmuchla.home.domain.note.exception.NoteNotUpdatedException;
+import com.github.krystianmuchla.home.domain.note.error.NoteNotUpdatedException;
 import com.github.krystianmuchla.home.domain.note.removed.RemovedNote;
 import com.github.krystianmuchla.home.domain.note.removed.RemovedNoteService;
+import com.github.krystianmuchla.home.domain.note.removed.error.RemovedNoteNotUpdatedException;
 import com.github.krystianmuchla.home.infrastructure.persistence.note.NotePersistence;
 import com.github.krystianmuchla.home.infrastructure.persistence.note.RemovedNotePersistence;
 
@@ -33,7 +35,7 @@ public class NoteSyncService {
             try {
                 syncNote(notes.get(id), removedNotes.get(id), externalNote).ifPresent(excludedNotes::add);
             } catch (NoteNotUpdatedException exception) {
-                throw new RuntimeException(exception);
+                throw new InternalException(exception);
             }
         }
         return excludedNotes;
@@ -49,8 +51,8 @@ public class NoteSyncService {
             var id = externalNote.id;
             try {
                 syncRemovedNote(removedNotes.get(id), notes.get(id), externalNote).ifPresent(excludedRemovedNotes::add);
-            } catch (NoteNotUpdatedException exception) {
-                throw new RuntimeException(exception);
+            } catch (RemovedNoteNotUpdatedException exception) {
+                throw new InternalException(exception);
             }
         }
         return excludedRemovedNotes;
@@ -88,7 +90,7 @@ public class NoteSyncService {
         RemovedNote removedNote,
         Note note,
         Note externalNote
-    ) throws NoteNotUpdatedException {
+    ) throws RemovedNoteNotUpdatedException {
         if (removedNote == null) {
             if (!externalNote.hasContent()) {
                 if (note == null) {
@@ -123,7 +125,7 @@ public class NoteSyncService {
         NoteService.update(note);
     }
 
-    private static void update(RemovedNote removedNote, Note externalNote) throws NoteNotUpdatedException {
+    private static void update(RemovedNote removedNote, Note externalNote) throws RemovedNoteNotUpdatedException {
         removedNote.updateRemovalTime(externalNote.contentsModificationTime);
         RemovedNoteService.update(removedNote);
     }

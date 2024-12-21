@@ -3,16 +3,15 @@ package com.github.krystianmuchla.home.domain.note;
 import com.github.krystianmuchla.home.application.exception.InternalException;
 import com.github.krystianmuchla.home.application.util.InstantFactory;
 import com.github.krystianmuchla.home.application.util.UUIDFactory;
+import com.github.krystianmuchla.home.domain.note.error.NoteValidationException;
 import com.github.krystianmuchla.home.domain.note.removed.RemovedNote;
+import com.github.krystianmuchla.home.domain.note.removed.error.RemovedNoteValidationException;
 import com.github.krystianmuchla.home.infrastructure.persistence.core.Entity;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.Instant;
 import java.util.UUID;
-
-import static com.github.krystianmuchla.home.domain.id.IdValidator.validateUserId;
-import static com.github.krystianmuchla.home.domain.note.NoteValidator.*;
 
 public class Note extends Entity {
     public static final String TABLE = "note";
@@ -43,15 +42,7 @@ public class Note extends Entity {
         Instant creationTime,
         Instant modificationTime,
         Integer version
-    ) {
-        assert validateNoteId(id).isEmpty();
-        assert validateUserId(userId).isEmpty();
-        assert title == null || validateNoteTitle(title).isEmpty();
-        assert content == null || validateNoteContent(content).isEmpty();
-        assert validateNoteContentsModificationTime(contentsModificationTime).isEmpty();
-        assert creationTime == null || validateCreationTime(creationTime).isEmpty();
-        assert modificationTime == null || validateModificationTime(modificationTime).isEmpty();
-        assert version == null || validateVersion(version).isEmpty();
+    ) throws NoteValidationException {
         this.id = id;
         this.userId = userId;
         this.title = title;
@@ -60,13 +51,14 @@ public class Note extends Entity {
         this.creationTime = creationTime;
         this.modificationTime = modificationTime;
         this.version = version;
+        NoteValidator.validate(this);
     }
 
-    public Note(UUID id, UUID userId, String title, String content, Instant contentsModificationTime) {
+    public Note(UUID id, UUID userId, String title, String content, Instant contentsModificationTime) throws NoteValidationException {
         this(id, userId, title, content, contentsModificationTime, null, null, null);
     }
 
-    public Note(UUID id, UUID userId, Instant contentsModificationTime) {
+    public Note(UUID id, UUID userId, Instant contentsModificationTime) throws NoteValidationException {
         this(id, userId, null, null, contentsModificationTime);
     }
 
@@ -83,7 +75,11 @@ public class Note extends Entity {
     }
 
     public RemovedNote asRemovedNote() {
-        return new RemovedNote(id, userId, contentsModificationTime);
+        try {
+            return new RemovedNote(id, userId, contentsModificationTime);
+        } catch (RemovedNoteValidationException exception) {
+            throw new InternalException(exception);
+        }
     }
 
     public boolean hasContent() {
@@ -102,7 +98,7 @@ public class Note extends Entity {
                 InstantFactory.create(resultSet.getTimestamp(MODIFICATION_TIME)),
                 resultSet.getInt(VERSION)
             );
-        } catch (SQLException exception) {
+        } catch (SQLException | NoteValidationException exception) {
             throw new InternalException(exception);
         }
     }

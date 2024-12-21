@@ -1,8 +1,9 @@
 package com.github.krystianmuchla.home.domain.drive.directory;
 
-import com.github.krystianmuchla.home.domain.drive.directory.exception.DirectoryNotFoundException;
-import com.github.krystianmuchla.home.domain.drive.directory.exception.DirectoryNotUpdatedException;
-import com.github.krystianmuchla.home.domain.drive.directory.exception.IllegalDirectoryStatusException;
+import com.github.krystianmuchla.home.domain.drive.directory.error.DirectoryNotFoundException;
+import com.github.krystianmuchla.home.domain.drive.directory.error.DirectoryNotUpdatedException;
+import com.github.krystianmuchla.home.domain.drive.directory.error.DirectoryValidationException;
+import com.github.krystianmuchla.home.domain.drive.directory.error.IllegalDirectoryStatusException;
 import com.github.krystianmuchla.home.infrastructure.persistence.drive.DirectoryPersistence;
 
 import java.util.LinkedList;
@@ -10,7 +11,10 @@ import java.util.List;
 import java.util.UUID;
 
 public class DirectoryService {
-    public static UUID create(UUID userId, UUID parentId, String name) {
+    public static UUID create(UUID userId, UUID parentId, String name) throws DirectoryNotFoundException, DirectoryValidationException {
+        if (parentId != null) {
+            checkExistence(userId, parentId);
+        }
         var directory = new Directory(userId, parentId, name);
         DirectoryPersistence.create(directory);
         return directory.id;
@@ -22,6 +26,10 @@ public class DirectoryService {
             throw new DirectoryNotFoundException();
         }
         return directory;
+    }
+
+    public static void checkExistence(UUID userId, UUID directoryId) throws DirectoryNotFoundException {
+        get(userId, directoryId);
     }
 
     public static List<Directory> getHierarchy(UUID userId, UUID directoryId) throws DirectoryNotFoundException {

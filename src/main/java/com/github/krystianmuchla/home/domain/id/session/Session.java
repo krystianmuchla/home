@@ -1,11 +1,13 @@
 package com.github.krystianmuchla.home.domain.id.session;
 
+import com.github.krystianmuchla.home.domain.id.session.error.SessionValidationException;
 import com.github.krystianmuchla.home.domain.id.user.User;
 
-import static com.github.krystianmuchla.home.domain.id.IdValidator.validateUser;
+public class Session {
+    public final User user;
 
-public record Session(User user) {
-    public Session {
-        assert validateUser(user).isEmpty();
+    public Session(User user) throws SessionValidationException {
+        this.user = user;
+        SessionValidator.validate(this);
     }
 }

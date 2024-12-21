@@ -1,7 +1,6 @@
 package com.github.krystianmuchla.home.infrastructure.http.drive;
 
 import com.github.krystianmuchla.home.application.exception.ValidationError;
-import com.github.krystianmuchla.home.domain.drive.DriveValidator;
 import com.github.krystianmuchla.home.infrastructure.http.core.Header;
 import com.github.krystianmuchla.home.infrastructure.http.core.RequestHeaders;
 import com.github.krystianmuchla.home.infrastructure.http.core.exception.BadRequestException;
@@ -15,21 +14,14 @@ public record UploadFileRequest(String fileName) implements RequestHeaders {
         this(resolveFileName(headers));
     }
 
-    @Override
-    public void validate() {
-        var errors = DriveValidator.validateFileName(fileName);
-        if (!errors.isEmpty()) {
-            throw new BadRequestException(Header.FILE_NAME, errors);
-        }
-    }
-
     private static String resolveFileName(Headers headers) {
         var fileName = headers.getFirst(Header.FILE_NAME);
+        if (fileName == null) {
+            return null;
+        }
         try {
             return URLDecoder.decode(fileName, StandardCharsets.UTF_8);
-        } catch (NullPointerException nullPointerException) {
-            throw new BadRequestException(Header.FILE_NAME, ValidationError.nullValue());
-        } catch (IllegalArgumentException illegalArgumentException) {
+        } catch (IllegalArgumentException exception) {
             throw new BadRequestException(Header.FILE_NAME, ValidationError.wrongFormat());
         }
     }

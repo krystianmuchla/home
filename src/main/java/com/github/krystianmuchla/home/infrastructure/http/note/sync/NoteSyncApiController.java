@@ -1,10 +1,16 @@
 package com.github.krystianmuchla.home.infrastructure.http.note.sync;
 
+import com.github.krystianmuchla.home.application.exception.ValidationError;
+import com.github.krystianmuchla.home.application.util.MultiValueHashMap;
 import com.github.krystianmuchla.home.domain.note.Note;
 import com.github.krystianmuchla.home.domain.note.NoteSyncService;
+import com.github.krystianmuchla.home.domain.note.error.NoteValidationError;
+import com.github.krystianmuchla.home.domain.note.error.NoteValidationException;
 import com.github.krystianmuchla.home.infrastructure.http.core.Controller;
 import com.github.krystianmuchla.home.infrastructure.http.core.RequestReader;
 import com.github.krystianmuchla.home.infrastructure.http.core.ResponseWriter;
+import com.github.krystianmuchla.home.infrastructure.http.core.exception.BadRequestException;
+import com.github.krystianmuchla.home.infrastructure.http.core.exception.InternalServerErrorException;
 import com.github.krystianmuchla.home.infrastructure.persistence.core.Transaction;
 import com.sun.net.httpserver.HttpExchange;
 
@@ -31,7 +37,37 @@ public class NoteSyncApiController extends Controller {
 
     private static List<Note> map(UUID userId, List<NoteRequest> notes) {
         return notes.stream().map(note -> {
-            return new Note(note.id(), userId, note.title(), note.content(), note.contentsModificationTime());
+            try {
+                return new Note(note.id(), userId, note.title(), note.content(), note.contentsModificationTime());
+            } catch (NoteValidationException exception) {
+                var errors = new MultiValueHashMap<String, ValidationError>();
+                for (var error : exception.errors) {
+                    switch (error) {
+                        case NoteValidationError.NullId e -> {
+                            errors.add("id", ValidationError.nullValue());
+                        }
+                        case NoteValidationError.TitleAboveMaxLength e -> {
+                            errors.add("title", ValidationError.aboveMaxLength(e.maxLength));
+                        }
+                        case NoteValidationError.ContentAboveMaxLength e -> {
+                            errors.add("content", ValidationError.aboveMaxLength(e.maxLength));
+                        }
+                        case NoteValidationError.NullContentsModificationTime e -> {
+                            errors.add("contentsModificationTime", ValidationError.nullValue());
+                        }
+                        case NoteValidationError.ContentsModificationTimeWrongFormat e -> {
+                            errors.add("contentsModificationTime", ValidationError.wrongFormat());
+                        }
+                        default -> {
+                        }
+                    }
+                }
+                if (errors.isEmpty()) {
+                    throw new InternalServerErrorException(exception);
+                } else {
+                    throw new BadRequestException(errors);
+                }
+            }
         }).toList();
     }
 

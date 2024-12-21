@@ -2,13 +2,12 @@ package com.github.krystianmuchla.home.domain.id.user;
 
 import com.github.krystianmuchla.home.application.util.InstantFactory;
 import com.github.krystianmuchla.home.application.util.UUIDFactory;
+import com.github.krystianmuchla.home.domain.id.user.error.UserValidationException;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.Instant;
 import java.util.UUID;
-
-import static com.github.krystianmuchla.home.domain.id.IdValidator.*;
 
 public class User {
     public static final String TABLE = "user";
@@ -24,20 +23,16 @@ public class User {
     public final Instant modificationTime;
     public final Integer version;
 
-    public User(UUID id, String name, Instant creationTime, Instant modificationTime, Integer version) {
-        assert validateUserId(id).isEmpty();
-        assert validateUserName(name).isEmpty();
-        assert creationTime == null || validateCreationTime(creationTime).isEmpty();
-        assert modificationTime == null || validateModificationTime(modificationTime).isEmpty();
-        assert version == null || validateVersion(version).isEmpty();
+    public User(UUID id, String name, Instant creationTime, Instant modificationTime, Integer version) throws UserValidationException {
         this.id = id;
         this.name = name;
         this.creationTime = creationTime;
         this.modificationTime = modificationTime;
         this.version = version;
+        UserValidator.validate(this);
     }
 
-    public User(String name) {
+    public User(String name) throws UserValidationException {
         this(UUID.randomUUID(), name, null, null, null);
     }
 
@@ -50,7 +45,7 @@ public class User {
                 InstantFactory.create(resultSet.getTimestamp(MODIFICATION_TIME)),
                 resultSet.getInt(VERSION)
             );
-        } catch (SQLException exception) {
+        } catch (SQLException | UserValidationException exception) {
             throw new RuntimeException(exception);
         }
     }

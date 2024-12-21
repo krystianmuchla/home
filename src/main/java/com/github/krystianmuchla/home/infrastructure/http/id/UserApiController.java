@@ -1,15 +1,26 @@
 package com.github.krystianmuchla.home.infrastructure.http.id;
 
+import com.github.krystianmuchla.home.application.exception.ValidationError;
+import com.github.krystianmuchla.home.application.util.MultiValueHashMap;
 import com.github.krystianmuchla.home.domain.id.SignUpToken;
+import com.github.krystianmuchla.home.domain.id.accessdata.error.AccessDataAlreadyExistsException;
+import com.github.krystianmuchla.home.domain.id.accessdata.error.AccessDataValidationError;
+import com.github.krystianmuchla.home.domain.id.accessdata.error.AccessDataValidationException;
+import com.github.krystianmuchla.home.domain.id.password.error.PasswordValidationError;
+import com.github.krystianmuchla.home.domain.id.password.error.PasswordValidationException;
+import com.github.krystianmuchla.home.domain.id.session.SessionId;
 import com.github.krystianmuchla.home.domain.id.session.SessionService;
+import com.github.krystianmuchla.home.domain.id.session.error.SessionValidationException;
 import com.github.krystianmuchla.home.domain.id.user.User;
 import com.github.krystianmuchla.home.domain.id.user.UserService;
-import com.github.krystianmuchla.home.domain.id.user.exception.UserAlreadyExistsException;
-import com.github.krystianmuchla.home.domain.id.user.exception.UserNotFoundException;
+import com.github.krystianmuchla.home.domain.id.user.error.UserNotFoundException;
+import com.github.krystianmuchla.home.domain.id.user.error.UserValidationError;
+import com.github.krystianmuchla.home.domain.id.user.error.UserValidationException;
 import com.github.krystianmuchla.home.infrastructure.http.core.Controller;
 import com.github.krystianmuchla.home.infrastructure.http.core.Cookie;
 import com.github.krystianmuchla.home.infrastructure.http.core.RequestReader;
 import com.github.krystianmuchla.home.infrastructure.http.core.ResponseWriter;
+import com.github.krystianmuchla.home.infrastructure.http.core.exception.BadRequestException;
 import com.github.krystianmuchla.home.infrastructure.http.core.exception.ConflictException;
 import com.github.krystianmuchla.home.infrastructure.http.core.exception.InternalServerErrorException;
 import com.github.krystianmuchla.home.infrastructure.http.core.exception.UnauthorizedException;
@@ -35,8 +46,58 @@ public class UserApiController extends Controller {
         var userId = Transaction.run(() -> {
             try {
                 return UserService.create(signUpRequest.name(), signUpRequest.login(), signUpRequest.password());
-            } catch (UserAlreadyExistsException exception) {
+            } catch (UserValidationException exception) {
+                var errors = new MultiValueHashMap<String, ValidationError>();
+                for (var error : exception.errors) {
+                    switch (error) {
+                        case UserValidationError.NullName e -> errors.add("name", ValidationError.nullValue());
+                        case UserValidationError.NameBelowMinLength e ->
+                            errors.add("name", ValidationError.belowMinLength(e.minLength));
+                        case UserValidationError.NameAboveMaxLength e ->
+                            errors.add("name", ValidationError.aboveMaxLength(e.maxLength));
+                        default -> {
+                        }
+                    }
+                }
+                if (errors.isEmpty()) {
+                    throw new InternalServerErrorException(exception);
+                } else {
+                    throw new BadRequestException(errors);
+                }
+            } catch (AccessDataAlreadyExistsException exception) {
                 throw new ConflictException();
+            } catch (PasswordValidationException exception) {
+                var errors = new MultiValueHashMap<String, ValidationError>();
+                for (var error : exception.errors) {
+                    switch (error) {
+                        case PasswordValidationError.NullValue e -> errors.add("password", ValidationError.nullValue());
+                        case PasswordValidationError.ValueBelowMinLength e ->
+                            errors.add("password", ValidationError.belowMinLength(e.minLength));
+                        case PasswordValidationError.ValueAboveMaxLength e ->
+                            errors.add("password", ValidationError.aboveMaxLength(e.maxLength));
+                        case PasswordValidationError.ValueWrongFormat e ->
+                            errors.add("password", ValidationError.wrongFormat());
+                    }
+                }
+                throw new BadRequestException(errors);
+            } catch (AccessDataValidationException exception) {
+                var errors = new MultiValueHashMap<String, ValidationError>();
+                for (var error : exception.errors) {
+                    switch (error) {
+                        case AccessDataValidationError.NullLogin e -> errors.add("login", ValidationError.nullValue());
+                        case AccessDataValidationError.LoginBelowMinLength e ->
+                            errors.add("login", ValidationError.belowMinValue(e.minLength));
+                        case AccessDataValidationError.LoginAboveMaxLength e ->
+                            errors.add("login", ValidationError.aboveMaxLength(e.maxLength));
+                        default -> {
+                        }
+                    }
+                }
+                if (errors.isEmpty()) {
+                    throw new InternalServerErrorException(exception);
+                } else {
+                    throw new BadRequestException(errors);
+                }
             }
         });
         User user;
@@ -45,7 +106,12 @@ public class UserApiController extends Controller {
         } catch (UserNotFoundException exception) {
             throw new InternalServerErrorException();
         }
-        var sessionId = SessionService.createSession(signUpRequest.login(), user);
+        SessionId sessionId;
+        try {
+            sessionId = SessionService.createSession(signUpRequest.login(), user);
+        } catch (SessionValidationException exception) {
+            throw new InternalServerErrorException(exception);
+        }
         ResponseWriter.writeCookies(exchange, 201, Cookie.fromSessionId(sessionId));
     }
 }

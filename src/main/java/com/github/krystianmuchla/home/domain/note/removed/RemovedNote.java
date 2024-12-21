@@ -4,15 +4,14 @@ import com.github.krystianmuchla.home.application.exception.InternalException;
 import com.github.krystianmuchla.home.application.util.InstantFactory;
 import com.github.krystianmuchla.home.application.util.UUIDFactory;
 import com.github.krystianmuchla.home.domain.note.Note;
+import com.github.krystianmuchla.home.domain.note.error.NoteValidationException;
+import com.github.krystianmuchla.home.domain.note.removed.error.RemovedNoteValidationException;
 import com.github.krystianmuchla.home.infrastructure.persistence.core.Entity;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.Instant;
 import java.util.UUID;
-
-import static com.github.krystianmuchla.home.domain.id.IdValidator.validateUserId;
-import static com.github.krystianmuchla.home.domain.note.NoteValidator.*;
 
 public class RemovedNote extends Entity {
     public static final String TABLE = "removed_note";
@@ -37,22 +36,17 @@ public class RemovedNote extends Entity {
         Instant creationTime,
         Instant modificationTime,
         Integer version
-    ) {
-        assert validateNoteId(id).isEmpty();
-        assert validateUserId(userId).isEmpty();
-        assert validateRemovalTime(removalTime).isEmpty();
-        assert creationTime == null || validateCreationTime(creationTime).isEmpty();
-        assert modificationTime == null || validateModificationTime(modificationTime).isEmpty();
-        assert version == null || validateVersion(version).isEmpty();
+    ) throws RemovedNoteValidationException {
         this.id = id;
         this.userId = userId;
         this.removalTime = removalTime;
         this.creationTime = creationTime;
         this.modificationTime = modificationTime;
         this.version = version;
+        RemovedNoteValidator.validate(this);
     }
 
-    public RemovedNote(UUID id, UUID userId, Instant removalTime) {
+    public RemovedNote(UUID id, UUID userId, Instant removalTime) throws RemovedNoteValidationException {
         this(id, userId, removalTime, null, null, null);
     }
 
@@ -61,7 +55,11 @@ public class RemovedNote extends Entity {
     }
 
     public Note asNote() {
-        return new Note(id, userId, removalTime);
+        try {
+            return new Note(id, userId, removalTime);
+        } catch (NoteValidationException exception) {
+            throw new InternalException(exception);
+        }
     }
 
     public static RemovedNote fromResultSet(ResultSet resultSet) {
@@ -74,7 +72,7 @@ public class RemovedNote extends Entity {
                 InstantFactory.create(resultSet.getTimestamp(MODIFICATION_TIME)),
                 resultSet.getInt(VERSION)
             );
-        } catch (SQLException exception) {
+        } catch (SQLException | RemovedNoteValidationException exception) {
             throw new InternalException(exception);
         }
     }

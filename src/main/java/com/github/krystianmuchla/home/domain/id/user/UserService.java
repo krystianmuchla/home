@@ -1,11 +1,15 @@
 package com.github.krystianmuchla.home.domain.id.user;
 
 import com.github.krystianmuchla.home.application.util.StringService;
-import com.github.krystianmuchla.home.domain.id.AccessData;
-import com.github.krystianmuchla.home.domain.id.exception.UnauthenticatedException;
-import com.github.krystianmuchla.home.domain.id.user.exception.UserAlreadyExistsException;
-import com.github.krystianmuchla.home.domain.id.user.exception.UserBlockedException;
-import com.github.krystianmuchla.home.domain.id.user.exception.UserNotFoundException;
+import com.github.krystianmuchla.home.domain.id.accessdata.AccessDataService;
+import com.github.krystianmuchla.home.domain.id.accessdata.error.AccessDataAlreadyExistsException;
+import com.github.krystianmuchla.home.domain.id.accessdata.error.AccessDataValidationException;
+import com.github.krystianmuchla.home.domain.id.error.UnauthenticatedException;
+import com.github.krystianmuchla.home.domain.id.password.Secret;
+import com.github.krystianmuchla.home.domain.id.password.error.PasswordValidationException;
+import com.github.krystianmuchla.home.domain.id.user.error.UserBlockedException;
+import com.github.krystianmuchla.home.domain.id.user.error.UserNotFoundException;
+import com.github.krystianmuchla.home.domain.id.user.error.UserValidationException;
 import com.github.krystianmuchla.home.infrastructure.persistence.id.AccessDataPersistence;
 import com.github.krystianmuchla.home.infrastructure.persistence.id.UserPersistence;
 
@@ -13,16 +17,10 @@ import java.util.Arrays;
 import java.util.UUID;
 
 public class UserService {
-    public static UUID create(String name, String login, String password) throws UserAlreadyExistsException {
-        var accessData = AccessDataPersistence.read(login);
-        if (accessData != null) {
-            throw new UserAlreadyExistsException();
-        }
+    public static UUID create(String name, String login, String password) throws UserValidationException, PasswordValidationException, AccessDataAlreadyExistsException, AccessDataValidationException {
         var user = new User(name);
         UserPersistence.create(user);
-        var secret = new Secret(password);
-        accessData = new AccessData(user.id, login, secret);
-        AccessDataPersistence.create(accessData);
+        AccessDataService.create(user.id, login, password);
         return user.id;
     }
 

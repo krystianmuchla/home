@@ -6,6 +6,7 @@ import org.slf4j.LoggerFactory;
 import java.time.Duration;
 import java.util.Collection;
 
+// todo
 public abstract class Worker implements Runnable {
     private static final Logger LOG = LoggerFactory.getLogger(Worker.class);
 

@@ -1,17 +1,19 @@
 package com.github.krystianmuchla.home.infrastructure.http.id;
 
 import com.github.krystianmuchla.home.application.exception.ValidationError;
-import com.github.krystianmuchla.home.domain.id.exception.UnauthenticatedException;
+import com.github.krystianmuchla.home.domain.id.error.UnauthenticatedException;
 import com.github.krystianmuchla.home.domain.id.session.SessionId;
 import com.github.krystianmuchla.home.domain.id.session.SessionService;
+import com.github.krystianmuchla.home.domain.id.session.error.SessionValidationException;
 import com.github.krystianmuchla.home.domain.id.user.User;
 import com.github.krystianmuchla.home.domain.id.user.UserService;
-import com.github.krystianmuchla.home.domain.id.user.exception.UserBlockedException;
+import com.github.krystianmuchla.home.domain.id.user.error.UserBlockedException;
 import com.github.krystianmuchla.home.infrastructure.http.core.Controller;
 import com.github.krystianmuchla.home.infrastructure.http.core.Cookie;
 import com.github.krystianmuchla.home.infrastructure.http.core.RequestReader;
 import com.github.krystianmuchla.home.infrastructure.http.core.ResponseWriter;
 import com.github.krystianmuchla.home.infrastructure.http.core.exception.BadRequestException;
+import com.github.krystianmuchla.home.infrastructure.http.core.exception.InternalServerErrorException;
 import com.github.krystianmuchla.home.infrastructure.http.core.exception.TooManyRequestsException;
 import com.github.krystianmuchla.home.infrastructure.http.core.exception.UnauthorizedException;
 import com.sun.net.httpserver.HttpExchange;
@@ -51,7 +53,12 @@ public class SessionApiController extends Controller {
         } catch (UserBlockedException exception) {
             throw new TooManyRequestsException();
         }
-        var sessionId = SessionService.createSession(signInRequest.login(), user);
+        SessionId sessionId;
+        try {
+            sessionId = SessionService.createSession(signInRequest.login(), user);
+        } catch (SessionValidationException exception) {
+            throw new InternalServerErrorException(exception);
+        }
         ResponseWriter.writeCookies(exchange, 204, Cookie.fromSessionId(sessionId));
     }
 }

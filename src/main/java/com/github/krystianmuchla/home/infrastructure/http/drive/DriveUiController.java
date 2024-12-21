@@ -6,7 +6,7 @@ import com.github.krystianmuchla.home.domain.drive.Entry;
 import com.github.krystianmuchla.home.domain.drive.EntryType;
 import com.github.krystianmuchla.home.domain.drive.directory.Directory;
 import com.github.krystianmuchla.home.domain.drive.directory.DirectoryService;
-import com.github.krystianmuchla.home.domain.drive.directory.exception.DirectoryNotFoundException;
+import com.github.krystianmuchla.home.domain.drive.directory.error.DirectoryNotFoundException;
 import com.github.krystianmuchla.home.infrastructure.http.core.Controller;
 import com.github.krystianmuchla.home.infrastructure.http.core.RequestReader;
 import com.github.krystianmuchla.home.infrastructure.http.core.ResponseWriter;

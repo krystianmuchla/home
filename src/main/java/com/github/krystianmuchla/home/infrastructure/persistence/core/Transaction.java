@@ -5,6 +5,7 @@ import com.github.krystianmuchla.home.application.exception.InternalException;
 import java.sql.SQLException;
 import java.util.function.Supplier;
 
+// todo
 public class Transaction {
     public static void run(Runnable runnable) {
         run(() -> {

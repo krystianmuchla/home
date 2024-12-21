@@ -14,8 +14,8 @@ public class HttpException extends RuntimeException {
         super(message);
     }
 
-    public HttpException(Throwable throwable) {
-        super(throwable);
+    public HttpException(Throwable cause) {
+        super(cause);
     }
 
     public void handle(HttpExchange exchange) throws IOException {
