@@ -33,8 +33,8 @@ public class UserService {
             throw new UnauthenticatedException();
         }
         UserGuardService.inspect(accessData.userId);
-        var secret = Secret.from(accessData.salt, password);
-        if (!Arrays.equals(secret, accessData.secret)) {
+        var secret = new Secret(accessData.salt, password);
+        if (!Arrays.equals(secret.secret, accessData.secret)) {
             UserGuardService.incrementAuthFailures(accessData.userId);
             throw new UnauthenticatedException();
         }

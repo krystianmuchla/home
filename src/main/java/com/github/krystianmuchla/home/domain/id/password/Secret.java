@@ -24,16 +24,16 @@ public class Secret {
     public final byte[] salt;
     public final byte[] secret;
 
-    public Secret(Password password) {
-        if (password == null) {
-            throw new IllegalArgumentException();
-        }
-        salt = SecureRandomFactory.createBytes(SALT_BYTES);
-        secret = Secret.from(salt, password.value);
+    public Secret(byte[] salt, String password) {
+        this.salt = salt;
+        this.secret = createSecret(salt, password);
     }
 
-    // todo
-    public static byte[] from(byte[] salt, String password) {
+    public Secret(Password password) {
+        this(SecureRandomFactory.createBytes(SALT_BYTES), password.value);
+    }
+
+    private static byte[] createSecret(byte[] salt, String password) {
         var keySpec = new PBEKeySpec(password.toCharArray(), salt, 65536, SECRET_BYTES * 8);
         SecretKey secret;
         try {
