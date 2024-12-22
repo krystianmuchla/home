@@ -1,6 +1,6 @@
 package com.github.krystianmuchla.home.infrastructure.persistence.drive;
 
-import com.github.krystianmuchla.home.application.util.InstantFactory;
+import com.github.krystianmuchla.home.application.time.Time;
 import com.github.krystianmuchla.home.domain.drive.file.File;
 import com.github.krystianmuchla.home.domain.drive.file.FileStatus;
 import com.github.krystianmuchla.home.infrastructure.persistence.core.Persistence;
@@ -14,7 +14,7 @@ import static com.github.krystianmuchla.home.infrastructure.persistence.core.Sql
 
 public class FilePersistence extends Persistence {
     public static void create(File file) {
-        var creationTime = InstantFactory.create();
+        var creationTime = new Time();
         var sql = new Sql.Builder()
             .insertInto(File.TABLE)
             .values(
@@ -91,7 +91,7 @@ public class FilePersistence extends Persistence {
 
     public static boolean update(File file) {
         var updates = file.consumeUpdates();
-        updates.put(File.MODIFICATION_TIME, InstantFactory.create());
+        updates.put(File.MODIFICATION_TIME, new Time());
         updates.put(File.VERSION, file.version + 1);
         var sql = new Sql.Builder()
             .update(File.TABLE)

@@ -1,10 +1,9 @@
 package com.github.krystianmuchla.home.domain.note;
 
-import com.github.krystianmuchla.home.application.util.InstantFactory;
+import com.github.krystianmuchla.home.application.time.Time;
 import com.github.krystianmuchla.home.domain.note.error.NoteValidationError;
 import com.github.krystianmuchla.home.domain.note.error.NoteValidationException;
 
-import java.time.Instant;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
@@ -44,23 +43,9 @@ public class NoteValidator {
         }
     }
 
-    public void validateContentsModificationTime(Instant contentsModificationTime) {
+    public void validateContentsModificationTime(Time contentsModificationTime) {
         if (contentsModificationTime == null) {
             errors.add(new NoteValidationError.NullContentsModificationTime());
-        } else if (InstantFactory.create(contentsModificationTime) != contentsModificationTime) {
-            errors.add(new NoteValidationError.ContentsModificationTimeWrongFormat());
-        }
-    }
-
-    public void validateCreationTime(Instant creationTime) {
-        if (creationTime != null && InstantFactory.create(creationTime) != creationTime) {
-            errors.add(new NoteValidationError.CreationTimeWrongFormat());
-        }
-    }
-
-    public void validateModificationTime(Instant modificationTime) {
-        if (modificationTime != null && InstantFactory.create(modificationTime) != modificationTime) {
-            errors.add(new NoteValidationError.ModificationTimeWrongFormat());
         }
     }
 
@@ -77,8 +62,6 @@ public class NoteValidator {
         validator.validateTitle(note.title);
         validator.validateContent(note.content);
         validator.validateContentsModificationTime(note.contentsModificationTime);
-        validator.validateCreationTime(note.creationTime);
-        validator.validateModificationTime(note.modificationTime);
         validator.validateVersion(note.version);
         if (validator.hasErrors()) {
             throw new NoteValidationException(validator.errors);

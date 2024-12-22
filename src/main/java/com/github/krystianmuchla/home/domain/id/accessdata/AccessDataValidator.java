@@ -1,10 +1,8 @@
 package com.github.krystianmuchla.home.domain.id.accessdata;
 
-import com.github.krystianmuchla.home.application.util.InstantFactory;
 import com.github.krystianmuchla.home.domain.id.accessdata.error.AccessDataValidationError;
 import com.github.krystianmuchla.home.domain.id.accessdata.error.AccessDataValidationException;
 
-import java.time.Instant;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
@@ -72,18 +70,6 @@ public class AccessDataValidator {
         }
     }
 
-    public void validateCreationTime(Instant creationTime) {
-        if (creationTime != null && InstantFactory.create(creationTime) != creationTime) {
-            errors.add(new AccessDataValidationError.CreationTimeWrongFormat());
-        }
-    }
-
-    public void validateModificationTime(Instant modificationTime) {
-        if (modificationTime != null && InstantFactory.create(modificationTime) != modificationTime) {
-            errors.add(new AccessDataValidationError.ModificationTimeWrongFormat());
-        }
-    }
-
     public void validateVersion(Integer version) {
         if (version != null && version < VERSION_MIN_VALUE) {
             errors.add(new AccessDataValidationError.VersionBelowMinValue(VERSION_MIN_VALUE));
@@ -97,8 +83,6 @@ public class AccessDataValidator {
         validator.validateLogin(accessData.login);
         validator.validateSalt(accessData.salt);
         validator.validateSecret(accessData.secret);
-        validator.validateCreationTime(accessData.creationTime);
-        validator.validateModificationTime(accessData.modificationTime);
         validator.validateVersion(accessData.version);
         if (validator.hasErrors()) {
             throw new AccessDataValidationException(validator.errors);

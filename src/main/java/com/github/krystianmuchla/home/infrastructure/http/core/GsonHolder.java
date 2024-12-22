@@ -1,22 +1,21 @@
 package com.github.krystianmuchla.home.infrastructure.http.core;
 
+import com.github.krystianmuchla.home.application.time.Time;
+import com.github.krystianmuchla.home.application.time.TimeFactory;
 import com.github.krystianmuchla.home.infrastructure.http.core.error.BadRequestException;
 import com.google.gson.*;
 
-import java.time.Instant;
-import java.time.format.DateTimeParseException;
-
 public class GsonHolder {
     public static final Gson INSTANCE = new GsonBuilder()
-        .registerTypeAdapter(Instant.class, instantSerializer())
-        .registerTypeAdapter(Instant.class, instantDeserializer())
+        .registerTypeAdapter(Time.class, timeSerializer())
+        .registerTypeAdapter(Time.class, timeDeserializer())
         .create();
 
-    private static JsonSerializer<Instant> instantSerializer() {
-        return (instant, type, context) -> new JsonPrimitive(instant.toString());
+    private static JsonSerializer<Time> timeSerializer() {
+        return (time, type, context) -> new JsonPrimitive(time.value().toString());
     }
 
-    private static JsonDeserializer<Instant> instantDeserializer() {
+    private static JsonDeserializer<Time> timeDeserializer() {
         return (element, type, context) -> {
             JsonPrimitive primitive;
             try {
@@ -25,8 +24,8 @@ public class GsonHolder {
                 throw new BadRequestException(exception);
             }
             try {
-                return Instant.parse(primitive.getAsString());
-            } catch (DateTimeParseException exception) {
+                return TimeFactory.create(primitive.getAsString());
+            } catch (Exception exception) {
                 throw new BadRequestException(exception);
             }
         };

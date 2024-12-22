@@ -1,6 +1,7 @@
 package com.github.krystianmuchla.home.domain.note;
 
-import com.github.krystianmuchla.home.application.util.InstantFactory;
+import com.github.krystianmuchla.home.application.time.Time;
+import com.github.krystianmuchla.home.application.time.TimeFactory;
 import com.github.krystianmuchla.home.application.util.UUIDFactory;
 import com.github.krystianmuchla.home.domain.note.error.NoteValidationException;
 import com.github.krystianmuchla.home.domain.note.removed.RemovedNote;
@@ -9,7 +10,6 @@ import com.github.krystianmuchla.home.infrastructure.persistence.core.Entity;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.time.Instant;
 import java.util.UUID;
 
 public class Note extends Entity {
@@ -27,9 +27,9 @@ public class Note extends Entity {
     public final UUID userId;
     public final String title;
     public final String content;
-    public final Instant contentsModificationTime;
-    public final Instant creationTime;
-    public final Instant modificationTime;
+    public final Time contentsModificationTime;
+    public final Time creationTime;
+    public final Time modificationTime;
     public final Integer version;
 
     public Note(
@@ -37,9 +37,9 @@ public class Note extends Entity {
         UUID userId,
         String title,
         String content,
-        Instant contentsModificationTime,
-        Instant creationTime,
-        Instant modificationTime,
+        Time contentsModificationTime,
+        Time creationTime,
+        Time modificationTime,
         Integer version
     ) throws NoteValidationException {
         this.id = id;
@@ -53,11 +53,11 @@ public class Note extends Entity {
         NoteValidator.validate(this);
     }
 
-    public Note(UUID id, UUID userId, String title, String content, Instant contentsModificationTime) throws NoteValidationException {
+    public Note(UUID id, UUID userId, String title, String content, Time contentsModificationTime) throws NoteValidationException {
         this(id, userId, title, content, contentsModificationTime, null, null, null);
     }
 
-    public Note(UUID id, UUID userId, Instant contentsModificationTime) throws NoteValidationException {
+    public Note(UUID id, UUID userId, Time contentsModificationTime) throws NoteValidationException {
         this(id, userId, null, null, contentsModificationTime);
     }
 
@@ -69,7 +69,7 @@ public class Note extends Entity {
         updates.put(CONTENT, content);
     }
 
-    public void updateContentsModificationTime(Instant contentsModificationTime) {
+    public void updateContentsModificationTime(Time contentsModificationTime) {
         updates.put(CONTENTS_MODIFICATION_TIME, contentsModificationTime);
     }
 
@@ -92,9 +92,9 @@ public class Note extends Entity {
                 UUIDFactory.create(resultSet.getString(USER_ID)),
                 resultSet.getString(TITLE),
                 resultSet.getString(CONTENT),
-                InstantFactory.create(resultSet.getTimestamp(CONTENTS_MODIFICATION_TIME)),
-                InstantFactory.create(resultSet.getTimestamp(CREATION_TIME)),
-                InstantFactory.create(resultSet.getTimestamp(MODIFICATION_TIME)),
+                TimeFactory.create(resultSet.getTimestamp(CONTENTS_MODIFICATION_TIME)),
+                TimeFactory.create(resultSet.getTimestamp(CREATION_TIME)),
+                TimeFactory.create(resultSet.getTimestamp(MODIFICATION_TIME)),
                 resultSet.getInt(VERSION)
             );
         } catch (SQLException | NoteValidationException exception) {

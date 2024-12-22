@@ -1,15 +1,14 @@
 package com.github.krystianmuchla.home.application.util;
 
+import com.github.krystianmuchla.home.application.time.Time;
+
 import java.sql.Timestamp;
-import java.time.Instant;
-import java.time.LocalDateTime;
-import java.time.ZoneOffset;
 
 public class TimestampFactory {
-    public static Timestamp create(Instant instant) {
-        if (instant == null) {
+    public static Timestamp create(Time time) {
+        if (time == null) {
             return null;
         }
-        return Timestamp.valueOf(LocalDateTime.ofInstant(instant, ZoneOffset.UTC));
+        return Timestamp.from(time.value());
     }
 }

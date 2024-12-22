@@ -1,11 +1,10 @@
 package com.github.krystianmuchla.home.infrastructure.persistence.note;
 
-import com.github.krystianmuchla.home.application.util.InstantFactory;
+import com.github.krystianmuchla.home.application.time.Time;
 import com.github.krystianmuchla.home.domain.note.removed.RemovedNote;
 import com.github.krystianmuchla.home.infrastructure.persistence.core.Persistence;
 import com.github.krystianmuchla.home.infrastructure.persistence.core.Sql;
 
-import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 
@@ -14,7 +13,7 @@ import static com.github.krystianmuchla.home.infrastructure.persistence.core.Sql
 public class RemovedNotePersistence extends Persistence {
     public static void create(RemovedNote... removedNotes) {
         for (var removedNote : removedNotes) {
-            var creationTime = InstantFactory.create();
+            var creationTime = new Time();
             var sql = new Sql.Builder()
                 .insertInto(RemovedNote.TABLE)
                 .values(
@@ -41,7 +40,7 @@ public class RemovedNotePersistence extends Persistence {
 
     public static boolean update(RemovedNote removedNote) {
         var updates = removedNote.consumeUpdates();
-        updates.put(RemovedNote.MODIFICATION_TIME, InstantFactory.create());
+        updates.put(RemovedNote.MODIFICATION_TIME, new Time());
         updates.put(RemovedNote.VERSION, removedNote.version + 1);
         var sql = new Sql.Builder()
             .update(RemovedNote.TABLE)
@@ -70,7 +69,7 @@ public class RemovedNotePersistence extends Persistence {
         return boolResult(result);
     }
 
-    public static void delete(Instant creationTime) {
+    public static void delete(Time creationTime) {
         var sql = new Sql.Builder()
             .delete()
             .from(RemovedNote.TABLE)

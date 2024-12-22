@@ -1,10 +1,9 @@
 package com.github.krystianmuchla.home.domain.note.removed;
 
-import com.github.krystianmuchla.home.application.util.InstantFactory;
+import com.github.krystianmuchla.home.application.time.Time;
 import com.github.krystianmuchla.home.domain.note.removed.error.RemovedNoteValidationError;
 import com.github.krystianmuchla.home.domain.note.removed.error.RemovedNoteValidationException;
 
-import java.time.Instant;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
@@ -30,23 +29,9 @@ public class RemovedNoteValidator {
         }
     }
 
-    public void validateRemovalTime(Instant removalTime) {
+    public void validateRemovalTime(Time removalTime) {
         if (removalTime == null) {
             errors.add(new RemovedNoteValidationError.NullRemovalTime());
-        } else if (InstantFactory.create(removalTime) != removalTime) {
-            errors.add(new RemovedNoteValidationError.RemovalTimeWrongFormat());
-        }
-    }
-
-    public void validateCreationTime(Instant creationTime) {
-        if (creationTime != null && InstantFactory.create(creationTime) != creationTime) {
-            errors.add(new RemovedNoteValidationError.CreationTimeWrongFormat());
-        }
-    }
-
-    public void validateModificationTime(Instant modificationTime) {
-        if (modificationTime != null && InstantFactory.create(modificationTime) != modificationTime) {
-            errors.add(new RemovedNoteValidationError.ModificationTimeWrongFormat());
         }
     }
 
@@ -61,8 +46,6 @@ public class RemovedNoteValidator {
         validator.validateId(removedNote.id);
         validator.validateUserId(removedNote.userId);
         validator.validateRemovalTime(removedNote.removalTime);
-        validator.validateCreationTime(removedNote.creationTime);
-        validator.validateModificationTime(removedNote.modificationTime);
         validator.validateVersion(removedNote.version);
         if (validator.hasErrors()) {
             throw new RemovedNoteValidationException(validator.errors);

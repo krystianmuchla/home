@@ -1,8 +1,6 @@
 package com.github.krystianmuchla.home.domain.drive.directory.error;
 
-public abstract sealed class DirectoryValidationError
-    permits DirectoryValidationError.CreationTimeWrongFormat,
-    DirectoryValidationError.ModificationTimeWrongFormat,
+public abstract sealed class DirectoryValidationError permits
     DirectoryValidationError.NameAboveMaxLength,
     DirectoryValidationError.NameBelowMinLength,
     DirectoryValidationError.NullId,
@@ -36,12 +34,6 @@ public abstract sealed class DirectoryValidationError
         public NameAboveMaxLength(int maxLength) {
             this.maxLength = maxLength;
         }
-    }
-
-    public static final class CreationTimeWrongFormat extends DirectoryValidationError {
-    }
-
-    public static final class ModificationTimeWrongFormat extends DirectoryValidationError {
     }
 
     public static final class VersionBelowMinValue extends DirectoryValidationError {

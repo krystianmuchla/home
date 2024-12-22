@@ -1,10 +1,8 @@
 package com.github.krystianmuchla.home.domain.drive.file;
 
-import com.github.krystianmuchla.home.application.util.InstantFactory;
 import com.github.krystianmuchla.home.domain.drive.file.error.FileValidationError;
 import com.github.krystianmuchla.home.domain.drive.file.error.FileValidationException;
 
-import java.time.Instant;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
@@ -50,18 +48,6 @@ public class FileValidator {
         }
     }
 
-    public void validateCreationTime(Instant creationTime) {
-        if (creationTime != null && InstantFactory.create(creationTime) != creationTime) {
-            errors.add(new FileValidationError.CreationTimeWrongFormat());
-        }
-    }
-
-    public void validateModificationTime(Instant modificationTime) {
-        if (modificationTime != null && InstantFactory.create(modificationTime) != modificationTime) {
-            errors.add(new FileValidationError.ModificationTimeWrongFormat());
-        }
-    }
-
     public void validateVersion(Integer version) {
         if (version != null && version < VERSION_MIN_VALUE) {
             errors.add(new FileValidationError.VersionBelowMinValue(VERSION_MIN_VALUE));
@@ -74,8 +60,6 @@ public class FileValidator {
         validator.validateUserId(file.userId);
         validator.validateStatus(file.status);
         validator.validateName(file.name);
-        validator.validateCreationTime(file.creationTime);
-        validator.validateModificationTime(file.modificationTime);
         validator.validateVersion(file.version);
         if (validator.hasErrors()) {
             throw new FileValidationException(validator.errors);

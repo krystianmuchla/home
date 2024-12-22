@@ -1,6 +1,13 @@
 package com.github.krystianmuchla.home.domain.drive.file.error;
 
-public abstract sealed class FileValidationError permits FileValidationError.CreationTimeWrongFormat, FileValidationError.ModificationTimeWrongFormat, FileValidationError.NameAboveMaxLength, FileValidationError.NameBelowMinLength, FileValidationError.NullId, FileValidationError.NullName, FileValidationError.NullStatus, FileValidationError.NullUserId, FileValidationError.VersionBelowMinValue {
+public abstract sealed class FileValidationError permits
+    FileValidationError.NameAboveMaxLength,
+    FileValidationError.NameBelowMinLength,
+    FileValidationError.NullId,
+    FileValidationError.NullName,
+    FileValidationError.NullStatus,
+    FileValidationError.NullUserId,
+    FileValidationError.VersionBelowMinValue {
     public static final class NullId extends FileValidationError {
     }
 
@@ -27,12 +34,6 @@ public abstract sealed class FileValidationError permits FileValidationError.Cre
         public NameAboveMaxLength(int maxLength) {
             this.maxLength = maxLength;
         }
-    }
-
-    public static final class CreationTimeWrongFormat extends FileValidationError {
-    }
-
-    public static final class ModificationTimeWrongFormat extends FileValidationError {
     }
 
     public static final class VersionBelowMinValue extends FileValidationError {

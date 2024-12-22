@@ -1,12 +1,12 @@
 package com.github.krystianmuchla.home.infrastructure.persistence.core;
 
+import com.github.krystianmuchla.home.application.time.Time;
 import com.github.krystianmuchla.home.application.util.CollectionService;
 import com.github.krystianmuchla.home.application.util.StreamService;
 import com.github.krystianmuchla.home.application.util.TimestampFactory;
 
 import java.net.URI;
 import java.sql.Timestamp;
-import java.time.Instant;
 import java.util.*;
 
 public class Sql {
@@ -42,8 +42,8 @@ public class Sql {
             case UUID uuid -> uuid.toString();
             case URI uri -> uri.toString();
             case Timestamp timestamp -> timestamp.toString();
-            case Instant instant -> {
-                var timestamp = TimestampFactory.create(instant);
+            case Time time -> {
+                var timestamp = TimestampFactory.create(time);
                 yield parameter(timestamp);
             }
             default -> parameter;

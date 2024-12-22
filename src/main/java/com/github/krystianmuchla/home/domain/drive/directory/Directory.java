@@ -1,13 +1,13 @@
 package com.github.krystianmuchla.home.domain.drive.directory;
 
-import com.github.krystianmuchla.home.application.util.InstantFactory;
+import com.github.krystianmuchla.home.application.time.Time;
+import com.github.krystianmuchla.home.application.time.TimeFactory;
 import com.github.krystianmuchla.home.application.util.UUIDFactory;
 import com.github.krystianmuchla.home.domain.drive.directory.error.DirectoryValidationException;
 import com.github.krystianmuchla.home.infrastructure.persistence.core.Entity;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.time.Instant;
 import java.util.UUID;
 
 public class Directory extends Entity {
@@ -26,8 +26,8 @@ public class Directory extends Entity {
     public final DirectoryStatus status;
     public final UUID parentId;
     public final String name;
-    public final Instant creationTime;
-    public final Instant modificationTime;
+    public final Time creationTime;
+    public final Time modificationTime;
     public final Integer version;
 
     public Directory(
@@ -36,8 +36,8 @@ public class Directory extends Entity {
         DirectoryStatus status,
         UUID parentId,
         String name,
-        Instant creationTime,
-        Instant modificationTime,
+        Time creationTime,
+        Time modificationTime,
         Integer version
     ) throws DirectoryValidationException {
         this.id = id;
@@ -76,8 +76,8 @@ public class Directory extends Entity {
                 DirectoryStatus.valueOf(resultSet.getString(STATUS)),
                 UUIDFactory.create(resultSet.getString(PARENT_ID)),
                 resultSet.getString(NAME),
-                InstantFactory.create(resultSet.getTimestamp(CREATION_TIME)),
-                InstantFactory.create(resultSet.getTimestamp(MODIFICATION_TIME)),
+                TimeFactory.create(resultSet.getTimestamp(CREATION_TIME)),
+                TimeFactory.create(resultSet.getTimestamp(MODIFICATION_TIME)),
                 resultSet.getInt(VERSION)
             );
         } catch (SQLException | DirectoryValidationException exception) {

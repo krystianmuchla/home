@@ -1,6 +1,6 @@
 package com.github.krystianmuchla.home.infrastructure.persistence.core.changelog;
 
-import com.github.krystianmuchla.home.application.util.InstantFactory;
+import com.github.krystianmuchla.home.application.time.Time;
 import com.github.krystianmuchla.home.application.util.Resource;
 import com.github.krystianmuchla.home.infrastructure.persistence.core.Persistence;
 import com.github.krystianmuchla.home.infrastructure.persistence.core.Transaction;
@@ -43,7 +43,7 @@ public class ChangelogService {
             int id = changeId;
             Transaction.run(() -> {
                 statements.forEach(statement -> Persistence.executeUpdate(statement.trim()));
-                ChangelogPersistence.createChange(new Change(id, InstantFactory.create()));
+                ChangelogPersistence.createChange(new Change(id, new Time()));
             });
             LOG.info("Executed database change with id: {}", changeId);
             changeId++;

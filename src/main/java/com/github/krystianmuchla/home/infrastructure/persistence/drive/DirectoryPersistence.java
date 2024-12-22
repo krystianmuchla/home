@@ -1,6 +1,6 @@
 package com.github.krystianmuchla.home.infrastructure.persistence.drive;
 
-import com.github.krystianmuchla.home.application.util.InstantFactory;
+import com.github.krystianmuchla.home.application.time.Time;
 import com.github.krystianmuchla.home.domain.drive.directory.Directory;
 import com.github.krystianmuchla.home.domain.drive.directory.DirectoryStatus;
 import com.github.krystianmuchla.home.infrastructure.persistence.core.Persistence;
@@ -14,7 +14,7 @@ import static com.github.krystianmuchla.home.infrastructure.persistence.core.Sql
 
 public class DirectoryPersistence extends Persistence {
     public static void create(Directory directory) {
-        var creationTime = InstantFactory.create();
+        var creationTime = new Time();
         var sql = new Sql.Builder()
             .insertInto(Directory.TABLE)
             .values(
@@ -91,7 +91,7 @@ public class DirectoryPersistence extends Persistence {
 
     public static boolean update(Directory directory) {
         var updates = directory.consumeUpdates();
-        updates.put(Directory.MODIFICATION_TIME, InstantFactory.create());
+        updates.put(Directory.MODIFICATION_TIME, new Time());
         updates.put(Directory.VERSION, directory.version + 1);
         var sql = new Sql.Builder()
             .update(Directory.TABLE)

@@ -1,6 +1,12 @@
 package com.github.krystianmuchla.home.domain.note.error;
 
-public abstract sealed class NoteValidationError permits NoteValidationError.ContentAboveMaxLength, NoteValidationError.ContentsModificationTimeWrongFormat, NoteValidationError.CreationTimeWrongFormat, NoteValidationError.ModificationTimeWrongFormat, NoteValidationError.NullContentsModificationTime, NoteValidationError.NullId, NoteValidationError.NullUserId, NoteValidationError.TitleAboveMaxLength, NoteValidationError.VersionBelowMinValue {
+public abstract sealed class NoteValidationError permits
+    NoteValidationError.ContentAboveMaxLength,
+    NoteValidationError.NullContentsModificationTime,
+    NoteValidationError.NullId,
+    NoteValidationError.NullUserId,
+    NoteValidationError.TitleAboveMaxLength,
+    NoteValidationError.VersionBelowMinValue {
     public static final class NullId extends NoteValidationError {
     }
 
@@ -24,15 +30,6 @@ public abstract sealed class NoteValidationError permits NoteValidationError.Con
     }
 
     public static final class NullContentsModificationTime extends NoteValidationError {
-    }
-
-    public static final class ContentsModificationTimeWrongFormat extends NoteValidationError {
-    }
-
-    public static final class CreationTimeWrongFormat extends NoteValidationError {
-    }
-
-    public static final class ModificationTimeWrongFormat extends NoteValidationError {
     }
 
     public static final class VersionBelowMinValue extends NoteValidationError {

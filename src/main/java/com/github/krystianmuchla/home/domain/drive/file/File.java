@@ -1,13 +1,13 @@
 package com.github.krystianmuchla.home.domain.drive.file;
 
-import com.github.krystianmuchla.home.application.util.InstantFactory;
+import com.github.krystianmuchla.home.application.time.Time;
+import com.github.krystianmuchla.home.application.time.TimeFactory;
 import com.github.krystianmuchla.home.application.util.UUIDFactory;
 import com.github.krystianmuchla.home.domain.drive.file.error.FileValidationException;
 import com.github.krystianmuchla.home.infrastructure.persistence.core.Entity;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.time.Instant;
 import java.util.UUID;
 
 public class File extends Entity {
@@ -26,8 +26,8 @@ public class File extends Entity {
     public final FileStatus status;
     public final UUID directoryId;
     public final String name;
-    public final Instant creationTime;
-    public final Instant modificationTime;
+    public final Time creationTime;
+    public final Time modificationTime;
     public final Integer version;
 
     public File(
@@ -36,8 +36,8 @@ public class File extends Entity {
         FileStatus status,
         UUID directoryId,
         String name,
-        Instant creationTime,
-        Instant modificationTime,
+        Time creationTime,
+        Time modificationTime,
         Integer version
     ) throws FileValidationException {
         this.id = id;
@@ -83,8 +83,8 @@ public class File extends Entity {
                 FileStatus.valueOf(resultSet.getString(STATUS)),
                 UUIDFactory.create(resultSet.getString(DIRECTORY_ID)),
                 resultSet.getString(NAME),
-                InstantFactory.create(resultSet.getTimestamp(CREATION_TIME)),
-                InstantFactory.create(resultSet.getTimestamp(MODIFICATION_TIME)),
+                TimeFactory.create(resultSet.getTimestamp(CREATION_TIME)),
+                TimeFactory.create(resultSet.getTimestamp(MODIFICATION_TIME)),
                 resultSet.getInt(VERSION)
             );
         } catch (SQLException | FileValidationException exception) {

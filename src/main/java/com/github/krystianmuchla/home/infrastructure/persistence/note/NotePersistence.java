@@ -1,6 +1,6 @@
 package com.github.krystianmuchla.home.infrastructure.persistence.note;
 
-import com.github.krystianmuchla.home.application.util.InstantFactory;
+import com.github.krystianmuchla.home.application.time.Time;
 import com.github.krystianmuchla.home.domain.note.Note;
 import com.github.krystianmuchla.home.infrastructure.persistence.core.Persistence;
 import com.github.krystianmuchla.home.infrastructure.persistence.core.Sql;
@@ -14,7 +14,7 @@ import static com.github.krystianmuchla.home.infrastructure.persistence.core.Sql
 public class NotePersistence extends Persistence {
     public static void create(Note... notes) {
         for (var note : notes) {
-            var creationTime = InstantFactory.create();
+            var creationTime = new Time();
             var sql = new Sql.Builder()
                 .insertInto(Note.TABLE)
                 .values(
@@ -43,7 +43,7 @@ public class NotePersistence extends Persistence {
 
     public static boolean update(Note note) {
         var updates = note.consumeUpdates();
-        updates.put(Note.MODIFICATION_TIME, InstantFactory.create());
+        updates.put(Note.MODIFICATION_TIME, new Time());
         updates.put(Note.VERSION, note.version + 1);
         var sql = new Sql.Builder()
             .update(Note.TABLE)

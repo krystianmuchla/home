@@ -1,6 +1,6 @@
 package com.github.krystianmuchla.home.infrastructure.persistence.id;
 
-import com.github.krystianmuchla.home.application.util.InstantFactory;
+import com.github.krystianmuchla.home.application.time.Time;
 import com.github.krystianmuchla.home.domain.id.user.User;
 import com.github.krystianmuchla.home.infrastructure.persistence.core.Persistence;
 import com.github.krystianmuchla.home.infrastructure.persistence.core.Sql;
@@ -9,7 +9,7 @@ import java.util.UUID;
 
 public class UserPersistence extends Persistence {
     public static void create(User user) {
-        var creationTime = InstantFactory.create();
+        var creationTime = new Time();
         var sql = new Sql.Builder()
             .insertInto(User.TABLE)
             .values(

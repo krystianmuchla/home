@@ -1,12 +1,12 @@
 package com.github.krystianmuchla.home.domain.id.user;
 
-import com.github.krystianmuchla.home.application.util.InstantFactory;
+import com.github.krystianmuchla.home.application.time.Time;
+import com.github.krystianmuchla.home.application.time.TimeFactory;
 import com.github.krystianmuchla.home.application.util.UUIDFactory;
 import com.github.krystianmuchla.home.domain.id.user.error.UserValidationException;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.time.Instant;
 import java.util.UUID;
 
 public class User {
@@ -19,11 +19,11 @@ public class User {
 
     public final UUID id;
     public final String name;
-    public final Instant creationTime;
-    public final Instant modificationTime;
+    public final Time creationTime;
+    public final Time modificationTime;
     public final Integer version;
 
-    public User(UUID id, String name, Instant creationTime, Instant modificationTime, Integer version) throws UserValidationException {
+    public User(UUID id, String name, Time creationTime, Time modificationTime, Integer version) throws UserValidationException {
         this.id = id;
         this.name = name;
         this.creationTime = creationTime;
@@ -41,8 +41,8 @@ public class User {
             return new User(
                 UUIDFactory.create(resultSet.getString(ID)),
                 resultSet.getString(NAME),
-                InstantFactory.create(resultSet.getTimestamp(CREATION_TIME)),
-                InstantFactory.create(resultSet.getTimestamp(MODIFICATION_TIME)),
+                TimeFactory.create(resultSet.getTimestamp(CREATION_TIME)),
+                TimeFactory.create(resultSet.getTimestamp(MODIFICATION_TIME)),
                 resultSet.getInt(VERSION)
             );
         } catch (SQLException | UserValidationException exception) {

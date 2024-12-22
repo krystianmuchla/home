@@ -1,10 +1,8 @@
 package com.github.krystianmuchla.home.domain.id.user;
 
-import com.github.krystianmuchla.home.application.util.InstantFactory;
 import com.github.krystianmuchla.home.domain.id.user.error.UserValidationError;
 import com.github.krystianmuchla.home.domain.id.user.error.UserValidationException;
 
-import java.time.Instant;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
@@ -38,18 +36,6 @@ public class UserValidator {
         }
     }
 
-    public void validateCreationTime(Instant creationTime) {
-        if (creationTime != null && InstantFactory.create(creationTime) != creationTime) {
-            errors.add(new UserValidationError.CreationTimeWrongFormat());
-        }
-    }
-
-    public void validateModificationTime(Instant modificationTime) {
-        if (modificationTime != null && InstantFactory.create(modificationTime) != modificationTime) {
-            errors.add(new UserValidationError.ModificationTimeWrongFormat());
-        }
-    }
-
     public void validateVersion(Integer version) {
         if (version != null && version < VERSION_MIN_VALUE) {
             errors.add(new UserValidationError.VersionBelowMinValue(VERSION_MIN_VALUE));
@@ -60,8 +46,6 @@ public class UserValidator {
         var validator = new UserValidator();
         validator.validateId(user.id);
         validator.validateName(user.name);
-        validator.validateCreationTime(user.creationTime);
-        validator.validateModificationTime(user.modificationTime);
         validator.validateVersion(user.version);
         if (validator.hasErrors()) {
             throw new UserValidationException(validator.errors);

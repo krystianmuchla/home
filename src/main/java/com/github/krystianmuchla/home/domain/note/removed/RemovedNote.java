@@ -1,6 +1,7 @@
 package com.github.krystianmuchla.home.domain.note.removed;
 
-import com.github.krystianmuchla.home.application.util.InstantFactory;
+import com.github.krystianmuchla.home.application.time.Time;
+import com.github.krystianmuchla.home.application.time.TimeFactory;
 import com.github.krystianmuchla.home.application.util.UUIDFactory;
 import com.github.krystianmuchla.home.domain.note.Note;
 import com.github.krystianmuchla.home.domain.note.error.NoteValidationException;
@@ -9,7 +10,6 @@ import com.github.krystianmuchla.home.infrastructure.persistence.core.Entity;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.time.Instant;
 import java.util.UUID;
 
 public class RemovedNote extends Entity {
@@ -23,17 +23,17 @@ public class RemovedNote extends Entity {
 
     public final UUID id;
     public final UUID userId;
-    public final Instant removalTime;
-    public final Instant creationTime;
-    public final Instant modificationTime;
+    public final Time removalTime;
+    public final Time creationTime;
+    public final Time modificationTime;
     public final Integer version;
 
     public RemovedNote(
         UUID id,
         UUID userId,
-        Instant removalTime,
-        Instant creationTime,
-        Instant modificationTime,
+        Time removalTime,
+        Time creationTime,
+        Time modificationTime,
         Integer version
     ) throws RemovedNoteValidationException {
         this.id = id;
@@ -45,11 +45,11 @@ public class RemovedNote extends Entity {
         RemovedNoteValidator.validate(this);
     }
 
-    public RemovedNote(UUID id, UUID userId, Instant removalTime) throws RemovedNoteValidationException {
+    public RemovedNote(UUID id, UUID userId, Time removalTime) throws RemovedNoteValidationException {
         this(id, userId, removalTime, null, null, null);
     }
 
-    public void updateRemovalTime(Instant removalTime) {
+    public void updateRemovalTime(Time removalTime) {
         updates.put(REMOVAL_TIME, removalTime);
     }
 
@@ -66,9 +66,9 @@ public class RemovedNote extends Entity {
             return new RemovedNote(
                 UUIDFactory.create(resultSet.getString(ID)),
                 UUIDFactory.create(resultSet.getString(USER_ID)),
-                InstantFactory.create(resultSet.getTimestamp(REMOVAL_TIME)),
-                InstantFactory.create(resultSet.getTimestamp(CREATION_TIME)),
-                InstantFactory.create(resultSet.getTimestamp(MODIFICATION_TIME)),
+                TimeFactory.create(resultSet.getTimestamp(REMOVAL_TIME)),
+                TimeFactory.create(resultSet.getTimestamp(CREATION_TIME)),
+                TimeFactory.create(resultSet.getTimestamp(MODIFICATION_TIME)),
                 resultSet.getInt(VERSION)
             );
         } catch (SQLException | RemovedNoteValidationException exception) {

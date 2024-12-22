@@ -1,6 +1,6 @@
 package com.github.krystianmuchla.home.infrastructure.persistence.id;
 
-import com.github.krystianmuchla.home.application.util.InstantFactory;
+import com.github.krystianmuchla.home.application.time.Time;
 import com.github.krystianmuchla.home.domain.id.accessdata.AccessData;
 import com.github.krystianmuchla.home.infrastructure.persistence.core.Persistence;
 import com.github.krystianmuchla.home.infrastructure.persistence.core.Sql;
@@ -14,7 +14,7 @@ public class AccessDataPersistence extends Persistence {
     private static final Map<String, AccessData> READ_CACHE = new ConcurrentHashMap<>();
 
     public static void create(AccessData accessData) {
-        var creationTime = InstantFactory.create();
+        var creationTime = new Time();
         var sql = new Sql.Builder()
             .insertInto(AccessData.TABLE)
             .values(

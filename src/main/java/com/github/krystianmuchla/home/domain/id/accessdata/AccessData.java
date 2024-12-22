@@ -1,12 +1,12 @@
 package com.github.krystianmuchla.home.domain.id.accessdata;
 
-import com.github.krystianmuchla.home.application.util.InstantFactory;
+import com.github.krystianmuchla.home.application.time.Time;
+import com.github.krystianmuchla.home.application.time.TimeFactory;
 import com.github.krystianmuchla.home.application.util.UUIDFactory;
 import com.github.krystianmuchla.home.domain.id.accessdata.error.AccessDataValidationException;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.time.Instant;
 import java.util.UUID;
 
 public class AccessData {
@@ -25,8 +25,8 @@ public class AccessData {
     public final String login;
     public final byte[] salt;
     public final byte[] secret;
-    public final Instant creationTime;
-    public final Instant modificationTime;
+    public final Time creationTime;
+    public final Time modificationTime;
     public final Integer version;
 
     public AccessData(
@@ -35,8 +35,8 @@ public class AccessData {
         String login,
         byte[] salt,
         byte[] secret,
-        Instant creationTime,
-        Instant modificationTime,
+        Time creationTime,
+        Time modificationTime,
         Integer version
     ) throws AccessDataValidationException {
         this.id = id;
@@ -62,8 +62,8 @@ public class AccessData {
                 resultSet.getString(LOGIN),
                 resultSet.getBytes(SALT),
                 resultSet.getBytes(SECRET),
-                InstantFactory.create(resultSet.getTimestamp(CREATION_TIME)),
-                InstantFactory.create(resultSet.getTimestamp(MODIFICATION_TIME)),
+                TimeFactory.create(resultSet.getTimestamp(CREATION_TIME)),
+                TimeFactory.create(resultSet.getTimestamp(MODIFICATION_TIME)),
                 resultSet.getInt(VERSION)
             );
         } catch (SQLException | AccessDataValidationException exception) {
