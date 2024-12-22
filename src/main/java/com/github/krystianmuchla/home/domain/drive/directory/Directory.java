@@ -1,6 +1,5 @@
 package com.github.krystianmuchla.home.domain.drive.directory;
 
-import com.github.krystianmuchla.home.application.exception.InternalException;
 import com.github.krystianmuchla.home.application.util.InstantFactory;
 import com.github.krystianmuchla.home.application.util.UUIDFactory;
 import com.github.krystianmuchla.home.domain.drive.directory.error.DirectoryValidationException;
@@ -82,7 +81,7 @@ public class Directory extends Entity {
                 resultSet.getInt(VERSION)
             );
         } catch (SQLException | DirectoryValidationException exception) {
-            throw new InternalException(exception);
+            throw new RuntimeException(exception);
         }
     }
 }

@@ -1,6 +1,5 @@
 package com.github.krystianmuchla.home.domain.id.password;
 
-import com.github.krystianmuchla.home.application.exception.InternalException;
 import com.github.krystianmuchla.home.domain.id.SecureRandomFactory;
 
 import javax.crypto.SecretKey;
@@ -40,7 +39,7 @@ public class Secret {
         try {
             secret = SECRET_KEY_FACTORY.generateSecret(keySpec);
         } catch (InvalidKeySpecException exception) {
-            throw new InternalException(exception);
+            throw new IllegalStateException(exception);
         }
         return secret.getEncoded();
     }

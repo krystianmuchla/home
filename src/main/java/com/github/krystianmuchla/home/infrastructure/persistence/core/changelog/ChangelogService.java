@@ -1,6 +1,5 @@
 package com.github.krystianmuchla.home.infrastructure.persistence.core.changelog;
 
-import com.github.krystianmuchla.home.application.exception.InternalException;
 import com.github.krystianmuchla.home.application.util.InstantFactory;
 import com.github.krystianmuchla.home.application.util.Resource;
 import com.github.krystianmuchla.home.infrastructure.persistence.core.Persistence;
@@ -36,7 +35,7 @@ public class ChangelogService {
                 }
                 statements = readStatements(stream);
             } catch (IOException exception) {
-                throw new InternalException(exception);
+                throw new RuntimeException(exception);
             }
             if (statements.getLast().isBlank()) {
                 statements.removeLast();

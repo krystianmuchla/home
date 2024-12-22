@@ -1,6 +1,5 @@
 package com.github.krystianmuchla.home.infrastructure.http.id;
 
-import com.github.krystianmuchla.home.application.exception.ValidationError;
 import com.github.krystianmuchla.home.application.util.MultiValueHashMap;
 import com.github.krystianmuchla.home.domain.id.SignUpToken;
 import com.github.krystianmuchla.home.domain.id.accessdata.error.AccessDataAlreadyExistsException;
@@ -20,10 +19,7 @@ import com.github.krystianmuchla.home.infrastructure.http.core.Controller;
 import com.github.krystianmuchla.home.infrastructure.http.core.Cookie;
 import com.github.krystianmuchla.home.infrastructure.http.core.RequestReader;
 import com.github.krystianmuchla.home.infrastructure.http.core.ResponseWriter;
-import com.github.krystianmuchla.home.infrastructure.http.core.exception.BadRequestException;
-import com.github.krystianmuchla.home.infrastructure.http.core.exception.ConflictException;
-import com.github.krystianmuchla.home.infrastructure.http.core.exception.InternalServerErrorException;
-import com.github.krystianmuchla.home.infrastructure.http.core.exception.UnauthorizedException;
+import com.github.krystianmuchla.home.infrastructure.http.core.error.*;
 import com.github.krystianmuchla.home.infrastructure.persistence.core.Transaction;
 import com.sun.net.httpserver.HttpExchange;
 
@@ -50,7 +46,7 @@ public class UserApiController extends Controller {
                 var errors = new MultiValueHashMap<String, ValidationError>();
                 for (var error : exception.errors) {
                     switch (error) {
-                        case UserValidationError.NullName e -> errors.add("name", ValidationError.nullValue());
+                        case UserValidationError.NullName ignored -> errors.add("name", ValidationError.nullValue());
                         case UserValidationError.NameBelowMinLength e ->
                             errors.add("name", ValidationError.belowMinLength(e.minLength));
                         case UserValidationError.NameAboveMaxLength e ->
@@ -70,12 +66,13 @@ public class UserApiController extends Controller {
                 var errors = new MultiValueHashMap<String, ValidationError>();
                 for (var error : exception.errors) {
                     switch (error) {
-                        case PasswordValidationError.NullValue e -> errors.add("password", ValidationError.nullValue());
+                        case PasswordValidationError.NullValue ignored ->
+                            errors.add("password", ValidationError.nullValue());
                         case PasswordValidationError.ValueBelowMinLength e ->
                             errors.add("password", ValidationError.belowMinLength(e.minLength));
                         case PasswordValidationError.ValueAboveMaxLength e ->
                             errors.add("password", ValidationError.aboveMaxLength(e.maxLength));
-                        case PasswordValidationError.ValueWrongFormat e ->
+                        case PasswordValidationError.ValueWrongFormat ignored ->
                             errors.add("password", ValidationError.wrongFormat());
                     }
                 }
@@ -84,7 +81,8 @@ public class UserApiController extends Controller {
                 var errors = new MultiValueHashMap<String, ValidationError>();
                 for (var error : exception.errors) {
                     switch (error) {
-                        case AccessDataValidationError.NullLogin e -> errors.add("login", ValidationError.nullValue());
+                        case AccessDataValidationError.NullLogin ignored ->
+                            errors.add("login", ValidationError.nullValue());
                         case AccessDataValidationError.LoginBelowMinLength e ->
                             errors.add("login", ValidationError.belowMinValue(e.minLength));
                         case AccessDataValidationError.LoginAboveMaxLength e ->

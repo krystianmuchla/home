@@ -1,6 +1,5 @@
 package com.github.krystianmuchla.home.infrastructure.persistence.core.changelog;
 
-import com.github.krystianmuchla.home.application.exception.InternalException;
 import com.github.krystianmuchla.home.application.util.InstantFactory;
 
 import java.sql.ResultSet;
@@ -15,7 +14,7 @@ public record Change(int id, Instant executionTime) {
         try {
             return new Change(resultSet.getInt(ID), InstantFactory.create(resultSet.getTimestamp(EXECUTION_TIME)));
         } catch (SQLException exception) {
-            throw new InternalException(exception);
+            throw new RuntimeException(exception);
         }
     }
 }

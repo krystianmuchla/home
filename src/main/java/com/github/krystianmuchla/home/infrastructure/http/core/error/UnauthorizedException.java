@@ -1,4 +1,4 @@
-package com.github.krystianmuchla.home.infrastructure.http.core.exception;
+package com.github.krystianmuchla.home.infrastructure.http.core.error;
 
 import com.github.krystianmuchla.home.infrastructure.http.core.ResponseWriter;
 import com.github.krystianmuchla.home.infrastructure.http.id.SignInController;

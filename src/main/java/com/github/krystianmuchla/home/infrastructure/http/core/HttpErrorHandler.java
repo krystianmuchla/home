@@ -1,6 +1,6 @@
 package com.github.krystianmuchla.home.infrastructure.http.core;
 
-import com.github.krystianmuchla.home.infrastructure.http.core.exception.HttpException;
+import com.github.krystianmuchla.home.infrastructure.http.core.error.HttpException;
 import com.github.krystianmuchla.home.infrastructure.persistence.core.TransactionException;
 import com.sun.net.httpserver.HttpExchange;
 

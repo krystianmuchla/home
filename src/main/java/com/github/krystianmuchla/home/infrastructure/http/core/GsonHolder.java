@@ -1,6 +1,6 @@
 package com.github.krystianmuchla.home.infrastructure.http.core;
 
-import com.github.krystianmuchla.home.infrastructure.http.core.exception.BadRequestException;
+import com.github.krystianmuchla.home.infrastructure.http.core.error.BadRequestException;
 import com.google.gson.*;
 
 import java.time.Instant;

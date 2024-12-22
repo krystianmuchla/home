@@ -1,7 +1,5 @@
 package com.github.krystianmuchla.home.infrastructure.persistence.core;
 
-import com.github.krystianmuchla.home.application.exception.InternalException;
-
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
@@ -17,7 +15,7 @@ public class ConnectionManager {
         try {
             CONNECTIONS.add(createConnection());
         } catch (SQLException exception) {
-            throw new InternalException(exception);
+            throw new RuntimeException(exception);
         }
     }
 
@@ -72,7 +70,7 @@ public class ConnectionManager {
         try {
             return CONNECTIONS.take();
         } catch (InterruptedException exception) {
-            throw new InternalException(exception);
+            throw new RuntimeException(exception);
         }
     }
 

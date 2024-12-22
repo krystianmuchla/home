@@ -1,6 +1,6 @@
 package com.github.krystianmuchla.home.infrastructure.http.id;
 
-import com.github.krystianmuchla.home.application.exception.ValidationError;
+import com.github.krystianmuchla.home.infrastructure.http.core.error.ValidationError;
 import com.github.krystianmuchla.home.domain.id.error.UnauthenticatedException;
 import com.github.krystianmuchla.home.domain.id.session.SessionId;
 import com.github.krystianmuchla.home.domain.id.session.SessionService;
@@ -12,10 +12,10 @@ import com.github.krystianmuchla.home.infrastructure.http.core.Controller;
 import com.github.krystianmuchla.home.infrastructure.http.core.Cookie;
 import com.github.krystianmuchla.home.infrastructure.http.core.RequestReader;
 import com.github.krystianmuchla.home.infrastructure.http.core.ResponseWriter;
-import com.github.krystianmuchla.home.infrastructure.http.core.exception.BadRequestException;
-import com.github.krystianmuchla.home.infrastructure.http.core.exception.InternalServerErrorException;
-import com.github.krystianmuchla.home.infrastructure.http.core.exception.TooManyRequestsException;
-import com.github.krystianmuchla.home.infrastructure.http.core.exception.UnauthorizedException;
+import com.github.krystianmuchla.home.infrastructure.http.core.error.BadRequestException;
+import com.github.krystianmuchla.home.infrastructure.http.core.error.InternalServerErrorException;
+import com.github.krystianmuchla.home.infrastructure.http.core.error.TooManyRequestsException;
+import com.github.krystianmuchla.home.infrastructure.http.core.error.UnauthorizedException;
 import com.sun.net.httpserver.HttpExchange;
 
 import java.io.IOException;

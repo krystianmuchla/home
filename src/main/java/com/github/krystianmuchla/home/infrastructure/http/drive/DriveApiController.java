@@ -1,6 +1,5 @@
 package com.github.krystianmuchla.home.infrastructure.http.drive;
 
-import com.github.krystianmuchla.home.application.exception.ValidationError;
 import com.github.krystianmuchla.home.application.util.MultiValueHashMap;
 import com.github.krystianmuchla.home.domain.drive.DriveService;
 import com.github.krystianmuchla.home.domain.drive.directory.DirectoryService;
@@ -17,10 +16,7 @@ import com.github.krystianmuchla.home.domain.drive.file.error.FileValidationExce
 import com.github.krystianmuchla.home.infrastructure.http.core.Controller;
 import com.github.krystianmuchla.home.infrastructure.http.core.RequestReader;
 import com.github.krystianmuchla.home.infrastructure.http.core.ResponseWriter;
-import com.github.krystianmuchla.home.infrastructure.http.core.exception.BadRequestException;
-import com.github.krystianmuchla.home.infrastructure.http.core.exception.ConflictException;
-import com.github.krystianmuchla.home.infrastructure.http.core.exception.InternalServerErrorException;
-import com.github.krystianmuchla.home.infrastructure.http.core.exception.NotFoundException;
+import com.github.krystianmuchla.home.infrastructure.http.core.error.*;
 import com.github.krystianmuchla.home.infrastructure.persistence.core.Transaction;
 import com.sun.net.httpserver.HttpExchange;
 
@@ -94,15 +90,12 @@ public class DriveApiController extends Controller {
                 var errors = new MultiValueHashMap<String, ValidationError>();
                 for (var error : exception.errors) {
                     switch (error) {
-                        case DirectoryValidationError.NullName e -> {
+                        case DirectoryValidationError.NullName ignored ->
                             errors.add("name", ValidationError.nullValue());
-                        }
-                        case DirectoryValidationError.NameBelowMinLength e -> {
+                        case DirectoryValidationError.NameBelowMinLength e ->
                             errors.add("name", ValidationError.belowMinLength(e.minLength));
-                        }
-                        case DirectoryValidationError.NameAboveMaxLength e -> {
+                        case DirectoryValidationError.NameAboveMaxLength e ->
                             errors.add("name", ValidationError.aboveMaxLength(e.maxLength));
-                        }
                         default -> {
                         }
                     }
@@ -132,15 +125,11 @@ public class DriveApiController extends Controller {
                 var errors = new MultiValueHashMap<String, ValidationError>();
                 for (var error : exception.errors) {
                     switch (error) {
-                        case FileValidationError.NullName e -> {
-                            errors.add("name", ValidationError.nullValue());
-                        }
-                        case FileValidationError.NameBelowMinLength e -> {
+                        case FileValidationError.NullName ignored -> errors.add("name", ValidationError.nullValue());
+                        case FileValidationError.NameBelowMinLength e ->
                             errors.add("name", ValidationError.belowMinValue(e.minLength));
-                        }
-                        case FileValidationError.NameAboveMaxLength e -> {
+                        case FileValidationError.NameAboveMaxLength e ->
                             errors.add("name", ValidationError.aboveMaxLength(e.maxLength));
-                        }
                         default -> {
                         }
                     }

@@ -1,14 +1,12 @@
-package com.github.krystianmuchla.home.infrastructure.http.core.exception;
+package com.github.krystianmuchla.home.infrastructure.http.core.error;
 
-import com.github.krystianmuchla.home.application.exception.ValidationError;
 import com.github.krystianmuchla.home.application.util.MultiValueHashMap;
 import com.github.krystianmuchla.home.application.util.MultiValueMap;
-import com.github.krystianmuchla.home.infrastructure.http.core.ResponseWriter;
 import com.github.krystianmuchla.home.infrastructure.http.core.ProblemResponseFactory;
+import com.github.krystianmuchla.home.infrastructure.http.core.ResponseWriter;
 import com.sun.net.httpserver.HttpExchange;
 
 import java.io.IOException;
-import java.util.List;
 import java.util.Map;
 
 public class BadRequestException extends HttpException {
@@ -25,10 +23,6 @@ public class BadRequestException extends HttpException {
 
     public BadRequestException(String parameter, ValidationError error) {
         this(MultiValueHashMap.of(parameter, error));
-    }
-
-    public BadRequestException(String parameter, List<ValidationError> errors) {
-        this(MultiValueHashMap.of(parameter, errors));
     }
 
     public BadRequestException(MultiValueMap<String, ValidationError> errors) {

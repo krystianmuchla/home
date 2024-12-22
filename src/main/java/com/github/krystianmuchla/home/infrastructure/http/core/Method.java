@@ -1,6 +1,6 @@
 package com.github.krystianmuchla.home.infrastructure.http.core;
 
-import com.github.krystianmuchla.home.infrastructure.http.core.exception.MethodNotAllowedException;
+import com.github.krystianmuchla.home.infrastructure.http.core.error.MethodNotAllowedException;
 
 public enum Method {
     DELETE, GET, POST, PUT;

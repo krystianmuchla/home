@@ -10,7 +10,7 @@ import com.github.krystianmuchla.home.domain.drive.directory.error.DirectoryNotF
 import com.github.krystianmuchla.home.infrastructure.http.core.Controller;
 import com.github.krystianmuchla.home.infrastructure.http.core.RequestReader;
 import com.github.krystianmuchla.home.infrastructure.http.core.ResponseWriter;
-import com.github.krystianmuchla.home.infrastructure.http.core.exception.NotFoundException;
+import com.github.krystianmuchla.home.infrastructure.http.core.error.NotFoundException;
 import com.github.krystianmuchla.home.infrastructure.http.core.html.Tag;
 import com.github.krystianmuchla.home.infrastructure.http.core.html.Tags;
 import com.sun.net.httpserver.HttpExchange;

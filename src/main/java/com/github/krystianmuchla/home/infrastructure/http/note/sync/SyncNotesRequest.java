@@ -1,8 +1,8 @@
 package com.github.krystianmuchla.home.infrastructure.http.note.sync;
 
-import com.github.krystianmuchla.home.application.exception.ValidationError;
+import com.github.krystianmuchla.home.infrastructure.http.core.error.ValidationError;
 import com.github.krystianmuchla.home.infrastructure.http.core.RequestBody;
-import com.github.krystianmuchla.home.infrastructure.http.core.exception.BadRequestException;
+import com.github.krystianmuchla.home.infrastructure.http.core.error.BadRequestException;
 
 import java.util.List;
 

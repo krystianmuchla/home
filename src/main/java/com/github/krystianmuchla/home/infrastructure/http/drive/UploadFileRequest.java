@@ -1,9 +1,9 @@
 package com.github.krystianmuchla.home.infrastructure.http.drive;
 
-import com.github.krystianmuchla.home.application.exception.ValidationError;
+import com.github.krystianmuchla.home.infrastructure.http.core.error.ValidationError;
 import com.github.krystianmuchla.home.infrastructure.http.core.Header;
 import com.github.krystianmuchla.home.infrastructure.http.core.RequestHeaders;
-import com.github.krystianmuchla.home.infrastructure.http.core.exception.BadRequestException;
+import com.github.krystianmuchla.home.infrastructure.http.core.error.BadRequestException;
 import com.sun.net.httpserver.Headers;
 
 import java.net.URLDecoder;

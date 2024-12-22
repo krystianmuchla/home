@@ -1,6 +1,5 @@
 package com.github.krystianmuchla.home.domain.drive.file;
 
-import com.github.krystianmuchla.home.application.exception.InternalException;
 import com.github.krystianmuchla.home.application.util.InstantFactory;
 import com.github.krystianmuchla.home.application.util.UUIDFactory;
 import com.github.krystianmuchla.home.domain.drive.file.error.FileValidationException;
@@ -89,7 +88,7 @@ public class File extends Entity {
                 resultSet.getInt(VERSION)
             );
         } catch (SQLException | FileValidationException exception) {
-            throw new InternalException(exception);
+            throw new RuntimeException(exception);
         }
     }
 }

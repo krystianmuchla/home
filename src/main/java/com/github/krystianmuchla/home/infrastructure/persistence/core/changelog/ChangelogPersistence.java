@@ -1,6 +1,5 @@
 package com.github.krystianmuchla.home.infrastructure.persistence.core.changelog;
 
-import com.github.krystianmuchla.home.application.exception.InternalException;
 import com.github.krystianmuchla.home.infrastructure.persistence.core.Persistence;
 import com.github.krystianmuchla.home.infrastructure.persistence.core.Sql;
 
@@ -54,7 +53,7 @@ public class ChangelogPersistence extends Persistence {
             try {
                 return resultSet.getString("name");
             } catch (SQLException exception) {
-                throw new InternalException(exception);
+                throw new RuntimeException(exception);
             }
         };
     }

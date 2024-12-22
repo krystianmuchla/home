@@ -1,6 +1,5 @@
 package com.github.krystianmuchla.home.domain.note;
 
-import com.github.krystianmuchla.home.application.exception.InternalException;
 import com.github.krystianmuchla.home.application.util.InstantFactory;
 import com.github.krystianmuchla.home.application.util.UUIDFactory;
 import com.github.krystianmuchla.home.domain.note.error.NoteValidationException;
@@ -78,7 +77,7 @@ public class Note extends Entity {
         try {
             return new RemovedNote(id, userId, contentsModificationTime);
         } catch (RemovedNoteValidationException exception) {
-            throw new InternalException(exception);
+            throw new IllegalStateException(exception);
         }
     }
 
@@ -99,7 +98,7 @@ public class Note extends Entity {
                 resultSet.getInt(VERSION)
             );
         } catch (SQLException | NoteValidationException exception) {
-            throw new InternalException(exception);
+            throw new RuntimeException(exception);
         }
     }
 }

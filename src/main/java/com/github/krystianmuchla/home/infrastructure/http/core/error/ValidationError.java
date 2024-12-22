@@ -1,8 +1,7 @@
-package com.github.krystianmuchla.home.application.exception;
+package com.github.krystianmuchla.home.infrastructure.http.core.error;
 
 import java.util.Map;
 
-// todo is it app or infra
 public record ValidationError(String error, Map<String, Object> details) {
     public ValidationError(Enum<?> error, Map<String, Object> details) {
         this(error.name(), details);

@@ -1,4 +1,4 @@
-package com.github.krystianmuchla.home.infrastructure.http.core.exception;
+package com.github.krystianmuchla.home.infrastructure.http.core.error;
 
 public class InternalServerErrorException extends HttpException {
     public InternalServerErrorException() {

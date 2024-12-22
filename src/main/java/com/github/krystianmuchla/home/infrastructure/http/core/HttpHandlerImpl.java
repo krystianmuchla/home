@@ -1,6 +1,6 @@
 package com.github.krystianmuchla.home.infrastructure.http.core;
 
-import com.github.krystianmuchla.home.infrastructure.http.core.exception.NotFoundException;
+import com.github.krystianmuchla.home.infrastructure.http.core.error.NotFoundException;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import org.slf4j.Logger;

@@ -1,7 +1,7 @@
 package com.github.krystianmuchla.home.infrastructure.http.core;
 
 import com.github.krystianmuchla.home.application.util.Resource;
-import com.github.krystianmuchla.home.infrastructure.http.core.exception.NotFoundException;
+import com.github.krystianmuchla.home.infrastructure.http.core.error.NotFoundException;
 import com.sun.net.httpserver.HttpExchange;
 
 import java.io.IOException;

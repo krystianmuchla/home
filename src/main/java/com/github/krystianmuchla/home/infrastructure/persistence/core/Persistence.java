@@ -1,7 +1,5 @@
 package com.github.krystianmuchla.home.infrastructure.persistence.core;
 
-import com.github.krystianmuchla.home.application.exception.InternalException;
-
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -30,7 +28,7 @@ public class Persistence {
                 }
             }
         } catch (SQLException exception) {
-            throw new InternalException(exception);
+            throw new RuntimeException(exception);
         }
     }
 
@@ -46,7 +44,7 @@ public class Persistence {
             }
             return preparedStatement.executeUpdate();
         } catch (SQLException exception) {
-            throw new InternalException(exception);
+            throw new RuntimeException(exception);
         }
     }
 
@@ -61,7 +59,7 @@ public class Persistence {
         if (result.size() == 1) {
             return result.getFirst();
         }
-        throw new InternalException("Could not resolve single result");
+        throw new IllegalStateException("Could not resolve single result");
     }
 
     protected static Sql[] toSql(Map<String, Object> updates) {

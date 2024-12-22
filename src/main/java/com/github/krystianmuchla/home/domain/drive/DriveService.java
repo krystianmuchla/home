@@ -1,6 +1,5 @@
 package com.github.krystianmuchla.home.domain.drive;
 
-import com.github.krystianmuchla.home.application.exception.InternalException;
 import com.github.krystianmuchla.home.application.util.StreamService;
 import com.github.krystianmuchla.home.domain.drive.directory.DirectoryStatus;
 import com.github.krystianmuchla.home.domain.drive.file.FileDto;
@@ -25,7 +24,7 @@ public class DriveService {
 
     static {
         if (Files.notExists(DRIVE_PATH)) {
-            throw new InternalException("Invalid drive location");
+            throw new IllegalStateException("Invalid drive location");
         }
     }
 
@@ -44,7 +43,7 @@ public class DriveService {
                 StreamService.copy(inputStream, outputStream);
             }
         } catch (IOException exception) {
-            throw new InternalException(exception);
+            throw new RuntimeException(exception);
         }
     }
 
@@ -73,7 +72,7 @@ public class DriveService {
             try {
                 Files.createDirectory(path);
             } catch (IOException exception) {
-                throw new InternalException(exception);
+                throw new RuntimeException(exception);
             }
         }
         return path;

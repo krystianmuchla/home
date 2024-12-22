@@ -1,6 +1,5 @@
 package com.github.krystianmuchla.home.infrastructure.http.core;
 
-import com.github.krystianmuchla.home.application.exception.InternalException;
 import com.github.krystianmuchla.home.infrastructure.http.core.filter.AuthFilter;
 import com.github.krystianmuchla.home.infrastructure.http.core.filter.QueryFilter;
 import com.sun.net.httpserver.Filter;
@@ -21,7 +20,7 @@ public class Http {
         try {
             server = HttpServer.create(new InetSocketAddress(port), 0);
         } catch (IOException exception) {
-            throw new InternalException(exception);
+            throw new RuntimeException(exception);
         }
         var context = server.createContext("/", new HttpHandlerImpl());
         context.getFilters().addAll(filters());

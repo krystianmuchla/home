@@ -1,6 +1,5 @@
 package com.github.krystianmuchla.home.domain.note;
 
-import com.github.krystianmuchla.home.application.exception.InternalException;
 import com.github.krystianmuchla.home.application.util.CollectionService;
 import com.github.krystianmuchla.home.domain.note.error.NoteNotUpdatedException;
 import com.github.krystianmuchla.home.domain.note.removed.RemovedNote;
@@ -35,7 +34,7 @@ public class NoteSyncService {
             try {
                 syncNote(notes.get(id), removedNotes.get(id), externalNote).ifPresent(excludedNotes::add);
             } catch (NoteNotUpdatedException exception) {
-                throw new InternalException(exception);
+                throw new IllegalStateException(exception);
             }
         }
         return excludedNotes;
@@ -52,7 +51,7 @@ public class NoteSyncService {
             try {
                 syncRemovedNote(removedNotes.get(id), notes.get(id), externalNote).ifPresent(excludedRemovedNotes::add);
             } catch (RemovedNoteNotUpdatedException exception) {
-                throw new InternalException(exception);
+                throw new IllegalStateException(exception);
             }
         }
         return excludedRemovedNotes;

@@ -1,10 +1,9 @@
 package com.github.krystianmuchla.home.infrastructure.http.core;
 
-import com.github.krystianmuchla.home.application.exception.InternalException;
 import com.github.krystianmuchla.home.application.util.MultiValueMap;
 import com.github.krystianmuchla.home.domain.id.user.User;
-import com.github.krystianmuchla.home.infrastructure.http.core.exception.BadRequestException;
-import com.github.krystianmuchla.home.infrastructure.http.core.exception.UnsupportedMediaTypeException;
+import com.github.krystianmuchla.home.infrastructure.http.core.error.BadRequestException;
+import com.github.krystianmuchla.home.infrastructure.http.core.error.UnsupportedMediaTypeException;
 import com.google.gson.JsonSyntaxException;
 import com.sun.net.httpserver.Headers;
 import com.sun.net.httpserver.HttpExchange;
@@ -18,7 +17,7 @@ public class RequestReader {
     public static User readUser(HttpExchange exchange) {
         var user = exchange.getAttribute(Attribute.USER);
         if (user == null) {
-            throw new InternalException("Could not find user attribute");
+            throw new IllegalStateException("Could not find user attribute");
         }
         return (User) user;
     }
@@ -37,7 +36,7 @@ public class RequestReader {
     public static MultiValueMap<String, String> readQuery(HttpExchange exchange) {
         var query = exchange.getAttribute(Attribute.QUERY);
         if (query == null) {
-            throw new InternalException("Could not find query attribute");
+            throw new IllegalStateException("Could not find query attribute");
         }
         return (MultiValueMap<String, String>) query;
     }

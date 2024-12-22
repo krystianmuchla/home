@@ -1,7 +1,5 @@
 package com.github.krystianmuchla.home.infrastructure.persistence.core;
 
-import com.github.krystianmuchla.home.application.exception.InternalException;
-
 import java.sql.SQLException;
 import java.util.function.Supplier;
 
@@ -27,7 +25,7 @@ public class Transaction {
             connection.commit();
             return result;
         } catch (SQLException exception) {
-            throw new InternalException(exception);
+            throw new RuntimeException(exception);
         }
     }
 }
