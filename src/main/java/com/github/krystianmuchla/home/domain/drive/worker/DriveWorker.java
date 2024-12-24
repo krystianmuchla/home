@@ -1,6 +1,6 @@
 package com.github.krystianmuchla.home.domain.drive.worker;
 
-import com.github.krystianmuchla.home.application.worker.Worker;
+import com.github.krystianmuchla.home.domain.core.worker.Worker;
 import com.github.krystianmuchla.home.domain.drive.DriveService;
 import com.github.krystianmuchla.home.domain.drive.directory.Directory;
 import com.github.krystianmuchla.home.domain.drive.directory.DirectoryService;

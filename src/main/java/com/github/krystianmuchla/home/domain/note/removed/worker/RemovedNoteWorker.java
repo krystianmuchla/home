@@ -1,7 +1,7 @@
 package com.github.krystianmuchla.home.domain.note.removed.worker;
 
 import com.github.krystianmuchla.home.application.time.Time;
-import com.github.krystianmuchla.home.application.worker.Worker;
+import com.github.krystianmuchla.home.domain.core.worker.Worker;
 import com.github.krystianmuchla.home.infrastructure.persistence.core.Transaction;
 import com.github.krystianmuchla.home.infrastructure.persistence.note.RemovedNotePersistence;
 

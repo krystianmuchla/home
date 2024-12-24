@@ -1,4 +1,4 @@
-package com.github.krystianmuchla.home.application.worker;
+package com.github.krystianmuchla.home.domain.core.worker;
 
 import com.github.krystianmuchla.home.application.Config;
 import com.github.krystianmuchla.home.domain.drive.worker.DriveWorker;

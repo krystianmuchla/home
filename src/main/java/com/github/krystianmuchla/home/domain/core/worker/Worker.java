@@ -1,4 +1,4 @@
-package com.github.krystianmuchla.home.application.worker;
+package com.github.krystianmuchla.home.domain.core.worker;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -6,7 +6,6 @@ import org.slf4j.LoggerFactory;
 import java.time.Duration;
 import java.util.Collection;
 
-// todo
 public abstract class Worker implements Runnable {
     private static final Logger LOG = LoggerFactory.getLogger(Worker.class);
 
