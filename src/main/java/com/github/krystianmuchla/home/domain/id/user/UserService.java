@@ -10,6 +10,7 @@ import com.github.krystianmuchla.home.domain.id.password.error.PasswordValidatio
 import com.github.krystianmuchla.home.domain.id.user.error.UserBlockedException;
 import com.github.krystianmuchla.home.domain.id.user.error.UserNotFoundException;
 import com.github.krystianmuchla.home.domain.id.user.error.UserValidationException;
+import com.github.krystianmuchla.home.infrastructure.persistence.core.Transaction;
 import com.github.krystianmuchla.home.infrastructure.persistence.id.AccessDataPersistence;
 import com.github.krystianmuchla.home.infrastructure.persistence.id.UserPersistence;
 
@@ -19,8 +20,10 @@ import java.util.UUID;
 public class UserService {
     public static UUID create(String name, String login, String password) throws UserValidationException, PasswordValidationException, AccessDataAlreadyExistsException, AccessDataValidationException {
         var user = new User(name);
-        UserPersistence.create(user);
-        AccessDataService.create(user.id, login, password);
+        Transaction.run(() -> {
+            UserPersistence.create(user);
+            AccessDataService.create(user.id, login, password);
+        });
         return user.id;
     }
 

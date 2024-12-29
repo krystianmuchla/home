@@ -1,4 +1,6 @@
 package com.github.krystianmuchla.home.domain.id.error;
 
-public class UnauthenticatedException extends Exception {
+import com.github.krystianmuchla.home.domain.core.error.DomainException;
+
+public class UnauthenticatedException extends DomainException {
 }

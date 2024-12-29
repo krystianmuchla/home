@@ -13,9 +13,8 @@ public class Persistence {
     }
 
     public static <T> List<T> executeQuery(String sql, Function<ResultSet, T> mapper, Object... parameters) {
-        try (var readConnection = ConnectionManager.getReadConnection()) {
-            var connection = readConnection.connection();
-            try (var preparedStatement = connection.prepareStatement(sql)) {
+        try (var transaction = TransactionManager.createReadTransaction()) {
+            try (var preparedStatement = transaction.connection.prepareStatement(sql)) {
                 for (int index = 0; index < parameters.length; index++) {
                     preparedStatement.setObject(index + 1, parameters[index]);
                 }
@@ -37,8 +36,8 @@ public class Persistence {
     }
 
     public static int executeUpdate(String sql, Object... parameters) {
-        var connection = ConnectionManager.getWriteConnection();
-        try (var preparedStatement = connection.prepareStatement(sql)) {
+        var transaction = TransactionManager.getTransaction();
+        try (var preparedStatement = transaction.connection.prepareStatement(sql)) {
             for (int index = 0; index < parameters.length; index++) {
                 preparedStatement.setObject(index + 1, parameters[index]);
             }

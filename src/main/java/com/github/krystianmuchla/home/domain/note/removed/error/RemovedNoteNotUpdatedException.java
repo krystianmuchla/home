@@ -1,4 +1,6 @@
 package com.github.krystianmuchla.home.domain.note.removed.error;
 
-public class RemovedNoteNotUpdatedException extends Exception {
+import com.github.krystianmuchla.home.domain.core.error.DomainException;
+
+public class RemovedNoteNotUpdatedException extends DomainException {
 }

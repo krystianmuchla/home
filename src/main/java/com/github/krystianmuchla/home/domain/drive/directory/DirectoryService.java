@@ -4,6 +4,7 @@ import com.github.krystianmuchla.home.domain.drive.directory.error.DirectoryNotF
 import com.github.krystianmuchla.home.domain.drive.directory.error.DirectoryNotUpdatedException;
 import com.github.krystianmuchla.home.domain.drive.directory.error.DirectoryValidationException;
 import com.github.krystianmuchla.home.domain.drive.directory.error.IllegalDirectoryStatusException;
+import com.github.krystianmuchla.home.infrastructure.persistence.core.Transaction;
 import com.github.krystianmuchla.home.infrastructure.persistence.drive.DirectoryPersistence;
 
 import java.util.LinkedList;
@@ -16,7 +17,7 @@ public class DirectoryService {
             checkExistence(userId, parentId);
         }
         var directory = new Directory(userId, parentId, name);
-        DirectoryPersistence.create(directory);
+        Transaction.run(() -> DirectoryPersistence.create(directory));
         return directory.id;
     }
 
@@ -61,7 +62,7 @@ public class DirectoryService {
     }
 
     public static void update(Directory directory) throws DirectoryNotUpdatedException {
-        var result = DirectoryPersistence.update(directory);
+        var result = Transaction.run(() -> DirectoryPersistence.update(directory));
         if (!result) {
             throw new DirectoryNotUpdatedException();
         }
@@ -71,7 +72,7 @@ public class DirectoryService {
         if (!directory.isRemoved()) {
             throw new IllegalDirectoryStatusException(directory.status);
         }
-        var result = DirectoryPersistence.delete(directory);
+        var result = Transaction.run(() -> DirectoryPersistence.delete(directory));
         if (!result) {
             throw new DirectoryNotFoundException();
         }

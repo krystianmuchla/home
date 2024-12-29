@@ -1,4 +1,6 @@
 package com.github.krystianmuchla.home.domain.drive.file.error;
 
-public class FileNotUpdatedException extends Exception {
+import com.github.krystianmuchla.home.domain.core.error.DomainException;
+
+public class FileNotUpdatedException extends DomainException {
 }

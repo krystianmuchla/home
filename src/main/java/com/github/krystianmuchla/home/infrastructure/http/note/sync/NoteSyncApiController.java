@@ -11,7 +11,6 @@ import com.github.krystianmuchla.home.infrastructure.http.core.ResponseWriter;
 import com.github.krystianmuchla.home.infrastructure.http.core.error.BadRequestException;
 import com.github.krystianmuchla.home.infrastructure.http.core.error.InternalServerErrorException;
 import com.github.krystianmuchla.home.infrastructure.http.core.error.ValidationError;
-import com.github.krystianmuchla.home.infrastructure.persistence.core.Transaction;
 import com.sun.net.httpserver.HttpExchange;
 
 import java.io.IOException;
@@ -29,9 +28,7 @@ public class NoteSyncApiController extends Controller {
     protected void put(HttpExchange exchange) throws IOException {
         var user = RequestReader.readUser(exchange);
         var syncNotesRequest = RequestReader.readJson(exchange, SyncNotesRequest.class);
-        var notes = Transaction.run(
-            () -> NoteSyncService.sync(user.id, map(user.id, syncNotesRequest.notes()))
-        );
+        var notes = NoteSyncService.sync(user.id, map(user.id, syncNotesRequest.notes()));
         ResponseWriter.writeJson(exchange, 200, new NoteSyncResponse(map(notes)));
     }
 

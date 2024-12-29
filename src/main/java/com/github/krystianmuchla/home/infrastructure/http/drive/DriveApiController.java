@@ -17,10 +17,10 @@ import com.github.krystianmuchla.home.infrastructure.http.core.Controller;
 import com.github.krystianmuchla.home.infrastructure.http.core.RequestReader;
 import com.github.krystianmuchla.home.infrastructure.http.core.ResponseWriter;
 import com.github.krystianmuchla.home.infrastructure.http.core.error.*;
-import com.github.krystianmuchla.home.infrastructure.persistence.core.Transaction;
 import com.sun.net.httpserver.HttpExchange;
 
 import java.io.IOException;
+import java.util.UUID;
 
 public class DriveApiController extends Controller {
     public static final DriveApiController INSTANCE = new DriveApiController();
@@ -34,25 +34,21 @@ public class DriveApiController extends Controller {
         var user = RequestReader.readUser(exchange);
         var request = RequestReader.readQuery(exchange, DriveFilterRequest::new);
         if (request.file() != null) {
-            Transaction.run(() -> {
-                try {
-                    FileService.remove(user.id, request.file());
-                } catch (FileNotFoundException exception) {
-                    throw new NotFoundException();
-                } catch (FileNotUpdatedException exception) {
-                    throw new ConflictException();
-                }
-            });
+            try {
+                FileService.remove(user.id, request.file());
+            } catch (FileNotFoundException exception) {
+                throw new NotFoundException();
+            } catch (FileNotUpdatedException exception) {
+                throw new ConflictException();
+            }
         } else if (request.dir() != null) {
-            Transaction.run(() -> {
-                try {
-                    DirectoryService.remove(user.id, request.dir());
-                } catch (DirectoryNotFoundException exception) {
-                    throw new NotFoundException();
-                } catch (DirectoryNotUpdatedException exception) {
-                    throw new ConflictException();
-                }
-            });
+            try {
+                DirectoryService.remove(user.id, request.dir());
+            } catch (DirectoryNotFoundException exception) {
+                throw new NotFoundException();
+            } catch (DirectoryNotUpdatedException exception) {
+                throw new ConflictException();
+            }
         } else {
             throw new BadRequestException();
         }
@@ -81,32 +77,29 @@ public class DriveApiController extends Controller {
     protected void post(HttpExchange exchange) throws IOException {
         var user = RequestReader.readUser(exchange);
         var request = RequestReader.readJson(exchange, CreateDirectoryRequest.class);
-        Transaction.run(() -> {
-            try {
-                DirectoryService.create(user.id, request.dir(), request.name());
-            } catch (DirectoryNotFoundException exception) {
-                throw new NotFoundException();
-            } catch (DirectoryValidationException exception) {
-                var errors = new MultiValueHashMap<String, ValidationError>();
-                for (var error : exception.errors) {
-                    switch (error) {
-                        case DirectoryValidationError.NullName ignored ->
-                            errors.add("name", ValidationError.nullValue());
-                        case DirectoryValidationError.NameBelowMinLength e ->
-                            errors.add("name", ValidationError.belowMinLength(e.minLength));
-                        case DirectoryValidationError.NameAboveMaxLength e ->
-                            errors.add("name", ValidationError.aboveMaxLength(e.maxLength));
-                        default -> {
-                        }
+        try {
+            DirectoryService.create(user.id, request.dir(), request.name());
+        } catch (DirectoryNotFoundException exception) {
+            throw new NotFoundException();
+        } catch (DirectoryValidationException exception) {
+            var errors = new MultiValueHashMap<String, ValidationError>();
+            for (var error : exception.errors) {
+                switch (error) {
+                    case DirectoryValidationError.NullName ignored -> errors.add("name", ValidationError.nullValue());
+                    case DirectoryValidationError.NameBelowMinLength e ->
+                        errors.add("name", ValidationError.belowMinLength(e.minLength));
+                    case DirectoryValidationError.NameAboveMaxLength e ->
+                        errors.add("name", ValidationError.aboveMaxLength(e.maxLength));
+                    default -> {
                     }
                 }
-                if (errors.isEmpty()) {
-                    throw new InternalServerErrorException(exception);
-                } else {
-                    throw new BadRequestException(errors);
-                }
             }
-        });
+            if (errors.isEmpty()) {
+                throw new InternalServerErrorException(exception);
+            } else {
+                throw new BadRequestException(errors);
+            }
+        }
         ResponseWriter.write(exchange, 201);
     }
 
@@ -116,41 +109,38 @@ public class DriveApiController extends Controller {
         var filter = RequestReader.readQuery(exchange, DriveFilterRequest::new);
         var request = RequestReader.readHeaders(exchange, UploadFileRequest::new);
         var fileContent = RequestReader.readStream(exchange);
-        var fileId = Transaction.run(() -> {
-            try {
-                return FileService.create(user.id, filter.dir(), request.fileName());
-            } catch (DirectoryNotFoundException exception) {
-                throw new NotFoundException();
-            } catch (FileValidationException exception) {
-                var errors = new MultiValueHashMap<String, ValidationError>();
-                for (var error : exception.errors) {
-                    switch (error) {
-                        case FileValidationError.NullName ignored -> errors.add("name", ValidationError.nullValue());
-                        case FileValidationError.NameBelowMinLength e ->
-                            errors.add("name", ValidationError.belowMinValue(e.minLength));
-                        case FileValidationError.NameAboveMaxLength e ->
-                            errors.add("name", ValidationError.aboveMaxLength(e.maxLength));
-                        default -> {
-                        }
+        UUID fileId;
+        try {
+            fileId = FileService.create(user.id, filter.dir(), request.fileName());
+        } catch (DirectoryNotFoundException exception) {
+            throw new NotFoundException();
+        } catch (FileValidationException exception) {
+            var errors = new MultiValueHashMap<String, ValidationError>();
+            for (var error : exception.errors) {
+                switch (error) {
+                    case FileValidationError.NullName ignored -> errors.add("name", ValidationError.nullValue());
+                    case FileValidationError.NameBelowMinLength e ->
+                        errors.add("name", ValidationError.belowMinValue(e.minLength));
+                    case FileValidationError.NameAboveMaxLength e ->
+                        errors.add("name", ValidationError.aboveMaxLength(e.maxLength));
+                    default -> {
                     }
                 }
-                if (errors.isEmpty()) {
-                    throw new InternalServerErrorException(exception);
-                } else {
-                    throw new BadRequestException(errors);
-                }
             }
-        });
-        DriveService.uploadFile(user.id, fileId, fileContent);
-        Transaction.run(() -> {
-            try {
-                FileService.upload(user.id, fileId);
-            } catch (FileNotFoundException exception) {
+            if (errors.isEmpty()) {
                 throw new InternalServerErrorException(exception);
-            } catch (FileNotUpdatedException exception) {
-                throw new ConflictException();
+            } else {
+                throw new BadRequestException(errors);
             }
-        });
+        }
+        DriveService.uploadFile(user.id, fileId, fileContent);
+        try {
+            FileService.upload(user.id, fileId);
+        } catch (FileNotFoundException exception) {
+            throw new InternalServerErrorException(exception);
+        } catch (FileNotUpdatedException exception) {
+            throw new ConflictException();
+        }
         ResponseWriter.write(exchange, 204);
     }
 }

@@ -11,6 +11,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+// todo cache
 public class ResourceController extends Controller {
     public static final ResourceController INSTANCE = new ResourceController();
 

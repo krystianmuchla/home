@@ -13,7 +13,6 @@ import com.github.krystianmuchla.home.domain.drive.file.FileService;
 import com.github.krystianmuchla.home.domain.drive.file.FileStatus;
 import com.github.krystianmuchla.home.domain.drive.file.error.FileNotUpdatedException;
 import com.github.krystianmuchla.home.domain.drive.file.error.IllegalFileStatusException;
-import com.github.krystianmuchla.home.infrastructure.persistence.core.Transaction;
 import com.github.krystianmuchla.home.infrastructure.persistence.drive.DirectoryPersistence;
 import com.github.krystianmuchla.home.infrastructure.persistence.drive.FilePersistence;
 import org.slf4j.Logger;
@@ -47,13 +46,11 @@ public class DriveWorker extends Worker {
     private void uploadFile(File file) {
         var path = DriveService.path(file.userId, file.id);
         if (Files.isRegularFile(path)) {
-            Transaction.run(() -> {
-                try {
-                    FileService.upload(file);
-                } catch (FileNotUpdatedException exception) {
-                    LOG.warn("{}", exception.getMessage(), exception);
-                }
-            });
+            try {
+                FileService.upload(file);
+            } catch (FileNotUpdatedException exception) {
+                LOG.warn("{}", exception.getMessage(), exception);
+            }
         }
     }
 
@@ -75,25 +72,21 @@ public class DriveWorker extends Worker {
         }
         var files = FilePersistence.readByDirectoryIdAndStatus(directory.userId, directory.id, FileStatus.UPLOADED);
         for (var file : files) {
-            Transaction.run(() -> {
-                try {
-                    FileService.remove(file);
-                } catch (FileNotUpdatedException exception) {
-                    LOG.warn("{}", exception.getMessage(), exception);
-                }
-            });
+            try {
+                FileService.remove(file);
+            } catch (FileNotUpdatedException exception) {
+                LOG.warn("{}", exception.getMessage(), exception);
+            }
         }
     }
 
     private void removeDirectory(Directory directory) {
         removeDirectoryContent(directory);
-        Transaction.run(() -> {
-            try {
-                DirectoryService.remove(directory);
-            } catch (DirectoryNotUpdatedException exception) {
-                LOG.warn("{}", exception.getMessage(), exception);
-            }
-        });
+        try {
+            DirectoryService.remove(directory);
+        } catch (DirectoryNotUpdatedException exception) {
+            LOG.warn("{}", exception.getMessage(), exception);
+        }
     }
 
     private void deleteFiles() {
@@ -108,13 +101,11 @@ public class DriveWorker extends Worker {
                     continue;
                 }
             }
-            Transaction.run(() -> {
-                try {
-                    FileService.delete(file);
-                } catch (IllegalFileStatusException | FileNotUpdatedException exception) {
-                    LOG.warn("{}", exception.getMessage(), exception);
-                }
-            });
+            try {
+                FileService.delete(file);
+            } catch (IllegalFileStatusException | FileNotUpdatedException exception) {
+                LOG.warn("{}", exception.getMessage(), exception);
+            }
         }
     }
 
@@ -129,13 +120,11 @@ public class DriveWorker extends Worker {
             if (!files.isEmpty()) {
                 continue;
             }
-            Transaction.run(() -> {
-                try {
-                    DirectoryService.delete(directory);
-                } catch (IllegalDirectoryStatusException | DirectoryNotFoundException exception) {
-                    LOG.warn("{}", exception.getMessage(), exception);
-                }
-            });
+            try {
+                DirectoryService.delete(directory);
+            } catch (IllegalDirectoryStatusException | DirectoryNotFoundException exception) {
+                LOG.warn("{}", exception.getMessage(), exception);
+            }
         }
     }
 }

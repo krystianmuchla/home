@@ -5,6 +5,7 @@ import com.github.krystianmuchla.home.domain.note.error.NoteNotUpdatedException;
 import com.github.krystianmuchla.home.domain.note.removed.RemovedNote;
 import com.github.krystianmuchla.home.domain.note.removed.RemovedNoteService;
 import com.github.krystianmuchla.home.domain.note.removed.error.RemovedNoteNotUpdatedException;
+import com.github.krystianmuchla.home.infrastructure.persistence.core.Transaction;
 import com.github.krystianmuchla.home.infrastructure.persistence.note.NotePersistence;
 import com.github.krystianmuchla.home.infrastructure.persistence.note.RemovedNotePersistence;
 
@@ -16,10 +17,12 @@ public class NoteSyncService {
         if (externalNotes == null || externalNotes.isEmpty()) {
             return notesToUpdate(NotePersistence.read(userId), RemovedNotePersistence.read(userId));
         }
-        Map<UUID, Note> notes = CollectionService.toMap(note -> note.id, NotePersistence.read(userId));
-        Map<UUID, RemovedNote> removedNotes = CollectionService.toMap(removedNote -> removedNote.id, RemovedNotePersistence.read(userId));
-        syncNotes(notes, removedNotes, externalNotes).forEach(notes::remove);
-        syncRemovedNotes(removedNotes, notes, externalNotes).forEach(removedNotes::remove);
+        var notes = CollectionService.toMap(note -> note.id, NotePersistence.read(userId));
+        var removedNotes = CollectionService.toMap(removedNote -> removedNote.id, RemovedNotePersistence.read(userId));
+        Transaction.run(() -> {
+            syncNotes(notes, removedNotes, externalNotes).forEach(notes::remove);
+            syncRemovedNotes(removedNotes, notes, externalNotes).forEach(removedNotes::remove);
+        });
         return notesToUpdate(notes.values(), removedNotes.values());
     }
 

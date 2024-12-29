@@ -6,10 +6,6 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 public class CollectionService {
-    public static String join(Collection<?> collection) {
-        return join("", collection);
-    }
-
     public static String join(String delimiter, Collection<?> collection) {
         return StreamService.join(delimiter, collection.stream());
     }

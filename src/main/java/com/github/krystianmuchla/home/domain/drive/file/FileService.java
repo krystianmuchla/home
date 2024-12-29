@@ -6,6 +6,7 @@ import com.github.krystianmuchla.home.domain.drive.file.error.FileNotFoundExcept
 import com.github.krystianmuchla.home.domain.drive.file.error.FileNotUpdatedException;
 import com.github.krystianmuchla.home.domain.drive.file.error.FileValidationException;
 import com.github.krystianmuchla.home.domain.drive.file.error.IllegalFileStatusException;
+import com.github.krystianmuchla.home.infrastructure.persistence.core.Transaction;
 import com.github.krystianmuchla.home.infrastructure.persistence.drive.FilePersistence;
 
 import java.util.UUID;
@@ -16,7 +17,7 @@ public class FileService {
             DirectoryService.checkExistence(userId, directoryId);
         }
         var file = new File(userId, directoryId, name);
-        FilePersistence.create(file);
+        Transaction.run(() -> FilePersistence.create(file));
         return file.id;
     }
 
@@ -40,6 +41,8 @@ public class FileService {
         if (!file.isUploaded()) {
             file.updateStatus(FileStatus.UPLOADED);
             update(file);
+        } else {
+            throw new FileNotUpdatedException();
         }
     }
 
@@ -59,7 +62,7 @@ public class FileService {
     }
 
     public static void update(File file) throws FileNotUpdatedException {
-        var result = FilePersistence.update(file);
+        var result = Transaction.run(() -> FilePersistence.update(file));
         if (!result) {
             throw new FileNotUpdatedException();
         }
@@ -69,7 +72,7 @@ public class FileService {
         if (!file.isRemoved()) {
             throw new IllegalFileStatusException(file.status);
         }
-        var result = FilePersistence.delete(file);
+        var result = Transaction.run(() -> FilePersistence.delete(file));
         if (!result) {
             throw new FileNotUpdatedException();
         }

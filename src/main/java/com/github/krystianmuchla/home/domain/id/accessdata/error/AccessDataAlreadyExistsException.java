@@ -1,4 +1,6 @@
 package com.github.krystianmuchla.home.domain.id.accessdata.error;
 
-public class AccessDataAlreadyExistsException extends Exception {
+import com.github.krystianmuchla.home.domain.core.error.DomainException;
+
+public class AccessDataAlreadyExistsException extends DomainException {
 }
