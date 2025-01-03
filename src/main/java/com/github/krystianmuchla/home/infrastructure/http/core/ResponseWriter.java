@@ -9,6 +9,7 @@ import java.util.List;
 public class ResponseWriter {
     private final HttpExchange exchange;
     private int status = 200;
+    private String cacheControl = "no-store, no-cache";
     private ResponseContent<?> content;
 
     public ResponseWriter(HttpExchange exchange) {
@@ -37,6 +38,11 @@ public class ResponseWriter {
 
     public ResponseWriter contentDisposition(String contentDisposition) {
         header("Content-Disposition", contentDisposition);
+        return this;
+    }
+
+    public ResponseWriter cacheControl(String cacheControl) {
+        this.cacheControl = cacheControl;
         return this;
     }
 
@@ -94,6 +100,7 @@ public class ResponseWriter {
     }
 
     private void writeHeaders() throws IOException {
+        header("Cache-Control", cacheControl);
         long length;
         if (content == null) {
             length = ResponseLength.NONE;

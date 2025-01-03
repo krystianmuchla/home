@@ -9,11 +9,13 @@ import java.net.URLConnection;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
-// todo cache
+// todo cache all resources
 public class ResourceController extends Controller {
     public static final ResourceController INSTANCE = new ResourceController();
+    private static final Set<Resource> CACHED_RESOURCES = Set.of(Resource.CONTEXT_MENU_IMAGE, Resource.FONT);
 
     private final Map<String, Response> responses = new HashMap<>();
 
@@ -29,7 +31,11 @@ public class ResourceController extends Controller {
     protected void get(HttpExchange exchange) throws IOException {
         var path = exchange.getRequestURI().getPath();
         var response = getResponse(path);
-        new ResponseWriter(exchange).content(response.contentType, response.content).write();
+        var writer = new ResponseWriter(exchange).content(response.contentType, response.content);
+        if (response.cached) {
+            writer.cacheControl("public, max-age=600, must-revalidate");
+        }
+        writer.write();
     }
 
     private Response getResponse(String path) throws IOException {
@@ -44,11 +50,11 @@ public class ResourceController extends Controller {
         }
         try (var inputStream = resource.asStream()) {
             var content = inputStream.readAllBytes();
-            responses.put(path, new Response(contentType, content));
+            responses.put(path, new Response(CACHED_RESOURCES.contains(resource), contentType, content));
         }
         return getResponse(path);
     }
 
-    private record Response(String contentType, byte[] content) {
+    private record Response(boolean cached, String contentType, byte[] content) {
     }
 }
