@@ -33,15 +33,15 @@ public class BadRequestException extends HttpException {
     @Override
     public void handleApi(HttpExchange exchange) throws IOException {
         if (errors == null || errors.isEmpty()) {
-            ResponseWriter.write(exchange, 400);
+            new ResponseWriter(exchange).status(400).write();
         } else {
             var response = ProblemResponseFactory.create(Map.of("errors", errors));
-            ResponseWriter.writeJson(exchange, 400, response);
+            new ResponseWriter(exchange).status(400).json(response).write();
         }
     }
 
     @Override
     public void handleWeb(HttpExchange exchange) throws IOException {
-        ResponseWriter.writeText(exchange, 400, "Something went wrong.");
+        new ResponseWriter(exchange).status(400).text("Something went wrong.").write();
     }
 }

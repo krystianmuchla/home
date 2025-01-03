@@ -29,7 +29,7 @@ public class NoteSyncApiController extends Controller {
         var user = RequestReader.readUser(exchange);
         var syncNotesRequest = RequestReader.readJson(exchange, SyncNotesRequest.class);
         var notes = NoteSyncService.sync(user.id, map(user.id, syncNotesRequest.notes()));
-        ResponseWriter.writeJson(exchange, 200, new NoteSyncResponse(map(notes)));
+        new ResponseWriter(exchange).json(new NoteSyncResponse(map(notes))).write();
     }
 
     private static List<Note> map(UUID userId, List<NoteRequest> notes) {

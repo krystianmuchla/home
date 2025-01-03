@@ -8,11 +8,11 @@ import java.io.IOException;
 public class TooManyRequestsException extends HttpException {
     @Override
     public void handleApi(HttpExchange exchange) throws IOException {
-        ResponseWriter.write(exchange, 429);
+        new ResponseWriter(exchange).status(429).write();
     }
 
     @Override
     public void handleWeb(HttpExchange exchange) throws IOException {
-        ResponseWriter.writeText(exchange, 429, "Try again later.");
+        new ResponseWriter(exchange).status(429).text("Try again later.").write();
     }
 }

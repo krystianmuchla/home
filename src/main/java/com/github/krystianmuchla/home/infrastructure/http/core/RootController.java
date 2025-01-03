@@ -13,6 +13,6 @@ public class RootController extends Controller {
 
     @Override
     protected void get(HttpExchange exchange) throws IOException {
-        ResponseWriter.writeLocation(exchange, 302, ControllerConfig.DEFAULT_PATH);
+        new ResponseWriter(exchange).status(302).location(ControllerConfig.DEFAULT_PATH).write();
     }
 }

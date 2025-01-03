@@ -1,107 +1,135 @@
 package com.github.krystianmuchla.home.infrastructure.http.core;
 
 import com.github.krystianmuchla.home.application.util.StreamService;
-import com.sun.net.httpserver.Headers;
 import com.sun.net.httpserver.HttpExchange;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.util.List;
 
 public class ResponseWriter {
-    public static void write(HttpExchange exchange, int status) throws IOException {
-        exchange.sendResponseHeaders(status, ResponseLength.NONE);
-        exchange.getResponseBody().close();
+    private final HttpExchange exchange;
+    private int status = 200;
+    private ResponseContent<?> content;
+
+    public ResponseWriter(HttpExchange exchange) {
+        this.exchange = exchange;
     }
 
-    public static void writeCookies(HttpExchange exchange, int status, List<String> cookies) throws IOException {
-        cookies.forEach(cookie -> headers(exchange).add("Set-Cookie", cookie));
-        write(exchange, status);
+    public ResponseWriter status(int status) {
+        this.status = status;
+        return this;
     }
 
-    public static void writeLocation(HttpExchange exchange, int status, String location) throws IOException {
-        headers(exchange).add("Location", location);
-        write(exchange, status);
+    public ResponseWriter header(String name, String value) {
+        exchange.getResponseHeaders().add(name, value);
+        return this;
     }
 
-    public static void writeText(HttpExchange exchange, int status, String string) throws IOException {
-        writeString(exchange, status, "text/plain", string);
+    public ResponseWriter cookies(List<String> cookies) {
+        cookies.forEach(cookie -> header("Set-Cookie", cookie));
+        return this;
     }
 
-    public static void writeHtml(HttpExchange exchange, int status, Object object) throws IOException {
-        var string = object.toString();
-        writeHtml(exchange, status, string);
+    public ResponseWriter location(String location) {
+        header("Location", location);
+        return this;
     }
 
-    public static void writeHtml(HttpExchange exchange, int status, String string) throws IOException {
-        writeString(exchange, status, "text/html", string);
+    public ResponseWriter contentDisposition(String contentDisposition) {
+        header("Content-Disposition", contentDisposition);
+        return this;
     }
 
-    public static void writeJson(HttpExchange exchange, int status, Object object) throws IOException {
-        var string = GsonHolder.INSTANCE.toJson(object);
-        writeJson(exchange, status, string);
+    public ResponseWriter content(String contentType, String content) {
+        content(contentType, content.getBytes());
+        return this;
     }
 
-    public static void writeJson(HttpExchange exchange, int status, String string) throws IOException {
-        writeString(exchange, status, "application/json", string);
+    public ResponseWriter content(String contentType, byte[] content) {
+        header("Content-Type", contentType);
+        this.content = new BytesResponseContent(content);
+        return this;
     }
 
-    public static void writeProblemJson(HttpExchange exchange, int status, Object object) throws IOException {
-        var string = GsonHolder.INSTANCE.toJson(object);
-        writeString(exchange, status, "application/problem+json", string);
+    public ResponseWriter content(long contentLength, InputStream content) {
+        header("Content-Type", "application/octet-stream");
+        this.content = new InputStreamResponseContent(contentLength, content);
+        return this;
     }
 
-    public static void writeFile(HttpExchange exchange, int status, String name, File file) throws IOException {
-        headers(exchange).add("Content-Disposition", "attachment; filename=\"" + name + "\"");
-        try (var inputStream = new FileInputStream(file)) {
-            writeStream(exchange, status, inputStream, file.length());
+    public ResponseWriter text(String text) {
+        content("text/plain", text);
+        return this;
+    }
+
+    public ResponseWriter html(String html) {
+        content("text/html", html);
+        return this;
+    }
+
+    public ResponseWriter html(Object html) {
+        html(html.toString());
+        return this;
+    }
+
+    public ResponseWriter json(String json) {
+        content("application/json", json);
+        return this;
+    }
+
+    public ResponseWriter json(Object json) {
+        json(GsonHolder.INSTANCE.toJson(json));
+        return this;
+    }
+
+    public ResponseWriter file(String fileName, File file) throws FileNotFoundException {
+        contentDisposition("attachment; filename=\"" + fileName + "\"");
+        content(file.length(), new FileInputStream(file));
+        return this;
+    }
+
+    public void write() throws IOException {
+        writeHeaders();
+        writeBody();
+    }
+
+    private void writeHeaders() throws IOException {
+        long length;
+        if (content == null) {
+            length = ResponseLength.NONE;
+        } else {
+            switch (content) {
+                case BytesResponseContent bytes -> length = bytes.value.length;
+                case InputStreamResponseContent inputStream -> {
+                    if (inputStream.length == null) {
+                        length = ResponseLength.CHUNKED;
+                    } else {
+                        length = inputStream.length;
+                    }
+                }
+            }
         }
+        exchange.sendResponseHeaders(status, length);
     }
 
-    public static void writeStream(
-        HttpExchange exchange,
-        int status,
-        InputStream inputStream,
-        Long length
-    ) throws IOException {
-        headers(exchange).add("Content-Type", "application/octet-stream");
-        exchange.sendResponseHeaders(status, length == null ? ResponseLength.CHUNKED : length);
-        try (var outputStream = exchange.getResponseBody()) {
-            StreamService.copy(inputStream, outputStream);
+    private void writeBody() throws IOException {
+        if (content == null) {
+            exchange.getResponseBody().close();
+            return;
         }
-    }
-
-    public static void writeString(
-        HttpExchange exchange,
-        int status,
-        String contentType,
-        String string
-    ) throws IOException {
-        var bytes = string.getBytes();
-        writeBytes(exchange, status, contentType, bytes);
-    }
-
-    public static void writeBytes(
-        HttpExchange exchange,
-        int status,
-        String contentType,
-        byte[] bytes
-    ) throws IOException {
-        headers(exchange).add("Content-Type", contentType);
-        writeBytes(exchange, status, bytes);
-    }
-
-    private static void writeBytes(HttpExchange exchange, int status, byte[] bytes) throws IOException {
-        exchange.sendResponseHeaders(status, bytes.length);
-        try (var outputStream = exchange.getResponseBody()) {
-            outputStream.write(bytes);
-            outputStream.flush();
+        switch (content) {
+            case BytesResponseContent bytes -> {
+                try (var outputStream = exchange.getResponseBody()) {
+                    outputStream.write(bytes.value);
+                    outputStream.flush();
+                }
+            }
+            case InputStreamResponseContent inputStream -> {
+                try (var outputStream = exchange.getResponseBody()) {
+                    StreamService.copy(inputStream.value, outputStream);
+                }
+                inputStream.value.close();
+            }
         }
-    }
-
-    private static Headers headers(HttpExchange exchange) {
-        return exchange.getResponseHeaders();
     }
 }

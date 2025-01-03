@@ -17,12 +17,12 @@ public class HttpErrorHandler {
             case TransactionException transactionException -> {
                 var cause = transactionException.getCause();
                 if (cause == null) {
-                    ResponseWriter.write(exchange, 500);
+                    new ResponseWriter(exchange).status(500).write();
                 } else {
                     handle(exchange, cause);
                 }
             }
-            default -> ResponseWriter.write(exchange, 500);
+            default -> new ResponseWriter(exchange).status(500).write();
         }
     }
 }

@@ -1,6 +1,5 @@
 package com.github.krystianmuchla.home.infrastructure.http.id;
 
-import com.github.krystianmuchla.home.infrastructure.http.core.error.ValidationError;
 import com.github.krystianmuchla.home.domain.id.error.UnauthenticatedException;
 import com.github.krystianmuchla.home.domain.id.session.SessionId;
 import com.github.krystianmuchla.home.domain.id.session.SessionService;
@@ -12,10 +11,7 @@ import com.github.krystianmuchla.home.infrastructure.http.core.Controller;
 import com.github.krystianmuchla.home.infrastructure.http.core.Cookie;
 import com.github.krystianmuchla.home.infrastructure.http.core.RequestReader;
 import com.github.krystianmuchla.home.infrastructure.http.core.ResponseWriter;
-import com.github.krystianmuchla.home.infrastructure.http.core.error.BadRequestException;
-import com.github.krystianmuchla.home.infrastructure.http.core.error.InternalServerErrorException;
-import com.github.krystianmuchla.home.infrastructure.http.core.error.TooManyRequestsException;
-import com.github.krystianmuchla.home.infrastructure.http.core.error.UnauthorizedException;
+import com.github.krystianmuchla.home.infrastructure.http.core.error.*;
 import com.sun.net.httpserver.HttpExchange;
 
 import java.io.IOException;
@@ -36,9 +32,9 @@ public class SessionApiController extends Controller {
         }
         var result = SessionService.removeSession(sessionId.get());
         if (result) {
-            ResponseWriter.write(exchange, 204);
+            new ResponseWriter(exchange).status(204).write();
         } else {
-            ResponseWriter.write(exchange, 410);
+            new ResponseWriter(exchange).status(410).write();
         }
     }
 
@@ -59,6 +55,6 @@ public class SessionApiController extends Controller {
         } catch (SessionValidationException exception) {
             throw new InternalServerErrorException(exception);
         }
-        ResponseWriter.writeCookies(exchange, 204, Cookie.fromSessionId(sessionId));
+        new ResponseWriter(exchange).status(204).cookies(Cookie.fromSessionId(sessionId)).write();
     }
 }

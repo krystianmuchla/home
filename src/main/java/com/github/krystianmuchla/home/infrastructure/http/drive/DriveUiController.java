@@ -42,7 +42,7 @@ public class DriveUiController extends Controller {
             throw new NotFoundException();
         }
         var list = DriveService.listDirectory(user.id, request.dir());
-        ResponseWriter.writeHtml(exchange, 200, html(user.name, dirHierarchy, list));
+        new ResponseWriter(exchange).html(html(user.name, dirHierarchy, list)).write();
     }
 
     private Tags html(String userName, List<Directory> dirHierarchy, List<Entry> list) {

@@ -20,7 +20,7 @@ public class DriveController extends Controller {
 
     @Override
     protected void get(HttpExchange exchange) throws IOException {
-        ResponseWriter.writeHtml(exchange, 200, response());
+        new ResponseWriter(exchange).html(response()).write();
     }
 
     private String response() {

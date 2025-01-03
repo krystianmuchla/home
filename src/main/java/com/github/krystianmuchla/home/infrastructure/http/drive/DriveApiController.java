@@ -52,7 +52,7 @@ public class DriveApiController extends Controller {
         } else {
             throw new BadRequestException();
         }
-        ResponseWriter.write(exchange, 204);
+        new ResponseWriter(exchange).status(204).write();
     }
 
     @Override
@@ -61,7 +61,7 @@ public class DriveApiController extends Controller {
         var request = RequestReader.readQuery(exchange, DriveFilterRequest::new);
         if (request.file() == null) {
             var list = DriveService.listDirectory(user.id, request.dir());
-            ResponseWriter.writeJson(exchange, 200, list.stream().map(EntryResponse::new).toList());
+            new ResponseWriter(exchange).json(list.stream().map(EntryResponse::new).toList()).write();
         } else {
             FileDto fileDto;
             try {
@@ -69,7 +69,7 @@ public class DriveApiController extends Controller {
             } catch (FileNotFoundException exception) {
                 throw new NotFoundException();
             }
-            ResponseWriter.writeFile(exchange, 200, fileDto.name(), fileDto.file());
+            new ResponseWriter(exchange).file(fileDto.name(), fileDto.file()).write();
         }
     }
 
@@ -100,7 +100,7 @@ public class DriveApiController extends Controller {
                 throw new BadRequestException(errors);
             }
         }
-        ResponseWriter.write(exchange, 201);
+        new ResponseWriter(exchange).status(201).write();
     }
 
     @Override
@@ -141,6 +141,6 @@ public class DriveApiController extends Controller {
         } catch (FileNotUpdatedException exception) {
             throw new ConflictException();
         }
-        ResponseWriter.write(exchange, 204);
+        new ResponseWriter(exchange).status(204).write();
     }
 }

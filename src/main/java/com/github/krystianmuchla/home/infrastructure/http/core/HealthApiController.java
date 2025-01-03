@@ -13,6 +13,6 @@ public class HealthApiController extends Controller {
 
     @Override
     protected void get(HttpExchange exchange) throws IOException {
-        ResponseWriter.writeJson(exchange, 200, "{}");
+        new ResponseWriter(exchange).json("{}").write();
     }
 }

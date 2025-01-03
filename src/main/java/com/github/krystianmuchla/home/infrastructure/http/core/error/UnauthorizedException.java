@@ -9,11 +9,11 @@ import java.io.IOException;
 public class UnauthorizedException extends HttpException {
     @Override
     public void handleApi(HttpExchange exchange) throws IOException {
-        ResponseWriter.write(exchange, 401);
+        new ResponseWriter(exchange).status(401).write();
     }
 
     @Override
     public void handleWeb(HttpExchange exchange) throws IOException {
-        ResponseWriter.writeLocation(exchange, 302, SignInController.INSTANCE.getPath());
+        new ResponseWriter(exchange).status(302).location(SignInController.INSTANCE.getPath()).write();
     }
 }

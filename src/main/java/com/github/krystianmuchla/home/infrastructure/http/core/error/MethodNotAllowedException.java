@@ -8,11 +8,11 @@ import java.io.IOException;
 public class MethodNotAllowedException extends HttpException {
     @Override
     public void handleApi(HttpExchange exchange) throws IOException {
-        ResponseWriter.write(exchange, 405);
+        new ResponseWriter(exchange).status(405).write();
     }
 
     @Override
     public void handleWeb(HttpExchange exchange) throws IOException {
-        ResponseWriter.writeText(exchange, 405, "Something went wrong.");
+        new ResponseWriter(exchange).status(405).text("Something went wrong.").write();
     }
 }

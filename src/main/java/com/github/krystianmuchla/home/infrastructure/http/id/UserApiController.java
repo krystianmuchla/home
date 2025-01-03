@@ -109,6 +109,6 @@ public class UserApiController extends Controller {
         } catch (SessionValidationException exception) {
             throw new InternalServerErrorException(exception);
         }
-        ResponseWriter.writeCookies(exchange, 201, Cookie.fromSessionId(sessionId));
+        new ResponseWriter(exchange).status(201).cookies(Cookie.fromSessionId(sessionId)).write();
     }
 }

@@ -18,9 +18,9 @@ public class UserInitApiController extends Controller {
     protected void post(HttpExchange exchange) throws IOException {
         var success = SignUpToken.INSTANCE.generateAndLog();
         if (success) {
-            ResponseWriter.write(exchange, 202);
+            new ResponseWriter(exchange).status(202).write();
         } else {
-            ResponseWriter.write(exchange, 409);
+            new ResponseWriter(exchange).status(409).write();
         }
     }
 }

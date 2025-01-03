@@ -29,7 +29,7 @@ public class ResourceController extends Controller {
     protected void get(HttpExchange exchange) throws IOException {
         var path = exchange.getRequestURI().getPath();
         var response = getResponse(path);
-        ResponseWriter.writeBytes(exchange, 200, response.contentType, response.content);
+        new ResponseWriter(exchange).content(response.contentType, response.content).write();
     }
 
     private Response getResponse(String path) throws IOException {

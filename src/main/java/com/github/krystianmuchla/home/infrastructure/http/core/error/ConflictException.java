@@ -8,11 +8,11 @@ import java.io.IOException;
 public class ConflictException extends HttpException {
     @Override
     public void handleApi(HttpExchange exchange) throws IOException {
-        ResponseWriter.write(exchange, 409);
+        new ResponseWriter(exchange).status(409).write();
     }
 
     @Override
     public void handleWeb(HttpExchange exchange) throws IOException {
-        ResponseWriter.writeText(exchange, 409, "Something went wrong.");
+        new ResponseWriter(exchange).status(409).text("Something went wrong.").write();
     }
 }

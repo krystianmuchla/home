@@ -30,7 +30,7 @@ public class HttpException extends RuntimeException {
     }
 
     public void handleApi(HttpExchange exchange) throws IOException {
-        ResponseWriter.write(exchange, 500);
+        new ResponseWriter(exchange).status(500).write();
     }
 
     public void handleUi(HttpExchange exchange) throws IOException {
@@ -38,6 +38,6 @@ public class HttpException extends RuntimeException {
     }
 
     public void handleWeb(HttpExchange exchange) throws IOException {
-        ResponseWriter.writeText(exchange, 500, "Something went wrong.");
+        new ResponseWriter(exchange).status(500).text("Something went wrong.").write();
     }
 }

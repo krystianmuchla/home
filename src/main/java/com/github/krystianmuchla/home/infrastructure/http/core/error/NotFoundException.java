@@ -8,11 +8,11 @@ import java.io.IOException;
 public class NotFoundException extends HttpException {
     @Override
     public void handleApi(HttpExchange exchange) throws IOException {
-        ResponseWriter.write(exchange, 404);
+        new ResponseWriter(exchange).status(404).write();
     }
 
     @Override
     public void handleWeb(HttpExchange exchange) throws IOException {
-        ResponseWriter.writeText(exchange, 404, "Selected page doesn't exist.");
+        new ResponseWriter(exchange).status(404).text("Selected page doesn't exist.").write();
     }
 }

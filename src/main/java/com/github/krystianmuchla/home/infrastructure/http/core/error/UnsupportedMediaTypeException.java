@@ -8,11 +8,11 @@ import java.io.IOException;
 public class UnsupportedMediaTypeException extends HttpException {
     @Override
     public void handleApi(HttpExchange exchange) throws IOException {
-        ResponseWriter.write(exchange, 415);
+        new ResponseWriter(exchange).status(415).write();
     }
 
     @Override
     public void handleWeb(HttpExchange exchange) throws IOException {
-        ResponseWriter.writeText(exchange, 415, "Something went wrong.");
+        new ResponseWriter(exchange).status(415).text("Something went wrong.").write();
     }
 }
