@@ -6,9 +6,7 @@ import com.github.krystianmuchla.home.application.time.TimeFactory;
 import com.github.krystianmuchla.home.domain.id.accessdata.error.AccessDataAlreadyExistsException;
 import com.github.krystianmuchla.home.domain.id.accessdata.error.AccessDataValidationException;
 import com.github.krystianmuchla.home.domain.id.password.error.PasswordValidationException;
-import com.github.krystianmuchla.home.domain.id.session.SessionId;
 import com.github.krystianmuchla.home.domain.id.session.SessionService;
-import com.github.krystianmuchla.home.domain.id.session.error.SessionValidationException;
 import com.github.krystianmuchla.home.domain.id.user.User;
 import com.github.krystianmuchla.home.domain.id.user.UserService;
 import com.github.krystianmuchla.home.domain.id.user.error.UserValidationException;
@@ -42,7 +40,7 @@ class NoteSyncApiControllerTest {
     private static Gson gson;
     private static User user;
     private static User otherUser;
-    private static SessionId sessionId;
+    private static String token;
     private static String cookie;
 
     @BeforeAll
@@ -50,30 +48,24 @@ class NoteSyncApiControllerTest {
         AppContext.init();
         gson = GsonHolder.INSTANCE;
         var login = "note_sync_controller_user";
-        var userId = Transaction.run(() -> {
-            try {
-                return UserService.create("User name", login, "zaq1@WSX");
-            } catch (UserValidationException | AccessDataAlreadyExistsException |
-                     PasswordValidationException | AccessDataValidationException exception) {
-                throw new RuntimeException(exception);
-            }
-        });
-        user = UserPersistence.read(userId);
-        var otherUserId = Transaction.run(() -> {
-            try {
-                return UserService.create("Other user name", "other_user_login", "zaq1@WSX");
-            } catch (UserValidationException | PasswordValidationException |
-                     AccessDataAlreadyExistsException | AccessDataValidationException exception) {
-                throw new RuntimeException(exception);
-            }
-        });
-        otherUser = UserPersistence.read(otherUserId);
+        UUID userId;
         try {
-            sessionId = SessionService.createSession(login, user);
-        } catch (SessionValidationException exception) {
+            userId = UserService.create("User name", login, "zaq1@WSX");
+        } catch (UserValidationException | AccessDataAlreadyExistsException |
+                 PasswordValidationException | AccessDataValidationException exception) {
             throw new RuntimeException(exception);
         }
-        cookie = "login=%s; token=%s".formatted(sessionId.login(), sessionId.token());
+        user = UserPersistence.read(userId);
+        UUID otherUserId;
+        try {
+            otherUserId = UserService.create("Other user name", "other_user_login", "zaq1@WSX");
+        } catch (UserValidationException | PasswordValidationException |
+                 AccessDataAlreadyExistsException | AccessDataValidationException exception) {
+            throw new RuntimeException(exception);
+        }
+        otherUser = UserPersistence.read(otherUserId);
+        token = SessionService.createSession(user);
+        cookie = "token=%s".formatted(token);
     }
 
     @AfterEach
@@ -90,7 +82,7 @@ class NoteSyncApiControllerTest {
             Persistence.executeUpdate("DELETE FROM access_data");
             Persistence.executeUpdate("DELETE FROM user");
         });
-        SessionService.removeSession(sessionId);
+        SessionService.removeSession(token);
     }
 
     @Test

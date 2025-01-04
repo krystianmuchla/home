@@ -2,12 +2,9 @@ package com.github.krystianmuchla.home.infrastructure.http.core.filter;
 
 import com.github.krystianmuchla.home.application.util.MultiValueMap;
 import com.github.krystianmuchla.home.domain.id.error.UnauthenticatedException;
-import com.github.krystianmuchla.home.domain.id.session.SessionId;
 import com.github.krystianmuchla.home.domain.id.session.SessionService;
 import com.github.krystianmuchla.home.domain.id.user.User;
-import com.github.krystianmuchla.home.domain.id.user.error.UserBlockedException;
 import com.github.krystianmuchla.home.infrastructure.http.core.*;
-import com.github.krystianmuchla.home.infrastructure.http.core.error.TooManyRequestsException;
 import com.github.krystianmuchla.home.infrastructure.http.core.error.UnauthorizedException;
 import com.sun.net.httpserver.Filter;
 import com.sun.net.httpserver.HttpExchange;
@@ -15,6 +12,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.util.Optional;
 
 public class AuthFilter extends Filter {
     private static final Logger LOG = LoggerFactory.getLogger(AuthFilter.class);
@@ -63,14 +61,12 @@ public class AuthFilter extends Filter {
 
     private User user(HttpExchange exchange) {
         var cookies = RequestReader.readCookies(exchange);
-        return SessionId.fromCookies(cookies)
-            .map(sessionId -> {
+        return Optional.ofNullable(cookies.get("token"))
+            .map(token -> {
                 try {
-                    return SessionService.getSession(sessionId);
+                    return SessionService.getSession(token);
                 } catch (UnauthenticatedException exception) {
                     throw new UnauthorizedException();
-                } catch (UserBlockedException exception) {
-                    throw new TooManyRequestsException();
                 }
             })
             .map(session -> session.user)

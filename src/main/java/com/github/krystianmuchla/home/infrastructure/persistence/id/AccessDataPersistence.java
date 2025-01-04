@@ -5,14 +5,9 @@ import com.github.krystianmuchla.home.domain.id.accessdata.AccessData;
 import com.github.krystianmuchla.home.infrastructure.persistence.core.Persistence;
 import com.github.krystianmuchla.home.infrastructure.persistence.core.Sql;
 
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-
 import static com.github.krystianmuchla.home.infrastructure.persistence.core.Sql.eq;
 
 public class AccessDataPersistence extends Persistence {
-    private static final Map<String, AccessData> READ_CACHE = new ConcurrentHashMap<>();
-
     public static void create(AccessData accessData) {
         var creationTime = new Time();
         var sql = new Sql.Builder()
@@ -30,11 +25,8 @@ public class AccessDataPersistence extends Persistence {
         executeUpdate(sql.build());
     }
 
+    // todo add index
     public static AccessData read(String login) {
-        var cachedAccessData = READ_CACHE.get(login);
-        if (cachedAccessData != null) {
-            return cachedAccessData;
-        }
         var sql = new Sql.Builder()
             .select()
             .from(AccessData.TABLE)
@@ -42,10 +34,6 @@ public class AccessDataPersistence extends Persistence {
                 eq(AccessData.LOGIN, login)
             );
         var result = executeQuery(sql.build(), AccessData::fromResultSet);
-        var accessData = singleResult(result);
-        if (accessData != null) {
-            READ_CACHE.put(login, accessData);
-        }
-        return accessData;
+        return singleResult(result);
     }
 }

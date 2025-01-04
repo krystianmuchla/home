@@ -18,4 +18,8 @@ public class SecureRandomFactory {
         }
         return result;
     }
+
+    public static int createInteger(int origin, int bound) {
+        return secureRandom.nextInt(origin, bound);
+    }
 }

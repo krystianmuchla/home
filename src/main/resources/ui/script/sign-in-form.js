@@ -39,9 +39,6 @@ signIn.onmousedown = async () => {
         case 401:
             queueToast('warn', 'Incorrect credentials given.');
             break;
-        case 429:
-            queueToast('warn', 'Cannot sign in. Try again later.');
-            break;
         default:
             queueToast('error', 'Something went wrong when signing in.');
     }

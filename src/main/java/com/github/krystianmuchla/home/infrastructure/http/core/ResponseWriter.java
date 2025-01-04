@@ -4,7 +4,6 @@ import com.github.krystianmuchla.home.application.util.StreamService;
 import com.sun.net.httpserver.HttpExchange;
 
 import java.io.*;
-import java.util.List;
 
 public class ResponseWriter {
     private final HttpExchange exchange;
@@ -26,8 +25,10 @@ public class ResponseWriter {
         return this;
     }
 
-    public ResponseWriter cookies(List<String> cookies) {
-        cookies.forEach(cookie -> header("Set-Cookie", cookie));
+    public ResponseWriter cookies(String... cookies) {
+        for (var cookie : cookies) {
+            header("Set-Cookie", cookie);
+        }
         return this;
     }
 

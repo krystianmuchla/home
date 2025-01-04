@@ -7,9 +7,7 @@ import com.github.krystianmuchla.home.domain.id.accessdata.error.AccessDataValid
 import com.github.krystianmuchla.home.domain.id.accessdata.error.AccessDataValidationException;
 import com.github.krystianmuchla.home.domain.id.password.error.PasswordValidationError;
 import com.github.krystianmuchla.home.domain.id.password.error.PasswordValidationException;
-import com.github.krystianmuchla.home.domain.id.session.SessionId;
 import com.github.krystianmuchla.home.domain.id.session.SessionService;
-import com.github.krystianmuchla.home.domain.id.session.error.SessionValidationException;
 import com.github.krystianmuchla.home.domain.id.user.User;
 import com.github.krystianmuchla.home.domain.id.user.UserService;
 import com.github.krystianmuchla.home.domain.id.user.error.UserNotFoundException;
@@ -101,14 +99,10 @@ public class UserApiController extends Controller {
         try {
             user = UserService.get(userId);
         } catch (UserNotFoundException exception) {
-            throw new InternalServerErrorException();
-        }
-        SessionId sessionId;
-        try {
-            sessionId = SessionService.createSession(signUpRequest.login(), user);
-        } catch (SessionValidationException exception) {
             throw new InternalServerErrorException(exception);
         }
-        new ResponseWriter(exchange).status(201).cookies(Cookie.fromSessionId(sessionId)).write();
+        var token = SessionService.createSession(user);
+        var cookie = Cookie.create("token", token);
+        new ResponseWriter(exchange).status(201).cookies(cookie).write();
     }
 }
