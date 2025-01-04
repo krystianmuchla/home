@@ -57,8 +57,8 @@ public class ResponseWriter {
         return this;
     }
 
-    public ResponseWriter content(long contentLength, InputStream content) {
-        header("Content-Type", "application/octet-stream");
+    public ResponseWriter content(String contentType, Long contentLength, InputStream content) {
+        header("Content-Type", contentType);
         this.content = new InputStreamResponseContent(contentLength, content);
         return this;
     }
@@ -90,7 +90,8 @@ public class ResponseWriter {
 
     public ResponseWriter file(String fileName, File file) throws FileNotFoundException {
         contentDisposition("attachment; filename=\"" + fileName + "\"");
-        content(file.length(), new FileInputStream(file));
+        var contentType = HttpService.resolveContentType(fileName);
+        content(contentType, file.length(), new FileInputStream(file));
         return this;
     }
 

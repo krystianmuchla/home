@@ -1,7 +1,8 @@
 package com.github.krystianmuchla.home.application.util;
 
 import java.io.InputStream;
-import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 public enum Resource {
@@ -16,8 +17,10 @@ public enum Resource {
     SIGN_IN_FORM_STYLE("ui/style/sign-in-form.css"),
     SIGN_UP_FORM_SCRIPT("ui/script/sign-up-form.js"),
     SIGN_UP_FORM_STYLE("ui/style/sign-up-form.css"),
-    TOAST_SCRIPT("ui/script/toast.js"),
-    ;
+    TOAST_SCRIPT("ui/script/toast.js");
+
+    private static final Map<String, Resource> RESOURCES =
+        CollectionService.toMap(resource -> resource.urlPath, List.of(Resource.values()));
 
     public final String resourcePath;
     public final String urlPath;
@@ -31,8 +34,8 @@ public enum Resource {
         return inputStream(resourcePath);
     }
 
-    public static Optional<Resource> findByUrlPath(String urlPath) {
-        return Arrays.stream(Resource.values()).filter(resource -> resource.urlPath.equals(urlPath)).findFirst();
+    public static Optional<Resource> getByUrlPath(String urlPath) {
+        return Optional.ofNullable(RESOURCES.get(urlPath));
     }
 
     public static InputStream inputStream(String path) {
