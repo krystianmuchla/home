@@ -12,7 +12,9 @@ import java.util.List;
 import java.util.UUID;
 
 public class DirectoryService {
-    public static UUID create(UUID userId, UUID parentId, String name) throws DirectoryNotFoundException, DirectoryValidationException {
+    public static final DirectoryService INSTANCE = new DirectoryService();
+
+    public UUID create(UUID userId, UUID parentId, String name) throws DirectoryNotFoundException, DirectoryValidationException {
         if (parentId != null) {
             checkExistence(userId, parentId);
         }
@@ -21,7 +23,7 @@ public class DirectoryService {
         return directory.id;
     }
 
-    public static Directory get(UUID userId, UUID directoryId) throws DirectoryNotFoundException {
+    public Directory get(UUID userId, UUID directoryId) throws DirectoryNotFoundException {
         var directory = DirectoryPersistence.readByIdAndStatus(userId, directoryId, DirectoryStatus.CREATED);
         if (directory == null) {
             throw new DirectoryNotFoundException();
@@ -29,11 +31,11 @@ public class DirectoryService {
         return directory;
     }
 
-    public static void checkExistence(UUID userId, UUID directoryId) throws DirectoryNotFoundException {
+    public void checkExistence(UUID userId, UUID directoryId) throws DirectoryNotFoundException {
         get(userId, directoryId);
     }
 
-    public static List<Directory> getHierarchy(UUID userId, UUID directoryId) throws DirectoryNotFoundException {
+    public List<Directory> getHierarchy(UUID userId, UUID directoryId) throws DirectoryNotFoundException {
         var path = new LinkedList<Directory>();
         while (directoryId != null) {
             var directory = get(userId, directoryId);
@@ -43,7 +45,7 @@ public class DirectoryService {
         return path;
     }
 
-    public static void remove(
+    public void remove(
         UUID userId,
         UUID directoryId
     ) throws DirectoryNotFoundException, DirectoryNotUpdatedException {
@@ -54,21 +56,21 @@ public class DirectoryService {
         remove(directory);
     }
 
-    public static void remove(Directory directory) throws DirectoryNotUpdatedException {
+    public void remove(Directory directory) throws DirectoryNotUpdatedException {
         if (!directory.isRemoved()) {
             directory.updateStatus(DirectoryStatus.REMOVED);
             update(directory);
         }
     }
 
-    public static void update(Directory directory) throws DirectoryNotUpdatedException {
+    public void update(Directory directory) throws DirectoryNotUpdatedException {
         var result = Transaction.run(() -> DirectoryPersistence.update(directory));
         if (!result) {
             throw new DirectoryNotUpdatedException();
         }
     }
 
-    public static void delete(Directory directory) throws IllegalDirectoryStatusException, DirectoryNotFoundException {
+    public void delete(Directory directory) throws IllegalDirectoryStatusException, DirectoryNotFoundException {
         if (!directory.isRemoved()) {
             throw new IllegalDirectoryStatusException(directory.status);
         }

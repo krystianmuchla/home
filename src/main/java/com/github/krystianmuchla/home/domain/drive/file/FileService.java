@@ -12,16 +12,24 @@ import com.github.krystianmuchla.home.infrastructure.persistence.drive.FilePersi
 import java.util.UUID;
 
 public class FileService {
-    public static UUID create(UUID userId, UUID directoryId, String name) throws DirectoryNotFoundException, FileValidationException {
+    public static final FileService INSTANCE = new FileService(DirectoryService.INSTANCE);
+
+    private final DirectoryService directoryService;
+
+    public FileService(DirectoryService directoryService) {
+        this.directoryService = directoryService;
+    }
+
+    public UUID create(UUID userId, UUID directoryId, String name) throws DirectoryNotFoundException, FileValidationException {
         if (directoryId != null) {
-            DirectoryService.checkExistence(userId, directoryId);
+            directoryService.checkExistence(userId, directoryId);
         }
         var file = new File(userId, directoryId, name);
         Transaction.run(() -> FilePersistence.create(file));
         return file.id;
     }
 
-    public static File get(UUID userId, UUID fileId) throws FileNotFoundException {
+    public File get(UUID userId, UUID fileId) throws FileNotFoundException {
         var file = FilePersistence.readByIdAndStatus(userId, fileId, FileStatus.UPLOADED);
         if (file == null) {
             throw new FileNotFoundException();
@@ -29,7 +37,7 @@ public class FileService {
         return file;
     }
 
-    public static void upload(UUID userId, UUID fileId) throws FileNotFoundException, FileNotUpdatedException {
+    public void upload(UUID userId, UUID fileId) throws FileNotFoundException, FileNotUpdatedException {
         var file = FilePersistence.readByIdAndStatus(userId, fileId, FileStatus.UPLOADING);
         if (file == null) {
             throw new FileNotFoundException();
@@ -37,7 +45,7 @@ public class FileService {
         upload(file);
     }
 
-    public static void upload(File file) throws FileNotUpdatedException {
+    public void upload(File file) throws FileNotUpdatedException {
         if (!file.isUploaded()) {
             file.updateStatus(FileStatus.UPLOADED);
             update(file);
@@ -46,7 +54,7 @@ public class FileService {
         }
     }
 
-    public static void remove(UUID userId, UUID fileId) throws FileNotFoundException, FileNotUpdatedException {
+    public void remove(UUID userId, UUID fileId) throws FileNotFoundException, FileNotUpdatedException {
         var file = FilePersistence.readByIdAndStatus(userId, fileId, FileStatus.UPLOADED);
         if (file == null) {
             throw new FileNotFoundException();
@@ -54,21 +62,21 @@ public class FileService {
         remove(file);
     }
 
-    public static void remove(File file) throws FileNotUpdatedException {
+    public void remove(File file) throws FileNotUpdatedException {
         if (!file.isRemoved()) {
             file.updateStatus(FileStatus.REMOVED);
             update(file);
         }
     }
 
-    public static void update(File file) throws FileNotUpdatedException {
+    public void update(File file) throws FileNotUpdatedException {
         var result = Transaction.run(() -> FilePersistence.update(file));
         if (!result) {
             throw new FileNotUpdatedException();
         }
     }
 
-    public static void delete(File file) throws IllegalFileStatusException, FileNotUpdatedException {
+    public void delete(File file) throws IllegalFileStatusException, FileNotUpdatedException {
         if (!file.isRemoved()) {
             throw new IllegalFileStatusException(file.status);
         }

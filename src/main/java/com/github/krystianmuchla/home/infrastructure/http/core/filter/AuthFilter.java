@@ -20,6 +20,8 @@ public class AuthFilter extends Filter {
     private final MultiValueMap<String, Method> optionalUserRoutes = ControllerConfig.OPTIONAL_USER_ROUTES;
     private final MultiValueMap<String, Method> noUserRoutes = ControllerConfig.NO_USER_ROUTES;
 
+    private final SessionService sessionService = SessionService.INSTANCE;
+
     @Override
     public void doFilter(HttpExchange exchange, Chain chain) throws IOException {
         if (matches(exchange, optionalUserRoutes)) {
@@ -64,7 +66,7 @@ public class AuthFilter extends Filter {
         return Optional.ofNullable(cookies.get("token"))
             .map(token -> {
                 try {
-                    return SessionService.getSession(token);
+                    return sessionService.getSession(token);
                 } catch (UnauthenticatedException exception) {
                     throw new UnauthorizedException();
                 }

@@ -10,7 +10,9 @@ import com.github.krystianmuchla.home.infrastructure.persistence.id.AccessDataPe
 import java.util.UUID;
 
 public class AccessDataService {
-    public static void create(UUID userId, String login, String password) throws AccessDataAlreadyExistsException, PasswordValidationException, AccessDataValidationException {
+    public static final AccessDataService INSTANCE = new AccessDataService();
+
+    public void create(UUID userId, String login, String password) throws AccessDataAlreadyExistsException, PasswordValidationException, AccessDataValidationException {
         var accessData = AccessDataPersistence.read(login);
         if (accessData != null) {
             throw new AccessDataAlreadyExistsException();

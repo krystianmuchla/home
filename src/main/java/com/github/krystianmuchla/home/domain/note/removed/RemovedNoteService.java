@@ -5,14 +5,16 @@ import com.github.krystianmuchla.home.infrastructure.persistence.core.Transactio
 import com.github.krystianmuchla.home.infrastructure.persistence.note.RemovedNotePersistence;
 
 public class RemovedNoteService {
-    public static void update(RemovedNote removedNote) throws RemovedNoteNotUpdatedException {
+    public static final RemovedNoteService INSTANCE = new RemovedNoteService();
+
+    public void update(RemovedNote removedNote) throws RemovedNoteNotUpdatedException {
         var result = Transaction.run(() -> RemovedNotePersistence.update(removedNote));
         if (!result) {
             throw new RemovedNoteNotUpdatedException();
         }
     }
 
-    public static void delete(RemovedNote removedNote) throws RemovedNoteNotUpdatedException {
+    public void delete(RemovedNote removedNote) throws RemovedNoteNotUpdatedException {
         var result = Transaction.run(() -> RemovedNotePersistence.delete(removedNote));
         if (!result) {
             throw new RemovedNoteNotUpdatedException();

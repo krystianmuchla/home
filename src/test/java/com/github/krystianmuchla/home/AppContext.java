@@ -11,6 +11,7 @@ public class AppContext {
         if (!initialized) {
             System.setProperty("http.port", PORT);
             System.setProperty("database.url", "jdbc:sqlite::memory:");
+            System.setProperty("drive.location", "/");
             App.main();
             initialized = true;
         }

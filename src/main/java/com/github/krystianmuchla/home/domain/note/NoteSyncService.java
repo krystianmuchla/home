@@ -13,7 +13,17 @@ import java.util.*;
 import java.util.stream.Stream;
 
 public class NoteSyncService {
-    public static List<Note> sync(UUID userId, List<Note> externalNotes) {
+    public static final NoteSyncService INSTANCE = new NoteSyncService(NoteService.INSTANCE, RemovedNoteService.INSTANCE);
+
+    private final NoteService noteService;
+    private final RemovedNoteService removedNoteService;
+
+    public NoteSyncService(NoteService noteService, RemovedNoteService removedNoteService) {
+        this.noteService = noteService;
+        this.removedNoteService = removedNoteService;
+    }
+
+    public List<Note> sync(UUID userId, List<Note> externalNotes) {
         if (externalNotes == null || externalNotes.isEmpty()) {
             return notesToUpdate(NotePersistence.read(userId), RemovedNotePersistence.read(userId));
         }
@@ -26,7 +36,7 @@ public class NoteSyncService {
         return notesToUpdate(notes.values(), removedNotes.values());
     }
 
-    private static List<UUID> syncNotes(
+    private List<UUID> syncNotes(
         Map<UUID, Note> notes,
         Map<UUID, RemovedNote> removedNotes,
         List<Note> externalNotes
@@ -43,7 +53,7 @@ public class NoteSyncService {
         return excludedNotes;
     }
 
-    private static List<UUID> syncRemovedNotes(
+    private List<UUID> syncRemovedNotes(
         Map<UUID, RemovedNote> removedNotes,
         Map<UUID, Note> notes,
         List<Note> externalNotes
@@ -60,7 +70,7 @@ public class NoteSyncService {
         return excludedRemovedNotes;
     }
 
-    private static Optional<UUID> syncNote(
+    private Optional<UUID> syncNote(
         Note note,
         RemovedNote removedNote,
         Note externalNote
@@ -80,7 +90,7 @@ public class NoteSyncService {
                 if (externalNote.hasContent()) {
                     update(note, externalNote);
                 } else {
-                    NoteService.delete(note);
+                    noteService.delete(note);
                 }
                 return Optional.of(note.id);
             }
@@ -88,7 +98,7 @@ public class NoteSyncService {
         return Optional.empty();
     }
 
-    private static Optional<UUID> syncRemovedNote(
+    private Optional<UUID> syncRemovedNote(
         RemovedNote removedNote,
         Note note,
         Note externalNote
@@ -106,7 +116,7 @@ public class NoteSyncService {
         } else {
             if (removedNote.removalTime.isBefore(externalNote.contentsModificationTime)) {
                 if (externalNote.hasContent()) {
-                    RemovedNoteService.delete(removedNote);
+                    removedNoteService.delete(removedNote);
                 } else {
                     update(removedNote, externalNote);
                 }
@@ -116,7 +126,7 @@ public class NoteSyncService {
         return Optional.empty();
     }
 
-    private static void update(Note note, Note externalNote) throws NoteNotUpdatedException {
+    private void update(Note note, Note externalNote) throws NoteNotUpdatedException {
         if (!Objects.equals(note.title, externalNote.title)) {
             note.updateTitle(externalNote.title);
         }
@@ -124,12 +134,12 @@ public class NoteSyncService {
             note.updateContent(externalNote.content);
         }
         note.updateContentsModificationTime(externalNote.contentsModificationTime);
-        NoteService.update(note);
+        noteService.update(note);
     }
 
-    private static void update(RemovedNote removedNote, Note externalNote) throws RemovedNoteNotUpdatedException {
+    private void update(RemovedNote removedNote, Note externalNote) throws RemovedNoteNotUpdatedException {
         removedNote.updateRemovalTime(externalNote.contentsModificationTime);
-        RemovedNoteService.update(removedNote);
+        removedNoteService.update(removedNote);
     }
 
     private static List<Note> notesToUpdate(Collection<Note> notes, Collection<RemovedNote> removedNotes) {

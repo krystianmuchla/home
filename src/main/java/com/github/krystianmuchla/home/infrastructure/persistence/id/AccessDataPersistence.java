@@ -25,7 +25,6 @@ public class AccessDataPersistence extends Persistence {
         executeUpdate(sql.build());
     }
 
-    // todo add index
     public static AccessData read(String login) {
         var sql = new Sql.Builder()
             .select()

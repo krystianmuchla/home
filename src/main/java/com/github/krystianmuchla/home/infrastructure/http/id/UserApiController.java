@@ -26,6 +26,9 @@ import java.util.UUID;
 public class UserApiController extends Controller {
     public static final UserApiController INSTANCE = new UserApiController();
 
+    private final UserService userService = UserService.INSTANCE;
+    private final SessionService sessionService = SessionService.INSTANCE;
+
     public UserApiController() {
         super("/api/users");
     }
@@ -39,7 +42,7 @@ public class UserApiController extends Controller {
         }
         UUID userId;
         try {
-            userId = UserService.create(signUpRequest.name(), signUpRequest.login(), signUpRequest.password());
+            userId = userService.create(signUpRequest.name(), signUpRequest.login(), signUpRequest.password());
         } catch (UserValidationException exception) {
             var errors = new MultiValueHashMap<String, ValidationError>();
             for (var error : exception.errors) {
@@ -97,11 +100,11 @@ public class UserApiController extends Controller {
         }
         User user;
         try {
-            user = UserService.get(userId);
+            user = userService.get(userId);
         } catch (UserNotFoundException exception) {
             throw new InternalServerErrorException(exception);
         }
-        var token = SessionService.createSession(user);
+        var token = sessionService.createSession(user);
         var cookie = Cookie.create("token", token);
         new ResponseWriter(exchange).status(201).cookies(cookie).write();
     }

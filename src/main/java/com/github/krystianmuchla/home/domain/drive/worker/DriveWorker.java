@@ -24,6 +24,10 @@ import java.nio.file.Files;
 public class DriveWorker extends Worker {
     private static final Logger LOG = LoggerFactory.getLogger(DriveWorker.class);
 
+    private final DriveService driveService = DriveService.INSTANCE;
+    private final DirectoryService directoryService = DirectoryService.INSTANCE;
+    private final FileService fileService = FileService.INSTANCE;
+
     public DriveWorker() {
         super(DriveWorkerConfig.RATE);
     }
@@ -44,10 +48,10 @@ public class DriveWorker extends Worker {
     }
 
     private void uploadFile(File file) {
-        var path = DriveService.path(file.userId, file.id);
+        var path = driveService.path(file.userId, file.id);
         if (Files.isRegularFile(path)) {
             try {
-                FileService.upload(file);
+                fileService.upload(file);
             } catch (FileNotUpdatedException exception) {
                 LOG.warn("{}", exception.getMessage(), exception);
             }
@@ -73,7 +77,7 @@ public class DriveWorker extends Worker {
         var files = FilePersistence.readByDirectoryIdAndStatus(directory.userId, directory.id, FileStatus.UPLOADED);
         for (var file : files) {
             try {
-                FileService.remove(file);
+                fileService.remove(file);
             } catch (FileNotUpdatedException exception) {
                 LOG.warn("{}", exception.getMessage(), exception);
             }
@@ -83,7 +87,7 @@ public class DriveWorker extends Worker {
     private void removeDirectory(Directory directory) {
         removeDirectoryContent(directory);
         try {
-            DirectoryService.remove(directory);
+            directoryService.remove(directory);
         } catch (DirectoryNotUpdatedException exception) {
             LOG.warn("{}", exception.getMessage(), exception);
         }
@@ -92,7 +96,7 @@ public class DriveWorker extends Worker {
     private void deleteFiles() {
         var files = FilePersistence.readByStatus(FileStatus.REMOVED);
         for (var file : files) {
-            var path = DriveService.path(file.userId, file.id);
+            var path = driveService.path(file.userId, file.id);
             if (Files.exists(path)) {
                 try {
                     Files.delete(path);
@@ -102,7 +106,7 @@ public class DriveWorker extends Worker {
                 }
             }
             try {
-                FileService.delete(file);
+                fileService.delete(file);
             } catch (IllegalFileStatusException | FileNotUpdatedException exception) {
                 LOG.warn("{}", exception.getMessage(), exception);
             }
@@ -121,7 +125,7 @@ public class DriveWorker extends Worker {
                 continue;
             }
             try {
-                DirectoryService.delete(directory);
+                directoryService.delete(directory);
             } catch (IllegalDirectoryStatusException | DirectoryNotFoundException exception) {
                 LOG.warn("{}", exception.getMessage(), exception);
             }

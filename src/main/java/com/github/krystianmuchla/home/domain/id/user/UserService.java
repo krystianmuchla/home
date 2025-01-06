@@ -18,16 +18,24 @@ import java.util.Arrays;
 import java.util.UUID;
 
 public class UserService {
-    public static UUID create(String name, String login, String password) throws UserValidationException, PasswordValidationException, AccessDataAlreadyExistsException, AccessDataValidationException {
+    public static final UserService INSTANCE = new UserService(AccessDataService.INSTANCE);
+
+    private final AccessDataService accessDataService;
+
+    public UserService(AccessDataService accessDataService) {
+        this.accessDataService = accessDataService;
+    }
+
+    public UUID create(String name, String login, String password) throws UserValidationException, PasswordValidationException, AccessDataAlreadyExistsException, AccessDataValidationException {
         var user = new User(name);
         Transaction.run(() -> {
             UserPersistence.create(user);
-            AccessDataService.create(user.id, login, password);
+            accessDataService.create(user.id, login, password);
         });
         return user.id;
     }
 
-    public static User get(String login, String password) throws UnauthenticatedException {
+    public User get(String login, String password) throws UnauthenticatedException {
         var processingTime = SecureRandomFactory.createInteger(1000, 2000);
         var processingStartTime = System.currentTimeMillis();
         User user = null;
@@ -59,7 +67,7 @@ public class UserService {
         return user;
     }
 
-    public static User get(UUID id) throws UserNotFoundException {
+    public User get(UUID id) throws UserNotFoundException {
         var user = UserPersistence.read(id);
         if (user == null) {
             throw new UserNotFoundException();

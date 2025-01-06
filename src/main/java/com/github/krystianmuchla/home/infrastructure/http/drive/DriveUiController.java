@@ -27,6 +27,9 @@ import static com.github.krystianmuchla.home.infrastructure.http.core.html.Tags.
 public class DriveUiController extends Controller {
     public static final DriveUiController INSTANCE = new DriveUiController();
 
+    private final DriveService driveService = DriveService.INSTANCE;
+    private final DirectoryService directoryService = DirectoryService.INSTANCE;
+
     public DriveUiController() {
         super("/ui/drive/main");
     }
@@ -37,11 +40,11 @@ public class DriveUiController extends Controller {
         var request = RequestReader.readQuery(exchange, DriveFilterRequest::new);
         List<Directory> dirHierarchy;
         try {
-            dirHierarchy = DirectoryService.getHierarchy(user.id, request.dir());
+            dirHierarchy = directoryService.getHierarchy(user.id, request.dir());
         } catch (DirectoryNotFoundException exception) {
             throw new NotFoundException();
         }
-        var list = DriveService.listDirectory(user.id, request.dir());
+        var list = driveService.listDirectory(user.id, request.dir());
         new ResponseWriter(exchange).html(html(user.name, dirHierarchy, list)).write();
     }
 

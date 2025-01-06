@@ -25,6 +25,10 @@ import java.util.UUID;
 public class DriveApiController extends Controller {
     public static final DriveApiController INSTANCE = new DriveApiController();
 
+    private final DriveService driveService = DriveService.INSTANCE;
+    private final DirectoryService directoryService = DirectoryService.INSTANCE;
+    private final FileService fileService = FileService.INSTANCE;
+
     public DriveApiController() {
         super("/api/drive");
     }
@@ -35,7 +39,7 @@ public class DriveApiController extends Controller {
         var request = RequestReader.readQuery(exchange, DriveFilterRequest::new);
         if (request.file() != null) {
             try {
-                FileService.remove(user.id, request.file());
+                fileService.remove(user.id, request.file());
             } catch (FileNotFoundException exception) {
                 throw new NotFoundException();
             } catch (FileNotUpdatedException exception) {
@@ -43,7 +47,7 @@ public class DriveApiController extends Controller {
             }
         } else if (request.dir() != null) {
             try {
-                DirectoryService.remove(user.id, request.dir());
+                directoryService.remove(user.id, request.dir());
             } catch (DirectoryNotFoundException exception) {
                 throw new NotFoundException();
             } catch (DirectoryNotUpdatedException exception) {
@@ -60,12 +64,12 @@ public class DriveApiController extends Controller {
         var user = RequestReader.readUser(exchange);
         var request = RequestReader.readQuery(exchange, DriveFilterRequest::new);
         if (request.file() == null) {
-            var list = DriveService.listDirectory(user.id, request.dir());
+            var list = driveService.listDirectory(user.id, request.dir());
             new ResponseWriter(exchange).json(list.stream().map(EntryResponse::new).toList()).write();
         } else {
             FileDto fileDto;
             try {
-                fileDto = DriveService.getFile(user.id, request.file());
+                fileDto = driveService.getFile(user.id, request.file());
             } catch (FileNotFoundException exception) {
                 throw new NotFoundException();
             }
@@ -78,7 +82,7 @@ public class DriveApiController extends Controller {
         var user = RequestReader.readUser(exchange);
         var request = RequestReader.readJson(exchange, CreateDirectoryRequest.class);
         try {
-            DirectoryService.create(user.id, request.dir(), request.name());
+            directoryService.create(user.id, request.dir(), request.name());
         } catch (DirectoryNotFoundException exception) {
             throw new NotFoundException();
         } catch (DirectoryValidationException exception) {
@@ -111,7 +115,7 @@ public class DriveApiController extends Controller {
         var fileContent = RequestReader.readStream(exchange);
         UUID fileId;
         try {
-            fileId = FileService.create(user.id, filter.dir(), request.fileName());
+            fileId = fileService.create(user.id, filter.dir(), request.fileName());
         } catch (DirectoryNotFoundException exception) {
             throw new NotFoundException();
         } catch (FileValidationException exception) {
@@ -133,9 +137,9 @@ public class DriveApiController extends Controller {
                 throw new BadRequestException(errors);
             }
         }
-        DriveService.uploadFile(user.id, fileId, fileContent);
+        driveService.uploadFile(user.id, fileId, fileContent);
         try {
-            FileService.upload(user.id, fileId);
+            fileService.upload(user.id, fileId);
         } catch (FileNotFoundException exception) {
             throw new InternalServerErrorException(exception);
         } catch (FileNotUpdatedException exception) {

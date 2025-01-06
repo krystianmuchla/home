@@ -20,7 +20,14 @@ import java.util.UUID;
 import java.util.stream.Stream;
 
 public class DriveService {
+    public static final DriveService INSTANCE = new DriveService(FileService.INSTANCE);
     private static final Path DRIVE_PATH = Path.of(DriveConfig.LOCATION);
+
+    private final FileService fileService;
+
+    public DriveService(FileService fileService) {
+        this.fileService = fileService;
+    }
 
     static {
         if (Files.notExists(DRIVE_PATH)) {
@@ -28,7 +35,7 @@ public class DriveService {
         }
     }
 
-    public static List<Entry> listDirectory(UUID userId, UUID directoryId) {
+    public List<Entry> listDirectory(UUID userId, UUID directoryId) {
         var directories = DirectoryPersistence.readByParentIdAndStatus(userId, directoryId, DirectoryStatus.CREATED)
             .stream().map(directory -> new Entry(directory.id, EntryType.DIR, directory.name));
         var files = FilePersistence.readByDirectoryIdAndStatus(userId, directoryId, FileStatus.UPLOADED)
@@ -36,7 +43,7 @@ public class DriveService {
         return Stream.concat(directories, files).toList();
     }
 
-    public static void uploadFile(UUID userId, UUID fileId, InputStream fileContent) {
+    public void uploadFile(UUID userId, UUID fileId, InputStream fileContent) {
         var path = path(userId, fileId);
         try (var outputStream = new FileOutputStream(path.toString())) {
             try (var inputStream = fileContent) {
@@ -47,17 +54,17 @@ public class DriveService {
         }
     }
 
-    public static FileDto getFile(UUID userId, UUID fileId) throws FileNotFoundException {
-        var file = FileService.get(userId, fileId);
+    public FileDto getFile(UUID userId, UUID fileId) throws FileNotFoundException {
+        var file = fileService.get(userId, fileId);
         var actualFile = actualFile(userId, fileId);
         return new FileDto(file.name, actualFile);
     }
 
-    public static Path path(UUID userId, UUID fileId) {
+    public Path path(UUID userId, UUID fileId) {
         return path(userId).resolve(fileId.toString());
     }
 
-    private static File actualFile(UUID userId, UUID fileId) {
+    private File actualFile(UUID userId, UUID fileId) {
         var path = path(userId, fileId);
         var file = path.toFile();
         if (!file.isFile()) {
@@ -66,7 +73,7 @@ public class DriveService {
         return file;
     }
 
-    private static Path path(UUID userId) {
+    private Path path(UUID userId) {
         var path = DRIVE_PATH.resolve(userId.toString());
         if (Files.notExists(path)) {
             try {

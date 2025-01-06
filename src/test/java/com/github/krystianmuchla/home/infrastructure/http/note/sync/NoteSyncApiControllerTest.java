@@ -38,6 +38,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 class NoteSyncApiControllerTest {
     private static Gson gson;
+    private static SessionService sessionService;
+
     private static User user;
     private static User otherUser;
     private static String token;
@@ -47,10 +49,12 @@ class NoteSyncApiControllerTest {
     static void beforeAllTests() {
         AppContext.init();
         gson = GsonHolder.INSTANCE;
+        sessionService = SessionService.INSTANCE;
+        var userService = UserService.INSTANCE;
         var login = "note_sync_controller_user";
         UUID userId;
         try {
-            userId = UserService.create("User name", login, "zaq1@WSX");
+            userId = userService.create("User name", login, "zaq1@WSX");
         } catch (UserValidationException | AccessDataAlreadyExistsException |
                  PasswordValidationException | AccessDataValidationException exception) {
             throw new RuntimeException(exception);
@@ -58,13 +62,13 @@ class NoteSyncApiControllerTest {
         user = UserPersistence.read(userId);
         UUID otherUserId;
         try {
-            otherUserId = UserService.create("Other user name", "other_user_login", "zaq1@WSX");
+            otherUserId = userService.create("Other user name", "other_user_login", "zaq1@WSX");
         } catch (UserValidationException | PasswordValidationException |
                  AccessDataAlreadyExistsException | AccessDataValidationException exception) {
             throw new RuntimeException(exception);
         }
         otherUser = UserPersistence.read(otherUserId);
-        token = SessionService.createSession(user);
+        token = sessionService.createSession(user);
         cookie = "token=%s".formatted(token);
     }
 
@@ -82,7 +86,7 @@ class NoteSyncApiControllerTest {
             Persistence.executeUpdate("DELETE FROM access_data");
             Persistence.executeUpdate("DELETE FROM user");
         });
-        SessionService.removeSession(token);
+        sessionService.removeSession(token);
     }
 
     @Test

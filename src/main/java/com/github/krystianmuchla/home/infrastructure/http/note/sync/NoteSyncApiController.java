@@ -20,6 +20,8 @@ import java.util.UUID;
 public class NoteSyncApiController extends Controller {
     public static final NoteSyncApiController INSTANCE = new NoteSyncApiController();
 
+    private final NoteSyncService noteSyncService = NoteSyncService.INSTANCE;
+
     public NoteSyncApiController() {
         super("/api/notes/sync");
     }
@@ -28,7 +30,7 @@ public class NoteSyncApiController extends Controller {
     protected void put(HttpExchange exchange) throws IOException {
         var user = RequestReader.readUser(exchange);
         var syncNotesRequest = RequestReader.readJson(exchange, SyncNotesRequest.class);
-        var notes = NoteSyncService.sync(user.id, map(user.id, syncNotesRequest.notes()));
+        var notes = noteSyncService.sync(user.id, map(user.id, syncNotesRequest.notes()));
         new ResponseWriter(exchange).json(new NoteSyncResponse(map(notes))).write();
     }
 

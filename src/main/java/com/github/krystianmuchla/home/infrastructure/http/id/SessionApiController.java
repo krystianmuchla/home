@@ -18,6 +18,9 @@ import java.io.IOException;
 public class SessionApiController extends Controller {
     public static final SessionApiController INSTANCE = new SessionApiController();
 
+    private final UserService userService = UserService.INSTANCE;
+    private final SessionService sessionService = SessionService.INSTANCE;
+
     public SessionApiController() {
         super("/api/sessions");
     }
@@ -29,7 +32,7 @@ public class SessionApiController extends Controller {
         if (token == null) {
             throw new BadRequestException("Cookie", ValidationError.wrongFormat());
         }
-        var result = SessionService.removeSession(token);
+        var result = sessionService.removeSession(token);
         if (result) {
             new ResponseWriter(exchange).status(204).write();
         } else {
@@ -42,11 +45,11 @@ public class SessionApiController extends Controller {
         var signInRequest = RequestReader.readJson(exchange, SignInRequest.class);
         User user;
         try {
-            user = UserService.get(signInRequest.login(), signInRequest.password());
+            user = userService.get(signInRequest.login(), signInRequest.password());
         } catch (UnauthenticatedException exception) {
             throw new UnauthorizedException();
         }
-        var token = SessionService.createSession(user);
+        var token = sessionService.createSession(user);
         var cookie = Cookie.create("token", token);
         new ResponseWriter(exchange).status(204).cookies(cookie).write();
     }
