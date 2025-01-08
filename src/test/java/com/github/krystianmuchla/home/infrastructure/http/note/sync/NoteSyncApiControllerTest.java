@@ -17,9 +17,9 @@ import com.github.krystianmuchla.home.domain.note.removed.error.RemovedNoteValid
 import com.github.krystianmuchla.home.infrastructure.http.core.GsonHolder;
 import com.github.krystianmuchla.home.infrastructure.persistence.core.Persistence;
 import com.github.krystianmuchla.home.infrastructure.persistence.core.Transaction;
-import com.github.krystianmuchla.home.infrastructure.persistence.id.UserPersistence;
+import com.github.krystianmuchla.home.infrastructure.persistence.id.user.UserPersistence;
 import com.github.krystianmuchla.home.infrastructure.persistence.note.NotePersistence;
-import com.github.krystianmuchla.home.infrastructure.persistence.note.RemovedNotePersistence;
+import com.github.krystianmuchla.home.infrastructure.persistence.note.removed.RemovedNotePersistence;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import org.junit.jupiter.api.AfterAll;
@@ -125,7 +125,7 @@ class NoteSyncApiControllerTest {
         assertThat(responseObject.size()).isEqualTo(1);
         var notesResponse = gson.fromJson(responseObject.get("notes"), NoteResponse[].class);
         assertThat(notesResponse).hasSize(0);
-        var notesDb = Persistence.executeQuery("SELECT * FROM note", Note::fromResultSet);
+        var notesDb = Persistence.executeQuery("SELECT * FROM note", NotePersistence::map);
         assertThat(notesDb).hasSize(1);
         var noteDb = notesDb.getFirst();
         assertThat(noteDb.id).isEqualTo(UUID.fromString("4d8af443-bfa9-4d47-a886-b1ddc82a958d"));
@@ -136,7 +136,7 @@ class NoteSyncApiControllerTest {
         assertThat(noteDb.creationTime).isNotNull();
         assertThat(noteDb.modificationTime).isNotNull();
         assertThat(noteDb.version).isEqualTo(1);
-        var removedNotesDb = Persistence.executeQuery("SELECT * FROM removed_note", RemovedNote::fromResultSet);
+        var removedNotesDb = Persistence.executeQuery("SELECT * FROM removed_note", RemovedNotePersistence::map);
         assertThat(removedNotesDb).hasSize(1);
         var removedNoteDb = removedNotesDb.getFirst();
         assertThat(removedNoteDb.id).isEqualTo(UUID.fromString("cb8b51f8-63e5-4964-94e4-0b3b7944e7d4"));
@@ -225,7 +225,7 @@ class NoteSyncApiControllerTest {
         assertThat(responseObject.size()).isEqualTo(1);
         var notesResponse = gson.fromJson(responseObject.get("notes"), NoteResponse[].class);
         assertThat(notesResponse).hasSize(0);
-        var notesDb = Persistence.executeQuery("SELECT * FROM note", Note::fromResultSet);
+        var notesDb = Persistence.executeQuery("SELECT * FROM note", NotePersistence::map);
         assertThat(notesDb).hasSize(2);
         assertThat(notesDb.getFirst().id).isEqualTo(UUID.fromString("6765b952-1db7-40ae-938c-51b49cac69ed"));
         assertThat(notesDb.getFirst().userId).isEqualTo(user.id);
@@ -243,7 +243,7 @@ class NoteSyncApiControllerTest {
         assertThat(notesDb.get(1).creationTime).isNotNull();
         assertThat(notesDb.get(1).modificationTime).isNotNull();
         assertThat(notesDb.get(1).version).isEqualTo(1);
-        var removedNotesDb = Persistence.executeQuery("SELECT * FROM removed_note", RemovedNote::fromResultSet);
+        var removedNotesDb = Persistence.executeQuery("SELECT * FROM removed_note", RemovedNotePersistence::map);
         assertThat(removedNotesDb).hasSize(2);
         assertThat(removedNotesDb.getFirst().id).isEqualTo(UUID.fromString("292e3117-59f1-4374-afe8-d8b751e0b6e3"));
         assertThat(removedNotesDb.getFirst().userId).isEqualTo(user.id);
@@ -308,7 +308,7 @@ class NoteSyncApiControllerTest {
         assertThat(notesResponse[1].title()).isNull();
         assertThat(notesResponse[1].content()).isNull();
         assertThat(notesResponse[1].contentsModificationTime()).isEqualTo(TimeFactory.create("2010-10-10T10:10:10Z"));
-        var notesDb = Persistence.executeQuery("SELECT * FROM note", Note::fromResultSet);
+        var notesDb = Persistence.executeQuery("SELECT * FROM note", NotePersistence::map);
         assertThat(notesDb).hasSize(1);
         var noteDb = notesDb.getFirst();
         assertThat(noteDb.id).isEqualTo(UUID.fromString("416b5888-4ee0-4460-8c4e-0531e62c029c"));
@@ -319,7 +319,7 @@ class NoteSyncApiControllerTest {
         assertThat(noteDb.creationTime).isNotNull();
         assertThat(noteDb.modificationTime).isNotNull();
         assertThat(noteDb.version).isEqualTo(1);
-        var removedNotesDb = Persistence.executeQuery("SELECT * FROM removed_note", RemovedNote::fromResultSet);
+        var removedNotesDb = Persistence.executeQuery("SELECT * FROM removed_note", RemovedNotePersistence::map);
         assertThat(removedNotesDb).hasSize(1);
         var removedNoteDb = removedNotesDb.getFirst();
         assertThat(removedNoteDb.id).isEqualTo(UUID.fromString("884f33f5-2b79-4f68-9118-73cabffc4f8a"));
@@ -371,7 +371,7 @@ class NoteSyncApiControllerTest {
         assertThat(responseObject.size()).isEqualTo(1);
         var notesResponse = gson.fromJson(responseObject.get("notes"), NoteResponse[].class);
         assertThat(notesResponse).hasSize(0);
-        var notesDb = Persistence.executeQuery("SELECT * FROM note", Note::fromResultSet);
+        var notesDb = Persistence.executeQuery("SELECT * FROM note", NotePersistence::map);
         assertThat(notesDb).hasSize(1);
         var noteDb = notesDb.getFirst();
         assertThat(noteDb.id).isEqualTo(UUID.fromString("8b4ae3f2-02b9-47e2-b1d1-fbb761e2dccf"));
@@ -382,7 +382,7 @@ class NoteSyncApiControllerTest {
         assertThat(noteDb.creationTime).isNotNull();
         assertThat(noteDb.modificationTime).isNotNull();
         assertThat(noteDb.version).isEqualTo(1);
-        var removedNotesDb = Persistence.executeQuery("SELECT * FROM removed_note", RemovedNote::fromResultSet);
+        var removedNotesDb = Persistence.executeQuery("SELECT * FROM removed_note", RemovedNotePersistence::map);
         assertThat(removedNotesDb).hasSize(1);
         var removedNoteDb = removedNotesDb.getFirst();
         assertThat(removedNoteDb.id).isEqualTo(UUID.fromString("dc5c2ee8-ba84-4019-b8f2-0a8d93e170cd"));
@@ -487,7 +487,7 @@ class NoteSyncApiControllerTest {
         assertThat(notesResponse[3].title()).isNull();
         assertThat(notesResponse[3].content()).isNull();
         assertThat(notesResponse[3].contentsModificationTime()).isEqualTo(TimeFactory.create("2011-11-11T11:11:11Z"));
-        var notesDb = Persistence.executeQuery("SELECT * FROM note", Note::fromResultSet);
+        var notesDb = Persistence.executeQuery("SELECT * FROM note", NotePersistence::map);
         assertThat(notesDb).hasSize(2);
         assertThat(notesDb.getFirst().id).isEqualTo(UUID.fromString("8b4ae3f2-02b9-47e2-b1d1-fbb761e2dccf"));
         assertThat(notesDb.getFirst().userId).isEqualTo(user.id);
@@ -505,7 +505,7 @@ class NoteSyncApiControllerTest {
         assertThat(notesDb.get(1).creationTime).isNotNull();
         assertThat(notesDb.get(1).modificationTime).isNotNull();
         assertThat(notesDb.get(1).version).isEqualTo(1);
-        var removedNotesDb = Persistence.executeQuery("SELECT * FROM removed_note", RemovedNote::fromResultSet);
+        var removedNotesDb = Persistence.executeQuery("SELECT * FROM removed_note", RemovedNotePersistence::map);
         assertThat(removedNotesDb).hasSize(2);
         assertThat(removedNotesDb.getFirst().id).isEqualTo(UUID.fromString("6d9e6e4d-be5e-4768-bd33-bc37f7b80284"));
         assertThat(removedNotesDb.getFirst().userId).isEqualTo(user.id);

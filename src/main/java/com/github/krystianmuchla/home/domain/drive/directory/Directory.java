@@ -1,26 +1,12 @@
 package com.github.krystianmuchla.home.domain.drive.directory;
 
 import com.github.krystianmuchla.home.application.time.Time;
-import com.github.krystianmuchla.home.application.time.TimeFactory;
-import com.github.krystianmuchla.home.application.util.UUIDFactory;
+import com.github.krystianmuchla.home.domain.core.Model;
 import com.github.krystianmuchla.home.domain.drive.directory.error.DirectoryValidationException;
-import com.github.krystianmuchla.home.infrastructure.persistence.core.Entity;
 
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.UUID;
 
-public class Directory extends Entity {
-    public static final String TABLE = "directory";
-    public static final String ID = "id";
-    public static final String USER_ID = "user_id";
-    public static final String STATUS = "status";
-    public static final String PARENT_ID = "parent_id";
-    public static final String NAME = "name";
-    public static final String CREATION_TIME = "creation_time";
-    public static final String MODIFICATION_TIME = "modification_time";
-    public static final String VERSION = "version";
-
+public class Directory extends Model<Directory.Field> {
     public final UUID id;
     public final UUID userId;
     public final DirectoryStatus status;
@@ -65,23 +51,25 @@ public class Directory extends Entity {
                 assert status == DirectoryStatus.REMOVED;
             }
         }
-        updates.put(Directory.STATUS, status);
+        updates.put(Field.STATUS, status);
     }
 
-    public static Directory fromResultSet(ResultSet resultSet) {
-        try {
-            return new Directory(
-                UUIDFactory.create(resultSet.getString(ID)),
-                UUIDFactory.create(resultSet.getString(USER_ID)),
-                DirectoryStatus.valueOf(resultSet.getString(STATUS)),
-                UUIDFactory.create(resultSet.getString(PARENT_ID)),
-                resultSet.getString(NAME),
-                TimeFactory.create(resultSet.getTimestamp(CREATION_TIME)),
-                TimeFactory.create(resultSet.getTimestamp(MODIFICATION_TIME)),
-                resultSet.getInt(VERSION)
-            );
-        } catch (SQLException | DirectoryValidationException exception) {
-            throw new RuntimeException(exception);
-        }
+    public void updateModificationTime() {
+        updates.put(Field.MODIFICATION_TIME, new Time());
+    }
+
+    public void updateVersion() {
+        updates.put(Field.VERSION, version + 1);
+    }
+
+    public enum Field {
+        ID,
+        USER_ID,
+        STATUS,
+        PARENT_ID,
+        NAME,
+        CREATION_TIME,
+        MODIFICATION_TIME,
+        VERSION
     }
 }

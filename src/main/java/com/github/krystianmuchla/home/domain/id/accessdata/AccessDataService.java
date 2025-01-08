@@ -5,7 +5,7 @@ import com.github.krystianmuchla.home.domain.id.accessdata.error.AccessDataValid
 import com.github.krystianmuchla.home.domain.id.password.Password;
 import com.github.krystianmuchla.home.domain.id.password.Secret;
 import com.github.krystianmuchla.home.domain.id.password.error.PasswordValidationException;
-import com.github.krystianmuchla.home.infrastructure.persistence.id.AccessDataPersistence;
+import com.github.krystianmuchla.home.infrastructure.persistence.id.accessdata.AccessDataPersistence;
 
 import java.util.UUID;
 

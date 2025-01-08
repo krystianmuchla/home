@@ -11,17 +11,18 @@ import java.util.concurrent.ConcurrentHashMap;
 public class SessionService {
     public static final SessionService INSTANCE = new SessionService();
     private static final int TOKEN_BYTES = 32;
-    private static final Map<String, Session> SESSIONS = new ConcurrentHashMap<>();
+
+    private final Map<String, Session> sessions = new ConcurrentHashMap<>();
 
     public String createSession(User user) {
         var token = generateToken();
         var session = new Session(user);
-        SESSIONS.put(token, session);
+        sessions.put(token, session);
         return token;
     }
 
     public Session getSession(String token) throws UnauthenticatedException {
-        var session = SESSIONS.get(token);
+        var session = sessions.get(token);
         if (session == null) {
             throw new UnauthenticatedException();
         }
@@ -29,7 +30,7 @@ public class SessionService {
     }
 
     public boolean removeSession(String token) {
-        var session = SESSIONS.remove(token);
+        var session = sessions.remove(token);
         return session != null;
     }
 

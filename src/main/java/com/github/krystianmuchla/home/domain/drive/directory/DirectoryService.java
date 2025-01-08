@@ -5,7 +5,7 @@ import com.github.krystianmuchla.home.domain.drive.directory.error.DirectoryNotU
 import com.github.krystianmuchla.home.domain.drive.directory.error.DirectoryValidationException;
 import com.github.krystianmuchla.home.domain.drive.directory.error.IllegalDirectoryStatusException;
 import com.github.krystianmuchla.home.infrastructure.persistence.core.Transaction;
-import com.github.krystianmuchla.home.infrastructure.persistence.drive.DirectoryPersistence;
+import com.github.krystianmuchla.home.infrastructure.persistence.drive.directory.DirectoryPersistence;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -64,6 +64,8 @@ public class DirectoryService {
     }
 
     public void update(Directory directory) throws DirectoryNotUpdatedException {
+        directory.updateModificationTime();
+        directory.updateVersion();
         var result = Transaction.run(() -> DirectoryPersistence.update(directory));
         if (!result) {
             throw new DirectoryNotUpdatedException();

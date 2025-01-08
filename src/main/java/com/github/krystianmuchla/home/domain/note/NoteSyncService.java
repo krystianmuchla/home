@@ -7,7 +7,7 @@ import com.github.krystianmuchla.home.domain.note.removed.RemovedNoteService;
 import com.github.krystianmuchla.home.domain.note.removed.error.RemovedNoteNotUpdatedException;
 import com.github.krystianmuchla.home.infrastructure.persistence.core.Transaction;
 import com.github.krystianmuchla.home.infrastructure.persistence.note.NotePersistence;
-import com.github.krystianmuchla.home.infrastructure.persistence.note.RemovedNotePersistence;
+import com.github.krystianmuchla.home.infrastructure.persistence.note.removed.RemovedNotePersistence;
 
 import java.util.*;
 import java.util.stream.Stream;

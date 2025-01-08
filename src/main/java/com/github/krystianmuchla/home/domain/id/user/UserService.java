@@ -11,8 +11,8 @@ import com.github.krystianmuchla.home.domain.id.password.error.PasswordValidatio
 import com.github.krystianmuchla.home.domain.id.user.error.UserNotFoundException;
 import com.github.krystianmuchla.home.domain.id.user.error.UserValidationException;
 import com.github.krystianmuchla.home.infrastructure.persistence.core.Transaction;
-import com.github.krystianmuchla.home.infrastructure.persistence.id.AccessDataPersistence;
-import com.github.krystianmuchla.home.infrastructure.persistence.id.UserPersistence;
+import com.github.krystianmuchla.home.infrastructure.persistence.id.accessdata.AccessDataPersistence;
+import com.github.krystianmuchla.home.infrastructure.persistence.id.user.UserPersistence;
 
 import java.util.Arrays;
 import java.util.UUID;

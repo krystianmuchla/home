@@ -8,6 +8,8 @@ public class NoteService {
     public static final NoteService INSTANCE = new NoteService();
 
     public void update(Note note) throws NoteNotUpdatedException {
+        note.updateModificationTime();
+        note.updateVersion();
         var result = Transaction.run(() -> NotePersistence.update(note));
         if (!result) {
             throw new NoteNotUpdatedException();

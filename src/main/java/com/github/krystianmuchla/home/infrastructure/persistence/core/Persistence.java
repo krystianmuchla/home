@@ -61,7 +61,11 @@ public class Persistence {
         throw new IllegalStateException("Could not resolve single result");
     }
 
-    protected static Sql[] toSql(Map<String, Object> updates) {
-        return updates.entrySet().stream().map(entry -> Sql.eq(entry.getKey(), entry.getValue())).toArray(Sql[]::new);
+    protected static <K> Sql[] toSql(Map<K, Object> updates, Function<K, String> mapper) {
+        return updates.entrySet()
+            .stream()
+            .map(entry -> Map.entry(mapper.apply(entry.getKey()), entry.getValue()))
+            .map(entry -> Sql.eq(entry.getKey(), entry.getValue()))
+            .toArray(Sql[]::new);
     }
 }

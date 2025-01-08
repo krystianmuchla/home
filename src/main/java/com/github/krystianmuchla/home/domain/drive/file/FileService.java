@@ -7,7 +7,7 @@ import com.github.krystianmuchla.home.domain.drive.file.error.FileNotUpdatedExce
 import com.github.krystianmuchla.home.domain.drive.file.error.FileValidationException;
 import com.github.krystianmuchla.home.domain.drive.file.error.IllegalFileStatusException;
 import com.github.krystianmuchla.home.infrastructure.persistence.core.Transaction;
-import com.github.krystianmuchla.home.infrastructure.persistence.drive.FilePersistence;
+import com.github.krystianmuchla.home.infrastructure.persistence.drive.file.FilePersistence;
 
 import java.util.UUID;
 
@@ -70,6 +70,8 @@ public class FileService {
     }
 
     public void update(File file) throws FileNotUpdatedException {
+        file.updateModificationTime();
+        file.updateVersion();
         var result = Transaction.run(() -> FilePersistence.update(file));
         if (!result) {
             throw new FileNotUpdatedException();

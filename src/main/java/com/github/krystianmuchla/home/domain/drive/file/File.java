@@ -1,26 +1,12 @@
 package com.github.krystianmuchla.home.domain.drive.file;
 
 import com.github.krystianmuchla.home.application.time.Time;
-import com.github.krystianmuchla.home.application.time.TimeFactory;
-import com.github.krystianmuchla.home.application.util.UUIDFactory;
+import com.github.krystianmuchla.home.domain.core.Model;
 import com.github.krystianmuchla.home.domain.drive.file.error.FileValidationException;
-import com.github.krystianmuchla.home.infrastructure.persistence.core.Entity;
 
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.UUID;
 
-public class File extends Entity {
-    public static final String TABLE = "file";
-    public static final String ID = "id";
-    public static final String USER_ID = "user_id";
-    public static final String STATUS = "status";
-    public static final String DIRECTORY_ID = "directory_id";
-    public static final String NAME = "name";
-    public static final String CREATION_TIME = "creation_time";
-    public static final String MODIFICATION_TIME = "modification_time";
-    public static final String VERSION = "version";
-
+public class File extends Model<File.Field> {
     public final UUID id;
     public final UUID userId;
     public final FileStatus status;
@@ -72,23 +58,25 @@ public class File extends Entity {
                 assert status == FileStatus.REMOVED;
             }
         }
-        updates.put(STATUS, status);
+        updates.put(Field.STATUS, status);
     }
 
-    public static File fromResultSet(ResultSet resultSet) {
-        try {
-            return new File(
-                UUIDFactory.create(resultSet.getString(ID)),
-                UUIDFactory.create(resultSet.getString(USER_ID)),
-                FileStatus.valueOf(resultSet.getString(STATUS)),
-                UUIDFactory.create(resultSet.getString(DIRECTORY_ID)),
-                resultSet.getString(NAME),
-                TimeFactory.create(resultSet.getTimestamp(CREATION_TIME)),
-                TimeFactory.create(resultSet.getTimestamp(MODIFICATION_TIME)),
-                resultSet.getInt(VERSION)
-            );
-        } catch (SQLException | FileValidationException exception) {
-            throw new RuntimeException(exception);
-        }
+    public void updateModificationTime() {
+        updates.put(Field.MODIFICATION_TIME, new Time());
+    }
+
+    public void updateVersion() {
+        updates.put(Field.VERSION, version + 1);
+    }
+
+    public enum Field {
+        ID,
+        USER_ID,
+        STATUS,
+        DIRECTORY_ID,
+        NAME,
+        CREATION_TIME,
+        MODIFICATION_TIME,
+        VERSION
     }
 }
