@@ -29,6 +29,7 @@ public abstract class Controller {
         switch (method) {
             case DELETE -> delete(exchange);
             case GET -> get(exchange);
+            case PATCH -> patch(exchange);
             case POST -> post(exchange);
             case PUT -> put(exchange);
         }
@@ -39,6 +40,10 @@ public abstract class Controller {
     }
 
     protected void get(HttpExchange exchange) throws IOException {
+        throw new MethodNotAllowedException();
+    }
+
+    protected void patch(HttpExchange exchange) throws IOException {
         throw new MethodNotAllowedException();
     }
 

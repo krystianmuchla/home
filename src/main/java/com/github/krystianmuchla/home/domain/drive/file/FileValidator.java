@@ -54,6 +54,12 @@ public class FileValidator {
         }
     }
 
+    public void validate() throws FileValidationException {
+        if (hasErrors()) {
+            throw new FileValidationException(errors);
+        }
+    }
+
     public static void validate(File file) throws FileValidationException {
         var validator = new FileValidator();
         validator.validateId(file.id);
@@ -61,8 +67,6 @@ public class FileValidator {
         validator.validateStatus(file.status);
         validator.validateName(file.name);
         validator.validateVersion(file.version);
-        if (validator.hasErrors()) {
-            throw new FileValidationException(validator.errors);
-        }
+        validator.validate();
     }
 }

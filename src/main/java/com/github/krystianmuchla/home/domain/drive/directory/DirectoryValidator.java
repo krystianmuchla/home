@@ -54,6 +54,12 @@ public class DirectoryValidator {
         }
     }
 
+    public void validate() throws DirectoryValidationException {
+        if (hasErrors()) {
+            throw new DirectoryValidationException(errors);
+        }
+    }
+
     public static void validate(Directory directory) throws DirectoryValidationException {
         var validator = new DirectoryValidator();
         validator.validateId(directory.id);
@@ -61,8 +67,6 @@ public class DirectoryValidator {
         validator.validateStatus(directory.status);
         validator.validateName(directory.name);
         validator.validateVersion(directory.version);
-        if (validator.hasErrors()) {
-            throw new DirectoryValidationException(validator.errors);
-        }
+        validator.validate();
     }
 }

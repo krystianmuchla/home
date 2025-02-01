@@ -25,9 +25,9 @@ uploadFileInput.onchange = async () => {
         setToastText(toastId, `Uploading ${index + 1} of ${files.length} files...`);
         /** @type {Response} */
         let response = await fetch(
-            '/api/drive' + url.search,
+            '/api/drive/files' + url.search,
             {
-                method: 'PUT',
+                method: 'POST',
                 headers: {
                     'Content-Type': 'application/octet-stream',
                     'File-Name': encodeURI(file.name)
@@ -50,6 +50,7 @@ uploadFileInput.onchange = async () => {
     if (count === files.length) {
         setToastLevel(toastId, 'success');
     }
+    uploadFileInput.value = '';
 };
 
 uploadFileButton.onmousedown = () => {
@@ -69,16 +70,16 @@ createDirButton.onmousedown = async () => {
     let query = new URL(location).searchParams;
     /** @type {Response} */
     let response = await fetch(
-        '/api/drive',
+        '/api/drive/directories',
         {
             method: 'POST',
             headers: {
-                'Content-Type': 'application/json'
+                'Content-Type': 'application/json',
             },
             body: JSON.stringify({
                 'dir': query.get('dir'),
-                'name': name
-            })
+                'name': name,
+            }),
         }
     );
     if (response.ok) {
@@ -100,7 +101,7 @@ createDirButton.onmousedown = async () => {
 
 initRouter(async (url) => {
     /** @type {Response} */
-    let response = await fetch('/ui/drive/main' + url.search);
+    let response = await fetch('/ui/drive' + url.search);
     if (!response.ok) {
         switch (response.status) {
             case 401:
@@ -144,6 +145,7 @@ initRouter(async (url) => {
         menu.onmousedown = (event) => {
             showContextMenu(event, [
                 { name: 'Open', onmousedown: () => openDir(dir.id) },
+                { name: 'Rename', onmousedown: () => renameDir(dir.id, name.textContent) },
                 { name: 'Delete', onmousedown: () => deleteDir(dir.id, name.textContent) },
             ]);
         };
@@ -159,6 +161,7 @@ initRouter(async (url) => {
         menu.onmousedown = (event) => {
             showContextMenu(event, [
                 { name: 'Download', onmousedown: () => downloadFile(file.id, name.textContent) },
+                { name: 'Rename', onmousedown: () => renameFile(file.id, name.textContent) },
                 { name: 'Delete', onmousedown: () => deleteFile(file.id, name.textContent) },
             ]);
         };
@@ -183,13 +186,49 @@ function openDir(id) {
  * @param {string} name
  * @returns {Promise<void>}
  */
+async function renameDir(id, name) {
+    let newName = prompt('Enter the new directory name', name);
+    if (!newName) {
+        return;
+    }
+    let response = await fetch(
+        `/api/drive/directories?dir=${id}`,
+        {
+            method: 'PATCH',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                'name': newName,
+            }),
+        }
+    );
+    if (response.ok) {
+        queueToast('success', 'Directory renamed.');
+        refreshRoute();
+        return;
+    }
+    switch (response.status) {
+        case 401:
+            location.replace('/id/sign_in');
+            break;
+        default:
+            queueToast('error', 'Something went wrong when renaming a directory.');
+    }
+}
+
+/**
+ * @param {string} id
+ * @param {string} name
+ * @returns {Promise<void>}
+ */
 async function deleteDir(id, name) {
     let confirmation = confirm(`Are you sure you want to delete the ${name} directory and all of its content?`);
     if (!confirmation) {
         return;
     }
     /** @type {Response} */
-    let response = await fetch(`/api/drive?dir=${id}`, { method: 'DELETE' });
+    let response = await fetch(`/api/drive/directories?dir=${id}`, { method: 'DELETE' });
     if (response.ok) {
         queueToast('success', 'Directory deleted.');
         refreshRoute();
@@ -212,9 +251,45 @@ async function deleteDir(id, name) {
 function downloadFile(id, name) {
     /** @type {HTMLAnchorElement} */
     let a = document.createElement('a');
-    a.href = `/api/drive?file=${id}`;
+    a.href = `/api/drive/files?file=${id}`;
     a.download = name;
     a.click();
+}
+
+/**
+ * @param {string} id
+ * @param {string} name
+ * @returns {Promise<void>} 
+ */
+async function renameFile(id, name) {
+    let newName = prompt('Enter the new file name', name);
+    if (!newName) {
+        return;
+    }
+    let response = await fetch(
+        `/api/drive/files?file=${id}`,
+        {
+            method: 'PATCH',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                'name': newName,
+            }),
+        }
+    );
+    if (response.ok) {
+        queueToast('success', 'File renamed.');
+        refreshRoute();
+        return;
+    }
+    switch (response.status) {
+        case 401:
+            location.replace('/id/sign_in');
+            break;
+        default:
+            queueToast('error', 'Something went wrong when renaming a file.');
+    }
 }
 
 /**
@@ -228,7 +303,7 @@ async function deleteFile(id, name) {
         return;
     }
     /** @type {Response} */
-    let response = await fetch(`/api/drive?file=${id}`, { method: 'DELETE' });
+    let response = await fetch(`/api/drive/files?file=${id}`, { method: 'DELETE' });
     if (response.ok) {
         queueToast('success', 'File deleted.');
         refreshRoute();

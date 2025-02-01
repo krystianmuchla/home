@@ -31,13 +31,13 @@ public class DriveUiController extends Controller {
     private final DirectoryService directoryService = DirectoryService.INSTANCE;
 
     public DriveUiController() {
-        super("/ui/drive/main");
+        super("/ui/drive");
     }
 
     @Override
     protected void get(HttpExchange exchange) throws IOException {
         var user = RequestReader.readUser(exchange);
-        var request = RequestReader.readQuery(exchange, DriveFilterRequest::new);
+        var request = RequestReader.readQuery(exchange, DirectoryFilterRequest::new);
         List<Directory> dirHierarchy;
         try {
             dirHierarchy = directoryService.getHierarchy(user.id, request.dir());

@@ -3,14 +3,11 @@ package com.github.krystianmuchla.home.infrastructure.http.core;
 import com.github.krystianmuchla.home.application.Config;
 import com.github.krystianmuchla.home.application.util.MultiValueHashMap;
 import com.github.krystianmuchla.home.application.util.MultiValueMap;
-import com.github.krystianmuchla.home.infrastructure.http.drive.DriveApiController;
 import com.github.krystianmuchla.home.infrastructure.http.drive.DriveController;
 import com.github.krystianmuchla.home.infrastructure.http.drive.DriveUiController;
-import com.github.krystianmuchla.home.infrastructure.http.id.SignInController;
-import com.github.krystianmuchla.home.infrastructure.http.id.SignUpController;
-import com.github.krystianmuchla.home.infrastructure.http.id.SessionApiController;
-import com.github.krystianmuchla.home.infrastructure.http.id.UserApiController;
-import com.github.krystianmuchla.home.infrastructure.http.id.UserInitApiController;
+import com.github.krystianmuchla.home.infrastructure.http.drive.directory.DirectoryApiController;
+import com.github.krystianmuchla.home.infrastructure.http.drive.file.FileApiController;
+import com.github.krystianmuchla.home.infrastructure.http.id.*;
 import com.github.krystianmuchla.home.infrastructure.http.note.sync.NoteSyncApiController;
 
 import java.util.ArrayList;
@@ -23,9 +20,10 @@ public class ControllerConfig extends Config {
     public static final MultiValueMap<String, Method> NO_USER_ROUTES = new MultiValueHashMap<>();
 
     static {
-        CONTROLLERS.add(DriveApiController.INSTANCE);
+        CONTROLLERS.add(DirectoryApiController.INSTANCE);
         CONTROLLERS.add(DriveController.INSTANCE);
         CONTROLLERS.add(DriveUiController.INSTANCE);
+        CONTROLLERS.add(FileApiController.INSTANCE);
         CONTROLLERS.add(HealthApiController.INSTANCE);
         CONTROLLERS.add(NoteSyncApiController.INSTANCE);
         CONTROLLERS.add(ResourceController.INSTANCE);

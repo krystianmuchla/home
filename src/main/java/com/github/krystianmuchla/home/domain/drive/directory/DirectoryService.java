@@ -49,10 +49,7 @@ public class DirectoryService {
         UUID userId,
         UUID directoryId
     ) throws DirectoryNotFoundException, DirectoryNotUpdatedException {
-        var directory = DirectoryPersistence.readByIdAndStatus(userId, directoryId, DirectoryStatus.CREATED);
-        if (directory == null) {
-            throw new DirectoryNotFoundException();
-        }
+        var directory = get(userId, directoryId);
         remove(directory);
     }
 
@@ -61,6 +58,18 @@ public class DirectoryService {
             directory.updateStatus(DirectoryStatus.REMOVED);
             update(directory);
         }
+    }
+
+    public void update(
+        UUID userId,
+        UUID directoryId,
+        DirectoryUpdate update
+    ) throws DirectoryNotFoundException, DirectoryNotUpdatedException {
+        var directory = get(userId, directoryId);
+        if (update.name != null) {
+            directory.updateName(update.name);
+        }
+        update(directory);
     }
 
     public void update(Directory directory) throws DirectoryNotUpdatedException {

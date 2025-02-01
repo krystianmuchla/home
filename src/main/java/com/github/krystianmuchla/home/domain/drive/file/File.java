@@ -61,6 +61,10 @@ public class File extends Model<File.Field> {
         updates.put(Field.STATUS, status);
     }
 
+    public void updateName(String name) {
+        updates.put(Field.NAME, name);
+    }
+
     public void updateModificationTime() {
         updates.put(Field.MODIFICATION_TIME, new Time());
     }

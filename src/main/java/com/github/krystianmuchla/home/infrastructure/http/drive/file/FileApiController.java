@@ -1,14 +1,11 @@
-package com.github.krystianmuchla.home.infrastructure.http.drive;
+package com.github.krystianmuchla.home.infrastructure.http.drive.file;
 
 import com.github.krystianmuchla.home.application.util.MultiValueHashMap;
 import com.github.krystianmuchla.home.domain.drive.DriveService;
-import com.github.krystianmuchla.home.domain.drive.directory.DirectoryService;
 import com.github.krystianmuchla.home.domain.drive.directory.error.DirectoryNotFoundException;
-import com.github.krystianmuchla.home.domain.drive.directory.error.DirectoryNotUpdatedException;
-import com.github.krystianmuchla.home.domain.drive.directory.error.DirectoryValidationError;
-import com.github.krystianmuchla.home.domain.drive.directory.error.DirectoryValidationException;
 import com.github.krystianmuchla.home.domain.drive.file.FileDto;
 import com.github.krystianmuchla.home.domain.drive.file.FileService;
+import com.github.krystianmuchla.home.domain.drive.file.FileUpdate;
 import com.github.krystianmuchla.home.domain.drive.file.error.FileNotFoundException;
 import com.github.krystianmuchla.home.domain.drive.file.error.FileNotUpdatedException;
 import com.github.krystianmuchla.home.domain.drive.file.error.FileValidationError;
@@ -22,39 +19,29 @@ import com.sun.net.httpserver.HttpExchange;
 import java.io.IOException;
 import java.util.UUID;
 
-public class DriveApiController extends Controller {
-    public static final DriveApiController INSTANCE = new DriveApiController();
+public class FileApiController extends Controller {
+    public static final FileApiController INSTANCE = new FileApiController();
 
     private final DriveService driveService = DriveService.INSTANCE;
-    private final DirectoryService directoryService = DirectoryService.INSTANCE;
     private final FileService fileService = FileService.INSTANCE;
 
-    public DriveApiController() {
-        super("/api/drive");
+    public FileApiController() {
+        super("/api/drive/files");
     }
 
     @Override
     protected void delete(HttpExchange exchange) throws IOException {
         var user = RequestReader.readUser(exchange);
-        var request = RequestReader.readQuery(exchange, DriveFilterRequest::new);
-        if (request.file() != null) {
-            try {
-                fileService.remove(user.id, request.file());
-            } catch (FileNotFoundException exception) {
-                throw new NotFoundException();
-            } catch (FileNotUpdatedException exception) {
-                throw new ConflictException();
-            }
-        } else if (request.dir() != null) {
-            try {
-                directoryService.remove(user.id, request.dir());
-            } catch (DirectoryNotFoundException exception) {
-                throw new NotFoundException();
-            } catch (DirectoryNotUpdatedException exception) {
-                throw new ConflictException();
-            }
-        } else {
-            throw new BadRequestException();
+        var request = RequestReader.readQuery(exchange, FileFilterRequest::new);
+        if (request.file() == null) {
+            throw new BadRequestException("file", ValidationError.nullValue());
+        }
+        try {
+            fileService.remove(user.id, request.file());
+        } catch (FileNotFoundException exception) {
+            throw new NotFoundException();
+        } catch (FileNotUpdatedException exception) {
+            throw new ConflictException();
         }
         new ResponseWriter(exchange).status(204).write();
     }
@@ -62,37 +49,37 @@ public class DriveApiController extends Controller {
     @Override
     protected void get(HttpExchange exchange) throws IOException {
         var user = RequestReader.readUser(exchange);
-        var request = RequestReader.readQuery(exchange, DriveFilterRequest::new);
+        var request = RequestReader.readQuery(exchange, FileFilterRequest::new);
         if (request.file() == null) {
-            var list = driveService.listDirectory(user.id, request.dir());
-            new ResponseWriter(exchange).json(list.stream().map(EntryResponse::new).toList()).write();
-        } else {
-            FileDto fileDto;
-            try {
-                fileDto = driveService.getFile(user.id, request.file());
-            } catch (FileNotFoundException exception) {
-                throw new NotFoundException();
-            }
-            new ResponseWriter(exchange).file(fileDto.name(), fileDto.file()).write();
+            throw new BadRequestException("file", ValidationError.nullValue());
         }
+        FileDto fileDto;
+        try {
+            fileDto = driveService.getFile(user.id, request.file());
+        } catch (FileNotFoundException exception) {
+            throw new NotFoundException();
+        }
+        new ResponseWriter(exchange).file(fileDto.name(), fileDto.file()).write();
     }
 
     @Override
-    protected void post(HttpExchange exchange) throws IOException {
+    protected void patch(HttpExchange exchange) throws IOException {
         var user = RequestReader.readUser(exchange);
-        var request = RequestReader.readJson(exchange, CreateDirectoryRequest.class);
+        var filter = RequestReader.readQuery(exchange, FileFilterRequest::new);
+        if (filter.file() == null) {
+            throw new BadRequestException("file", ValidationError.nullValue());
+        }
+        var request = RequestReader.readJson(exchange, UpdateFileRequest.class);
         try {
-            directoryService.create(user.id, request.dir(), request.name());
-        } catch (DirectoryNotFoundException exception) {
-            throw new NotFoundException();
-        } catch (DirectoryValidationException exception) {
+            var update = map(request);
+            fileService.update(user.id, filter.file(), update);
+        } catch (FileValidationException exception) {
             var errors = new MultiValueHashMap<String, ValidationError>();
             for (var error : exception.errors) {
                 switch (error) {
-                    case DirectoryValidationError.NullName ignored -> errors.add("name", ValidationError.nullValue());
-                    case DirectoryValidationError.NameBelowMinLength e ->
+                    case FileValidationError.NameBelowMinLength e ->
                         errors.add("name", ValidationError.belowMinLength(e.minLength));
-                    case DirectoryValidationError.NameAboveMaxLength e ->
+                    case FileValidationError.NameAboveMaxLength e ->
                         errors.add("name", ValidationError.aboveMaxLength(e.maxLength));
                     default -> {
                     }
@@ -103,14 +90,19 @@ public class DriveApiController extends Controller {
             } else {
                 throw new BadRequestException(errors);
             }
+        } catch (FileNotFoundException exception) {
+            throw new NotFoundException();
+        } catch (FileNotUpdatedException exception) {
+            throw new ConflictException();
         }
-        new ResponseWriter(exchange).status(201).write();
+        new ResponseWriter(exchange).status(204).write();
     }
 
+    // todo put logic in a service
     @Override
-    protected void put(HttpExchange exchange) throws IOException {
+    protected void post(HttpExchange exchange) throws IOException {
         var user = RequestReader.readUser(exchange);
-        var filter = RequestReader.readQuery(exchange, DriveFilterRequest::new);
+        var filter = RequestReader.readQuery(exchange, DirectoryFilterRequest::new);
         var request = RequestReader.readHeaders(exchange, UploadFileRequest::new);
         var fileContent = RequestReader.readStream(exchange);
         UUID fileId;
@@ -146,5 +138,9 @@ public class DriveApiController extends Controller {
             throw new ConflictException();
         }
         new ResponseWriter(exchange).status(204).write();
+    }
+
+    private static FileUpdate map(UpdateFileRequest request) throws FileValidationException {
+        return new FileUpdate(request.name());
     }
 }

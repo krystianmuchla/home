@@ -55,10 +55,7 @@ public class FileService {
     }
 
     public void remove(UUID userId, UUID fileId) throws FileNotFoundException, FileNotUpdatedException {
-        var file = FilePersistence.readByIdAndStatus(userId, fileId, FileStatus.UPLOADED);
-        if (file == null) {
-            throw new FileNotFoundException();
-        }
+        var file = get(userId, fileId);
         remove(file);
     }
 
@@ -67,6 +64,18 @@ public class FileService {
             file.updateStatus(FileStatus.REMOVED);
             update(file);
         }
+    }
+
+    public void update(
+        UUID userId,
+        UUID fileId,
+        FileUpdate update
+    ) throws FileNotFoundException, FileNotUpdatedException {
+        var file = get(userId, fileId);
+        if (update.name != null) {
+            file.updateName(update.name);
+        }
+        update(file);
     }
 
     public void update(File file) throws FileNotUpdatedException {

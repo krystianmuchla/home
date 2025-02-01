@@ -1,4 +1,4 @@
-package com.github.krystianmuchla.home.infrastructure.http.drive;
+package com.github.krystianmuchla.home.infrastructure.http.drive.file;
 
 import com.github.krystianmuchla.home.infrastructure.http.core.error.ValidationError;
 import com.github.krystianmuchla.home.infrastructure.http.core.Header;
