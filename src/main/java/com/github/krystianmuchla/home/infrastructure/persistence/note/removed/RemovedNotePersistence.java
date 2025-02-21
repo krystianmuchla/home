@@ -33,16 +33,15 @@ public class RemovedNotePersistence extends Persistence {
 
     public static void create(RemovedNote... removedNotes) {
         for (var removedNote : removedNotes) {
-            var creationTime = new Time();
             var sql = new Builder()
                 .insertInto(TABLE)
                 .values(
                     removedNote.id,
                     removedNote.userId,
                     removedNote.removalTime,
-                    creationTime,
-                    creationTime,
-                    1
+                    removedNote.creationTime,
+                    removedNote.modificationTime,
+                    removedNote.version
                 );
             executeUpdate(sql.build());
         }

@@ -1,6 +1,5 @@
 package com.github.krystianmuchla.home.infrastructure.persistence.id.accessdata;
 
-import com.github.krystianmuchla.home.application.time.Time;
 import com.github.krystianmuchla.home.application.time.TimeFactory;
 import com.github.krystianmuchla.home.application.util.UUIDFactory;
 import com.github.krystianmuchla.home.domain.id.accessdata.AccessData;
@@ -18,7 +17,6 @@ public class AccessDataPersistence extends Persistence {
     private static final String TABLE = "access_data";
 
     public static void create(AccessData accessData) {
-        var creationTime = new Time();
         var sql = new Sql.Builder()
             .insertInto(TABLE)
             .values(
@@ -27,9 +25,9 @@ public class AccessDataPersistence extends Persistence {
                 accessData.login,
                 accessData.salt,
                 accessData.secret,
-                creationTime,
-                creationTime,
-                1
+                accessData.creationTime,
+                accessData.modificationTime,
+                accessData.version
             );
         executeUpdate(sql.build());
     }

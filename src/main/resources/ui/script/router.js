@@ -11,7 +11,7 @@
 
 /**
  * @callback PostRouteCallback
- * @returns {void}
+ * @returns {Promise<void>}
  */
 
 /** @type {HTMLElement} */
@@ -31,12 +31,12 @@ let _postRouteCallback = null;
 export async function initRouter(routeCallback, postRouteCallback = null) {
     _routeCallback = routeCallback;
     _postRouteCallback = postRouteCallback;
-    refreshRoute();
+    await refreshRoute();
     /** @param {PopStateEvent} event */
-    onpopstate = (event) => {
+    onpopstate = async (event) => {
         /** @type {RouteState} */
         let state = event.state;
-        consumeRouteState(state);
+        await consumeRouteState(state);
     };
 }
 
@@ -49,7 +49,7 @@ export async function route(url) {
     let state = await routeState(url);
     if (state) {
         history.pushState(state, '', url);
-        consumeRouteState(state);
+        await consumeRouteState(state);
     }
 }
 
@@ -63,7 +63,7 @@ export async function refreshRoute() {
     let state = await routeState(url);
     if (state) {
         history.replaceState(state, '', url);
-        consumeRouteState(state);
+        await consumeRouteState(state);
     }
 }
 
@@ -76,27 +76,27 @@ async function routeState(url) {
         console.error('Route callback not found');
         return null;
     }
+    /** @type {string | null} */
     let result = await _routeCallback(url);
     if (result == null) {
         return null;
     }
-    let state = {
+    return {
         content: result,
     };
-    return state;
 }
 
 /**
  * @param {RouteState} state
- * @returns {void}
+ * @returns {Promise<void>}
  */
-function consumeRouteState(state) {
+async function consumeRouteState(state) {
     if (!router) {
         console.error('Router not found');
         return;
     }
     router.innerHTML = state.content;
     if (_postRouteCallback) {
-        _postRouteCallback();
+        await _postRouteCallback();
     }
 }

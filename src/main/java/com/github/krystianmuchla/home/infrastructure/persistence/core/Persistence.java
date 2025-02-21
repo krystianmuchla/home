@@ -64,8 +64,11 @@ public class Persistence {
     protected static <K> Sql[] toSql(Map<K, Object> updates, Function<K, String> mapper) {
         return updates.entrySet()
             .stream()
-            .map(entry -> Map.entry(mapper.apply(entry.getKey()), entry.getValue()))
-            .map(entry -> Sql.eq(entry.getKey(), entry.getValue()))
+            .map(entry -> {
+                var field = mapper.apply(entry.getKey());
+                var value = entry.getValue();
+                return Sql.eq(field, value);
+            })
             .toArray(Sql[]::new);
     }
 }

@@ -1,9 +1,14 @@
 package com.github.krystianmuchla.home.domain.note.removed.error;
 
-public abstract sealed class RemovedNoteValidationError permits
+import com.github.krystianmuchla.home.domain.core.error.ValidationError;
+
+public abstract sealed class RemovedNoteValidationError extends ValidationError permits
     RemovedNoteValidationError.NullId,
-    RemovedNoteValidationError.NullRemovalTime,
     RemovedNoteValidationError.NullUserId,
+    RemovedNoteValidationError.NullRemovalTime,
+    RemovedNoteValidationError.NullCreationTime,
+    RemovedNoteValidationError.NullModificationTime,
+    RemovedNoteValidationError.NullVersion,
     RemovedNoteValidationError.VersionBelowMinValue {
     public static final class NullId extends RemovedNoteValidationError {
     }
@@ -12,6 +17,15 @@ public abstract sealed class RemovedNoteValidationError permits
     }
 
     public static final class NullRemovalTime extends RemovedNoteValidationError {
+    }
+
+    public static final class NullCreationTime extends RemovedNoteValidationError {
+    }
+
+    public static final class NullModificationTime extends RemovedNoteValidationError {
+    }
+
+    public static final class NullVersion extends RemovedNoteValidationError {
     }
 
     public static final class VersionBelowMinValue extends RemovedNoteValidationError {

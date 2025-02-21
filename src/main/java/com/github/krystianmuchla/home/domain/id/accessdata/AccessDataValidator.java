@@ -1,91 +1,117 @@
 package com.github.krystianmuchla.home.domain.id.accessdata;
 
+import com.github.krystianmuchla.home.domain.core.error.Validator;
 import com.github.krystianmuchla.home.domain.id.accessdata.error.AccessDataValidationError;
 import com.github.krystianmuchla.home.domain.id.accessdata.error.AccessDataValidationException;
 
-import java.util.HashSet;
-import java.util.Set;
-import java.util.UUID;
-
-public class AccessDataValidator {
+public class AccessDataValidator extends Validator<AccessDataValidationError, AccessDataValidationException> {
     private static final int LOGIN_MAX_LENGTH = 50;
     private static final int SALT_LENGTH = 32;
     private static final int SECRET_LENGTH = 32;
     private static final int VERSION_MIN_VALUE = 1;
 
-    private final Set<AccessDataValidationError> errors = new HashSet<>();
+    private final AccessData accessData;
 
-    public boolean hasErrors() {
-        return !errors.isEmpty();
+    public AccessDataValidator(AccessData accessData) {
+        this.accessData = accessData;
     }
 
-    public void validateId(UUID id) {
-        if (id == null) {
+    public AccessDataValidator checkId() {
+        if (accessData.id == null) {
             errors.add(new AccessDataValidationError.NullId());
         }
+        return this;
     }
 
-    public void validateUserId(UUID userId) {
-        if (userId == null) {
+    public AccessDataValidator checkUserId() {
+        if (accessData.userId == null) {
             errors.add(new AccessDataValidationError.NullUserId());
         }
+        return this;
     }
 
-    public void validateLogin(String login) {
-        if (login == null) {
+    public AccessDataValidator checkLogin() {
+        if (accessData.login == null) {
             errors.add(new AccessDataValidationError.NullLogin());
         } else {
-            if (login.isEmpty()) {
+            if (accessData.login.isEmpty()) {
                 errors.add(new AccessDataValidationError.LoginBelowMinLength(1));
             }
-            if (login.length() > LOGIN_MAX_LENGTH) {
+            if (accessData.login.length() > LOGIN_MAX_LENGTH) {
                 errors.add(new AccessDataValidationError.LoginAboveMaxLength(LOGIN_MAX_LENGTH));
             }
         }
+        return this;
     }
 
-    public void validateSalt(byte[] salt) {
-        if (salt == null) {
+    public AccessDataValidator checkSalt() {
+        if (accessData.salt == null) {
             errors.add(new AccessDataValidationError.NullSalt());
         } else {
-            if (salt.length < SALT_LENGTH) {
+            if (accessData.salt.length < SALT_LENGTH) {
                 errors.add(new AccessDataValidationError.SaltBelowMinLength(SALT_LENGTH));
             }
-            if (salt.length > SALT_LENGTH) {
+            if (accessData.salt.length > SALT_LENGTH) {
                 errors.add(new AccessDataValidationError.SaltAboveMaxLength(SALT_LENGTH));
             }
         }
+        return this;
     }
 
-    public void validateSecret(byte[] secret) {
-        if (secret == null) {
+    public AccessDataValidator checkSecret() {
+        if (accessData.secret == null) {
             errors.add(new AccessDataValidationError.NullSecret());
         } else {
-            if (secret.length < SECRET_LENGTH) {
+            if (accessData.secret.length < SECRET_LENGTH) {
                 errors.add(new AccessDataValidationError.SecretBelowMinLength(SECRET_LENGTH));
             }
-            if (secret.length > SECRET_LENGTH) {
+            if (accessData.secret.length > SECRET_LENGTH) {
                 errors.add(new AccessDataValidationError.SecretAboveMaxLength(SECRET_LENGTH));
             }
         }
+        return this;
     }
 
-    public void validateVersion(Integer version) {
-        if (version != null && version < VERSION_MIN_VALUE) {
+    public AccessDataValidator checkCreationTime() {
+        if (accessData.creationTime == null) {
+            errors.add(new AccessDataValidationError.NullCreationTime());
+        }
+        return this;
+    }
+
+    public AccessDataValidator checkModificationTime() {
+        if (accessData.modificationTime == null) {
+            errors.add(new AccessDataValidationError.NullModificationTime());
+        }
+        return this;
+    }
+
+    public AccessDataValidator checkVersion() {
+        if (accessData.version == null) {
+            errors.add(new AccessDataValidationError.NullVersion());
+        } else if (accessData.version < VERSION_MIN_VALUE) {
             errors.add(new AccessDataValidationError.VersionBelowMinValue(VERSION_MIN_VALUE));
+        }
+        return this;
+    }
+
+    @Override
+    public void validate() throws AccessDataValidationException {
+        if (hasErrors()) {
+            throw new AccessDataValidationException(errors);
         }
     }
 
     public static void validate(AccessData accessData) throws AccessDataValidationException {
-        var validator = new AccessDataValidator();
-        validator.validateId(accessData.id);
-        validator.validateUserId(accessData.userId);
-        validator.validateLogin(accessData.login);
-        validator.validateSalt(accessData.salt);
-        validator.validateSecret(accessData.secret);
-        validator.validateVersion(accessData.version);
-        if (validator.hasErrors()) {
-            throw new AccessDataValidationException(validator.errors);
-        }
+        new AccessDataValidator(accessData)
+            .checkId()
+            .checkUserId()
+            .checkLogin()
+            .checkSalt()
+            .checkSecret()
+            .checkCreationTime()
+            .checkModificationTime()
+            .checkVersion()
+            .validate();
     }
 }

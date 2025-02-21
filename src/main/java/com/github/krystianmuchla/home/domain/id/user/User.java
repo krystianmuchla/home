@@ -22,6 +22,6 @@ public class User {
     }
 
     public User(String name) throws UserValidationException {
-        this(UUID.randomUUID(), name, null, null, null);
+        this(UUID.randomUUID(), name, new Time(), new Time(), 1);
     }
 }

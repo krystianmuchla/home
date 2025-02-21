@@ -1,54 +1,77 @@
 package com.github.krystianmuchla.home.domain.id.user;
 
+import com.github.krystianmuchla.home.domain.core.error.Validator;
 import com.github.krystianmuchla.home.domain.id.user.error.UserValidationError;
 import com.github.krystianmuchla.home.domain.id.user.error.UserValidationException;
 
-import java.util.HashSet;
-import java.util.Set;
-import java.util.UUID;
-
-public class UserValidator {
+public class UserValidator extends Validator<UserValidationError, UserValidationException> {
     private static final int NAME_MAX_LENGTH = 100;
     private static final int VERSION_MIN_VALUE = 1;
 
-    public final Set<UserValidationError> errors = new HashSet<>();
+    private final User user;
 
-    public boolean hasErrors() {
-        return !errors.isEmpty();
+    public UserValidator(User user) {
+        this.user = user;
     }
 
-    public void validateId(UUID id) {
-        if (id == null) {
+    public UserValidator checkId() {
+        if (user.id == null) {
             errors.add(new UserValidationError.NullId());
         }
+        return this;
     }
 
-    public void validateName(String name) {
-        if (name == null) {
+    public UserValidator checkName() {
+        if (user.name == null) {
             errors.add(new UserValidationError.NullName());
         } else {
-            if (name.isBlank()) {
+            if (user.name.isBlank()) {
                 errors.add(new UserValidationError.NameBelowMinLength(1));
             }
-            if (name.length() > NAME_MAX_LENGTH) {
+            if (user.name.length() > NAME_MAX_LENGTH) {
                 errors.add(new UserValidationError.NameAboveMaxLength(NAME_MAX_LENGTH));
             }
         }
+        return this;
     }
 
-    public void validateVersion(Integer version) {
-        if (version != null && version < VERSION_MIN_VALUE) {
+    public UserValidator checkCreationTime() {
+        if (user.creationTime == null) {
+            errors.add(new UserValidationError.NullCreationTime());
+        }
+        return this;
+    }
+
+    public UserValidator checkModificationTime() {
+        if (user.modificationTime == null) {
+            errors.add(new UserValidationError.NullModificationTime());
+        }
+        return this;
+    }
+
+    public UserValidator checkVersion() {
+        if (user.version == null) {
+            errors.add(new UserValidationError.NullVersion());
+        } else if (user.version < VERSION_MIN_VALUE) {
             errors.add(new UserValidationError.VersionBelowMinValue(VERSION_MIN_VALUE));
+        }
+        return this;
+    }
+
+    @Override
+    public void validate() throws UserValidationException {
+        if (hasErrors()) {
+            throw new UserValidationException(errors);
         }
     }
 
     public static void validate(User user) throws UserValidationException {
-        var validator = new UserValidator();
-        validator.validateId(user.id);
-        validator.validateName(user.name);
-        validator.validateVersion(user.version);
-        if (validator.hasErrors()) {
-            throw new UserValidationException(validator.errors);
-        }
+        new UserValidator(user)
+            .checkId()
+            .checkName()
+            .checkCreationTime()
+            .checkModificationTime()
+            .checkVersion()
+            .validate();
     }
 }

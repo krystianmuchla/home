@@ -2,8 +2,6 @@ package com.github.krystianmuchla.home.domain.note.removed;
 
 import com.github.krystianmuchla.home.application.time.Time;
 import com.github.krystianmuchla.home.domain.core.Model;
-import com.github.krystianmuchla.home.domain.note.Note;
-import com.github.krystianmuchla.home.domain.note.error.NoteValidationException;
 import com.github.krystianmuchla.home.domain.note.removed.error.RemovedNoteValidationException;
 
 import java.util.UUID;
@@ -34,27 +32,22 @@ public class RemovedNote extends Model<RemovedNote.Field> {
     }
 
     public RemovedNote(UUID id, UUID userId, Time removalTime) throws RemovedNoteValidationException {
-        this(id, userId, removalTime, null, null, null);
+        this(id, userId, removalTime, new Time(), new Time(), 1);
     }
 
-    public void updateRemovalTime(Time removalTime) {
+    public void updateRemovalTime(Time removalTime) throws RemovedNoteValidationException {
+        new RemovedNoteValidator(this).checkRemovalTime(removalTime).validate();
         updates.put(Field.REMOVAL_TIME, removalTime);
     }
 
-    public void updateModificationTime() {
-        updates.put(Field.MODIFICATION_TIME, new Time());
+    public void updateModificationTime(Time modificationTime) throws RemovedNoteValidationException {
+        new RemovedNoteValidator(this).checkModificationTime(modificationTime).validate();
+        updates.put(Field.MODIFICATION_TIME, modificationTime);
     }
 
-    public void updateVersion() {
-        updates.put(Field.VERSION, version + 1);
-    }
-
-    public Note asNote() {
-        try {
-            return new Note(id, userId, removalTime);
-        } catch (NoteValidationException exception) {
-            throw new IllegalStateException(exception);
-        }
+    public void updateVersion(Integer version) throws RemovedNoteValidationException {
+        new RemovedNoteValidator(this).checkVersion(version).validate();
+        updates.put(Field.VERSION, version);
     }
 
     public enum Field {

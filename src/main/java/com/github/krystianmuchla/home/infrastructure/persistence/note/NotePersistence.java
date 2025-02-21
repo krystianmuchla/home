@@ -1,6 +1,5 @@
 package com.github.krystianmuchla.home.infrastructure.persistence.note;
 
-import com.github.krystianmuchla.home.application.time.Time;
 import com.github.krystianmuchla.home.application.time.TimeFactory;
 import com.github.krystianmuchla.home.application.util.UUIDFactory;
 import com.github.krystianmuchla.home.domain.note.Note;
@@ -37,7 +36,6 @@ public class NotePersistence extends Persistence {
 
     public static void create(Note... notes) {
         for (var note : notes) {
-            var creationTime = new Time();
             var sql = new Sql.Builder()
                 .insertInto(TABLE)
                 .values(
@@ -46,9 +44,9 @@ public class NotePersistence extends Persistence {
                     note.title,
                     note.content,
                     note.contentsModificationTime,
-                    creationTime,
-                    creationTime,
-                    1
+                    note.creationTime,
+                    note.modificationTime,
+                    note.version
                 );
             executeUpdate(sql.build());
         }

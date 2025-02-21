@@ -1,12 +1,17 @@
 package com.github.krystianmuchla.home.domain.drive.file.error;
 
-public abstract sealed class FileValidationError permits
+import com.github.krystianmuchla.home.domain.core.error.ValidationError;
+
+public abstract sealed class FileValidationError extends ValidationError permits
+    FileValidationError.NullId,
+    FileValidationError.NullUserId,
+    FileValidationError.NullStatus,
+    FileValidationError.NullName,
     FileValidationError.NameAboveMaxLength,
     FileValidationError.NameBelowMinLength,
-    FileValidationError.NullId,
-    FileValidationError.NullName,
-    FileValidationError.NullStatus,
-    FileValidationError.NullUserId,
+    FileValidationError.NullCreationTime,
+    FileValidationError.NullModificationTime,
+    FileValidationError.NullVersion,
     FileValidationError.VersionBelowMinValue {
     public static final class NullId extends FileValidationError {
     }
@@ -34,6 +39,15 @@ public abstract sealed class FileValidationError permits
         public NameAboveMaxLength(int maxLength) {
             this.maxLength = maxLength;
         }
+    }
+
+    public static final class NullCreationTime extends FileValidationError {
+    }
+
+    public static final class NullModificationTime extends FileValidationError {
+    }
+
+    public static final class NullVersion extends FileValidationError {
     }
 
     public static final class VersionBelowMinValue extends FileValidationError {

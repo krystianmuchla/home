@@ -6,6 +6,7 @@ import com.github.krystianmuchla.home.application.util.MultiValueMap;
 import com.github.krystianmuchla.home.infrastructure.http.drive.DriveController;
 import com.github.krystianmuchla.home.infrastructure.http.drive.DriveUiController;
 import com.github.krystianmuchla.home.infrastructure.http.drive.directory.DirectoryApiController;
+import com.github.krystianmuchla.home.infrastructure.http.drive.directory.DirectoryUiController;
 import com.github.krystianmuchla.home.infrastructure.http.drive.file.FileApiController;
 import com.github.krystianmuchla.home.infrastructure.http.id.*;
 import com.github.krystianmuchla.home.infrastructure.http.note.sync.NoteSyncApiController;
@@ -21,6 +22,7 @@ public class ControllerConfig extends Config {
 
     static {
         CONTROLLERS.add(DirectoryApiController.INSTANCE);
+        CONTROLLERS.add(DirectoryUiController.INSTANCE);
         CONTROLLERS.add(DriveController.INSTANCE);
         CONTROLLERS.add(DriveUiController.INSTANCE);
         CONTROLLERS.add(FileApiController.INSTANCE);

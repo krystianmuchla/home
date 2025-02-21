@@ -149,11 +149,7 @@ public class Sql {
 
         public Builder eq(String field, Object value) {
             sql.words.add(field + " = ?");
-            if (value == null) {
-                sql.parameters.add("NULL");
-            } else {
-                sql.parameters.add(value);
-            }
+            sql.parameters.add(value);
             return this;
         }
 

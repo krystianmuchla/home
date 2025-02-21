@@ -37,6 +37,6 @@ public class AccessData {
     }
 
     public AccessData(UUID userId, String login, byte[] salt, byte[] secret) throws AccessDataValidationException {
-        this(UUID.randomUUID(), userId, login, salt, secret, null, null, null);
+        this(UUID.randomUUID(), userId, login, salt, secret, new Time(), new Time(), 1);
     }
 }

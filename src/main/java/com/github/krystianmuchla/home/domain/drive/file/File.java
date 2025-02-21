@@ -38,7 +38,7 @@ public class File extends Model<File.Field> {
     }
 
     public File(UUID userId, UUID directoryId, String name) throws FileValidationException {
-        this(UUID.randomUUID(), userId, FileStatus.UPLOADING, directoryId, name, null, null, null);
+        this(UUID.randomUUID(), userId, FileStatus.UPLOADING, directoryId, name, new Time(), new Time(), 1);
     }
 
     public boolean isUploaded() {
@@ -49,7 +49,8 @@ public class File extends Model<File.Field> {
         return status == FileStatus.REMOVED;
     }
 
-    public void updateStatus(FileStatus status) {
+    public void updateStatus(FileStatus status) throws FileValidationException {
+        new FileValidator(this).checkStatus(status).validate();
         switch (this.status) {
             case UPLOADING -> {
                 assert status == FileStatus.UPLOADED;
@@ -61,16 +62,24 @@ public class File extends Model<File.Field> {
         updates.put(Field.STATUS, status);
     }
 
-    public void updateName(String name) {
+    public void updateDirectoryId(UUID directoryId) throws FileValidationException {
+        new FileValidator(this).checkDirectoryId(directoryId).validate();
+        updates.put(Field.DIRECTORY_ID, directoryId);
+    }
+
+    public void updateName(String name) throws FileValidationException {
+        new FileValidator(this).checkName(name).validate();
         updates.put(Field.NAME, name);
     }
 
-    public void updateModificationTime() {
+    public void updateModificationTime(Time modificationTime) throws FileValidationException {
+        new FileValidator(this).checkModificationTime(modificationTime).validate();
         updates.put(Field.MODIFICATION_TIME, new Time());
     }
 
-    public void updateVersion() {
-        updates.put(Field.VERSION, version + 1);
+    public void updateVersion(Integer version) throws FileValidationException {
+        new FileValidator(this).checkVersion(version).validate();
+        updates.put(Field.VERSION, version);
     }
 
     public enum Field {

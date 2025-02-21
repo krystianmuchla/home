@@ -35,6 +35,8 @@ public class DirectoryApiController extends Controller {
             directoryService.remove(user.id, request.dir());
         } catch (DirectoryNotFoundException exception) {
             throw new NotFoundException();
+        } catch (DirectoryValidationException exception) {
+            throw new InternalServerErrorException(exception);
         } catch (DirectoryNotUpdatedException exception) {
             throw new ConflictException();
         }
@@ -50,12 +52,13 @@ public class DirectoryApiController extends Controller {
         }
         var request = RequestReader.readJson(exchange, UpdateDirectoryRequest.class);
         try {
-            var update = map(request);
-            directoryService.update(user.id, filter.dir(), update);
+            directoryService.update(user.id, filter.dir(), map(request));
         } catch (DirectoryValidationException exception) {
             var errors = new MultiValueHashMap<String, ValidationError>();
             for (var error : exception.errors) {
                 switch (error) {
+                    case DirectoryValidationError.InvalidHierarchy ignored ->
+                        errors.add("parentId", ValidationError.invalidValue());
                     case DirectoryValidationError.NameBelowMinLength e ->
                         errors.add("name", ValidationError.belowMinLength(e.minLength));
                     case DirectoryValidationError.NameAboveMaxLength e ->
@@ -89,6 +92,8 @@ public class DirectoryApiController extends Controller {
             var errors = new MultiValueHashMap<String, ValidationError>();
             for (var error : exception.errors) {
                 switch (error) {
+                    case DirectoryValidationError.InvalidHierarchy ignored ->
+                        errors.add("dir", ValidationError.invalidValue());
                     case DirectoryValidationError.NullName ignored -> errors.add("name", ValidationError.nullValue());
                     case DirectoryValidationError.NameBelowMinLength e ->
                         errors.add("name", ValidationError.belowMinLength(e.minLength));
@@ -107,7 +112,7 @@ public class DirectoryApiController extends Controller {
         new ResponseWriter(exchange).status(201).write();
     }
 
-    private static DirectoryUpdate map(UpdateDirectoryRequest request) throws DirectoryValidationException {
-        return new DirectoryUpdate(request.name());
+    private static DirectoryUpdate map(UpdateDirectoryRequest request) {
+        return new DirectoryUpdate(request.parentId(), request.unsetParentId(), request.name());
     }
 }

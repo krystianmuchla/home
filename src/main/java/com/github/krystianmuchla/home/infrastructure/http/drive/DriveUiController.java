@@ -38,37 +38,44 @@ public class DriveUiController extends Controller {
     protected void get(HttpExchange exchange) throws IOException {
         var user = RequestReader.readUser(exchange);
         var request = RequestReader.readQuery(exchange, DirectoryFilterRequest::new);
-        List<Directory> dirHierarchy;
+        List<Directory> hierarchy;
         try {
-            dirHierarchy = directoryService.getHierarchy(user.id, request.dir());
+            hierarchy = directoryService.getHierarchy(user.id, request.dir());
         } catch (DirectoryNotFoundException exception) {
             throw new NotFoundException();
         }
         var list = driveService.listDirectory(user.id, request.dir());
-        new ResponseWriter(exchange).html(html(user.name, dirHierarchy, list)).write();
+        new ResponseWriter(exchange).html(html(user.name, hierarchy, list)).write();
     }
 
-    private Tags html(String userName, List<Directory> dirHierarchy, List<Entry> list) {
+    // todo ogarnij nazwy klas i atrybutów
+    private Tags html(String userName, List<Directory> hierarchy, List<Entry> list) {
         return tags(
-            div(attrs(id("path")), path(userName, dirHierarchy)),
+            div(attrs(id("path")),
+                path(userName, hierarchy)
+            ),
             div(attrs(id("list"), clazz("column")),
-                Tags.tags(list.stream().map(entry ->
+                tags(list.stream().map(entry ->
                     div(attrs(id(entry.id()), clazz("row " + entry.type().asClass())),
-                        entryName(entry),
-                        entryMenu(entry)
+                        div(attrs(clazz(entryName(entry))),
+                            entry.name()
+                        ),
+                        div(attrs(clazz(entryMenu(entry))),
+                            img(attrs(src(CONTEXT_MENU_IMAGE.urlPath)))
+                        )
                     )
                 ))
             )
         );
     }
 
-    private String path(String userName, List<Directory> dirHierarchy) {
+    private String path(String userName, List<Directory> hierarchy) {
         var segments = new ArrayList<Tag>();
         var rootSegment = span(attrs(clazz("segment")),
             userName
         );
         segments.add(rootSegment);
-        for (var directory : dirHierarchy) {
+        for (var directory : hierarchy) {
             var segment = span(attrs(id(directory.id), clazz("segment")),
                 directory.name
             );
@@ -77,23 +84,17 @@ public class DriveUiController extends Controller {
         return "/ " + CollectionService.join(" / ", segments);
     }
 
-    private Tag entryName(Entry entry) {
-        var clazz = switch (entry.type()) {
+    private String entryName(Entry entry) {
+        return switch (entry.type()) {
             case EntryType.DIR -> "dir-name";
             case EntryType.FILE -> "file-name";
         };
-        return div(attrs(clazz(clazz)),
-            entry.name()
-        );
     }
 
-    private Tag entryMenu(Entry entry) {
-        var clazz = switch (entry.type()) {
+    private String entryMenu(Entry entry) {
+        return switch (entry.type()) {
             case EntryType.DIR -> "dir-menu";
             case EntryType.FILE -> "file-menu";
         };
-        return div(attrs(clazz(clazz)),
-            img(attrs(src(CONTEXT_MENU_IMAGE.urlPath)))
-        );
     }
 }

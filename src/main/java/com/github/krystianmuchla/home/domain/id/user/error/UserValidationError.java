@@ -1,6 +1,16 @@
 package com.github.krystianmuchla.home.domain.id.user.error;
 
-public abstract sealed class UserValidationError permits UserValidationError.CreationTimeWrongFormat, UserValidationError.ModificationTimeWrongFormat, UserValidationError.NameAboveMaxLength, UserValidationError.NameBelowMinLength, UserValidationError.NullId, UserValidationError.NullName, UserValidationError.VersionBelowMinValue {
+import com.github.krystianmuchla.home.domain.core.error.ValidationError;
+
+public abstract sealed class UserValidationError extends ValidationError permits
+    UserValidationError.NullId,
+    UserValidationError.NullName,
+    UserValidationError.NameBelowMinLength,
+    UserValidationError.NameAboveMaxLength,
+    UserValidationError.NullCreationTime,
+    UserValidationError.NullModificationTime,
+    UserValidationError.NullVersion,
+    UserValidationError.VersionBelowMinValue {
     public static final class NullId extends UserValidationError {
     }
 
@@ -23,10 +33,13 @@ public abstract sealed class UserValidationError permits UserValidationError.Cre
         }
     }
 
-    public static final class CreationTimeWrongFormat extends UserValidationError {
+    public static final class NullCreationTime extends UserValidationError {
     }
 
-    public static final class ModificationTimeWrongFormat extends UserValidationError {
+    public static final class NullModificationTime extends UserValidationError {
+    }
+
+    public static final class NullVersion extends UserValidationError {
     }
 
     public static final class VersionBelowMinValue extends UserValidationError {

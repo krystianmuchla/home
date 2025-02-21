@@ -1,6 +1,5 @@
 package com.github.krystianmuchla.home.infrastructure.persistence.id.user;
 
-import com.github.krystianmuchla.home.application.time.Time;
 import com.github.krystianmuchla.home.application.time.TimeFactory;
 import com.github.krystianmuchla.home.application.util.UUIDFactory;
 import com.github.krystianmuchla.home.domain.id.user.User;
@@ -18,15 +17,14 @@ public class UserPersistence extends Persistence {
     private static final String TABLE = "user";
 
     public static void create(User user) {
-        var creationTime = new Time();
         var sql = new Sql.Builder()
             .insertInto(TABLE)
             .values(
                 user.id,
                 user.name,
-                creationTime,
-                creationTime,
-                1
+                user.creationTime,
+                user.modificationTime,
+                user.version
             );
         executeUpdate(sql.build());
     }

@@ -1,6 +1,12 @@
 package com.github.krystianmuchla.home.domain.id.password.error;
 
-public abstract sealed class PasswordValidationError permits PasswordValidationError.NullValue, PasswordValidationError.ValueAboveMaxLength, PasswordValidationError.ValueBelowMinLength, PasswordValidationError.ValueWrongFormat {
+import com.github.krystianmuchla.home.domain.core.error.ValidationError;
+
+public abstract sealed class PasswordValidationError extends ValidationError permits
+    PasswordValidationError.NullValue,
+    PasswordValidationError.ValueBelowMinLength,
+    PasswordValidationError.ValueAboveMaxLength,
+    PasswordValidationError.ValueWrongFormat {
     public static final class NullValue extends PasswordValidationError {
     }
 

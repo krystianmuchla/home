@@ -1,6 +1,23 @@
 package com.github.krystianmuchla.home.domain.id.accessdata.error;
 
-public abstract sealed class AccessDataValidationError permits AccessDataValidationError.CreationTimeWrongFormat, AccessDataValidationError.LoginAboveMaxLength, AccessDataValidationError.LoginBelowMinLength, AccessDataValidationError.ModificationTimeWrongFormat, AccessDataValidationError.NullId, AccessDataValidationError.NullLogin, AccessDataValidationError.NullSalt, AccessDataValidationError.NullSecret, AccessDataValidationError.NullUserId, AccessDataValidationError.SaltAboveMaxLength, AccessDataValidationError.SaltBelowMinLength, AccessDataValidationError.SecretAboveMaxLength, AccessDataValidationError.SecretBelowMinLength, AccessDataValidationError.VersionBelowMinValue {
+import com.github.krystianmuchla.home.domain.core.error.ValidationError;
+
+public abstract sealed class AccessDataValidationError extends ValidationError permits
+    AccessDataValidationError.NullId,
+    AccessDataValidationError.NullUserId,
+    AccessDataValidationError.NullLogin,
+    AccessDataValidationError.LoginBelowMinLength,
+    AccessDataValidationError.LoginAboveMaxLength,
+    AccessDataValidationError.NullSalt,
+    AccessDataValidationError.SaltBelowMinLength,
+    AccessDataValidationError.SaltAboveMaxLength,
+    AccessDataValidationError.NullSecret,
+    AccessDataValidationError.SecretBelowMinLength,
+    AccessDataValidationError.SecretAboveMaxLength,
+    AccessDataValidationError.NullCreationTime,
+    AccessDataValidationError.NullModificationTime,
+    AccessDataValidationError.NullVersion,
+    AccessDataValidationError.VersionBelowMinValue {
     public static final class NullId extends AccessDataValidationError {
     }
 
@@ -64,10 +81,13 @@ public abstract sealed class AccessDataValidationError permits AccessDataValidat
         }
     }
 
-    public static final class CreationTimeWrongFormat extends AccessDataValidationError {
+    public static final class NullCreationTime extends AccessDataValidationError {
     }
 
-    public static final class ModificationTimeWrongFormat extends AccessDataValidationError {
+    public static final class NullModificationTime extends AccessDataValidationError {
+    }
+
+    public static final class NullVersion extends AccessDataValidationError {
     }
 
     public static final class VersionBelowMinValue extends AccessDataValidationError {

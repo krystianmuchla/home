@@ -40,6 +40,8 @@ public class FileApiController extends Controller {
             fileService.remove(user.id, request.file());
         } catch (FileNotFoundException exception) {
             throw new NotFoundException();
+        } catch (FileValidationException exception) {
+            throw new InternalServerErrorException(exception);
         } catch (FileNotUpdatedException exception) {
             throw new ConflictException();
         }
@@ -71,8 +73,7 @@ public class FileApiController extends Controller {
         }
         var request = RequestReader.readJson(exchange, UpdateFileRequest.class);
         try {
-            var update = map(request);
-            fileService.update(user.id, filter.file(), update);
+            fileService.update(user.id, filter.file(), map(request));
         } catch (FileValidationException exception) {
             var errors = new MultiValueHashMap<String, ValidationError>();
             for (var error : exception.errors) {
@@ -132,7 +133,7 @@ public class FileApiController extends Controller {
         driveService.uploadFile(user.id, fileId, fileContent);
         try {
             fileService.upload(user.id, fileId);
-        } catch (FileNotFoundException exception) {
+        } catch (FileNotFoundException | FileValidationException exception) {
             throw new InternalServerErrorException(exception);
         } catch (FileNotUpdatedException exception) {
             throw new ConflictException();
@@ -140,7 +141,7 @@ public class FileApiController extends Controller {
         new ResponseWriter(exchange).status(204).write();
     }
 
-    private static FileUpdate map(UpdateFileRequest request) throws FileValidationException {
-        return new FileUpdate(request.name());
+    private static FileUpdate map(UpdateFileRequest request) {
+        return new FileUpdate(request.directoryId(), request.unsetDirectoryId(), request.name());
     }
 }

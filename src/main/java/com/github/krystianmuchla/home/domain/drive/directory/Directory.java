@@ -38,14 +38,15 @@ public class Directory extends Model<Directory.Field> {
     }
 
     public Directory(UUID userId, UUID parentId, String name) throws DirectoryValidationException {
-        this(UUID.randomUUID(), userId, DirectoryStatus.CREATED, parentId, name, null, null, null);
+        this(UUID.randomUUID(), userId, DirectoryStatus.CREATED, parentId, name, new Time(), new Time(), 1);
     }
 
     public boolean isRemoved() {
         return status == DirectoryStatus.REMOVED;
     }
 
-    public void updateStatus(DirectoryStatus status) {
+    public void updateStatus(DirectoryStatus status) throws DirectoryValidationException {
+        new DirectoryValidator(this).checkStatus(status).validate();
         switch (this.status) {
             case CREATED, REMOVED -> {
                 assert status == DirectoryStatus.REMOVED;
@@ -54,16 +55,24 @@ public class Directory extends Model<Directory.Field> {
         updates.put(Field.STATUS, status);
     }
 
-    public void updateName(String name) {
+    public void updateParentId(UUID parentId) throws DirectoryValidationException {
+        new DirectoryValidator(this).checkParentId(parentId).validate();
+        updates.put(Field.PARENT_ID, parentId);
+    }
+
+    public void updateName(String name) throws DirectoryValidationException {
+        new DirectoryValidator(this).checkName(name).validate();
         updates.put(Field.NAME, name);
     }
 
-    public void updateModificationTime() {
-        updates.put(Field.MODIFICATION_TIME, new Time());
+    public void updateModificationTime(Time modificationTime) throws DirectoryValidationException {
+        new DirectoryValidator(this).checkModificationTime(modificationTime).validate();
+        updates.put(Field.MODIFICATION_TIME, modificationTime);
     }
 
-    public void updateVersion() {
-        updates.put(Field.VERSION, version + 1);
+    public void updateVersion(Integer version) throws DirectoryValidationException {
+        new DirectoryValidator(this).checkVersion(version).validate();
+        updates.put(Field.VERSION, version);
     }
 
     public enum Field {

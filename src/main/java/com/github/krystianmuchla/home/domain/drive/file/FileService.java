@@ -1,5 +1,6 @@
 package com.github.krystianmuchla.home.domain.drive.file;
 
+import com.github.krystianmuchla.home.application.time.Time;
 import com.github.krystianmuchla.home.domain.drive.directory.DirectoryService;
 import com.github.krystianmuchla.home.domain.drive.directory.error.DirectoryNotFoundException;
 import com.github.krystianmuchla.home.domain.drive.file.error.FileNotFoundException;
@@ -37,7 +38,7 @@ public class FileService {
         return file;
     }
 
-    public void upload(UUID userId, UUID fileId) throws FileNotFoundException, FileNotUpdatedException {
+    public void upload(UUID userId, UUID fileId) throws FileNotFoundException, FileValidationException, FileNotUpdatedException {
         var file = FilePersistence.readByIdAndStatus(userId, fileId, FileStatus.UPLOADING);
         if (file == null) {
             throw new FileNotFoundException();
@@ -45,7 +46,7 @@ public class FileService {
         upload(file);
     }
 
-    public void upload(File file) throws FileNotUpdatedException {
+    public void upload(File file) throws FileValidationException, FileNotUpdatedException {
         if (!file.isUploaded()) {
             file.updateStatus(FileStatus.UPLOADED);
             update(file);
@@ -54,12 +55,12 @@ public class FileService {
         }
     }
 
-    public void remove(UUID userId, UUID fileId) throws FileNotFoundException, FileNotUpdatedException {
+    public void remove(UUID userId, UUID fileId) throws FileNotFoundException, FileValidationException, FileNotUpdatedException {
         var file = get(userId, fileId);
         remove(file);
     }
 
-    public void remove(File file) throws FileNotUpdatedException {
+    public void remove(File file) throws FileValidationException, FileNotUpdatedException {
         if (!file.isRemoved()) {
             file.updateStatus(FileStatus.REMOVED);
             update(file);
@@ -70,17 +71,23 @@ public class FileService {
         UUID userId,
         UUID fileId,
         FileUpdate update
-    ) throws FileNotFoundException, FileNotUpdatedException {
+    ) throws FileNotFoundException, FileValidationException, FileNotUpdatedException {
         var file = get(userId, fileId);
-        if (update.name != null) {
-            file.updateName(update.name);
+        if (update.directoryId() != null) {
+            file.updateDirectoryId(update.directoryId());
+        }
+        if (update.unsetDirectoryId()) {
+            file.updateDirectoryId(null);
+        }
+        if (update.name() != null) {
+            file.updateName(update.name());
         }
         update(file);
     }
 
-    public void update(File file) throws FileNotUpdatedException {
-        file.updateModificationTime();
-        file.updateVersion();
+    public void update(File file) throws FileValidationException, FileNotUpdatedException {
+        file.updateModificationTime(new Time());
+        file.updateVersion(file.version + 1);
         var result = Transaction.run(() -> FilePersistence.update(file));
         if (!result) {
             throw new FileNotUpdatedException();

@@ -1,12 +1,18 @@
 package com.github.krystianmuchla.home.domain.drive.directory.error;
 
-public abstract sealed class DirectoryValidationError permits
+import com.github.krystianmuchla.home.domain.core.error.ValidationError;
+
+public abstract sealed class DirectoryValidationError extends ValidationError permits
+    DirectoryValidationError.NullId,
+    DirectoryValidationError.NullUserId,
+    DirectoryValidationError.NullStatus,
+    DirectoryValidationError.InvalidHierarchy,
+    DirectoryValidationError.NullName,
     DirectoryValidationError.NameAboveMaxLength,
     DirectoryValidationError.NameBelowMinLength,
-    DirectoryValidationError.NullId,
-    DirectoryValidationError.NullName,
-    DirectoryValidationError.NullStatus,
-    DirectoryValidationError.NullUserId,
+    DirectoryValidationError.NullCreationTime,
+    DirectoryValidationError.NullModificationTime,
+    DirectoryValidationError.NullVersion,
     DirectoryValidationError.VersionBelowMinValue {
     public static final class NullId extends DirectoryValidationError {
     }
@@ -15,6 +21,9 @@ public abstract sealed class DirectoryValidationError permits
     }
 
     public static final class NullStatus extends DirectoryValidationError {
+    }
+
+    public static final class InvalidHierarchy extends DirectoryValidationError {
     }
 
     public static final class NullName extends DirectoryValidationError {
@@ -34,6 +43,15 @@ public abstract sealed class DirectoryValidationError permits
         public NameAboveMaxLength(int maxLength) {
             this.maxLength = maxLength;
         }
+    }
+
+    public static final class NullCreationTime extends DirectoryValidationError {
+    }
+
+    public static final class NullModificationTime extends DirectoryValidationError {
+    }
+
+    public static final class NullVersion extends DirectoryValidationError {
     }
 
     public static final class VersionBelowMinValue extends DirectoryValidationError {

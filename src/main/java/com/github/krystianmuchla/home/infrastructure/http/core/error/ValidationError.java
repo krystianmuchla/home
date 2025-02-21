@@ -3,16 +3,20 @@ package com.github.krystianmuchla.home.infrastructure.http.core.error;
 import java.util.Map;
 
 public record ValidationError(String error, Map<String, Object> details) {
+    public ValidationError(Enum<?> error) {
+        this(error, null);
+    }
+
     public ValidationError(Enum<?> error, Map<String, Object> details) {
         this(error.name(), details);
     }
 
     public static ValidationError nullValue() {
-        return new ValidationError(Error.NULL_VALUE, null);
+        return new ValidationError(Error.NULL_VALUE);
     }
 
     public static ValidationError wrongFormat() {
-        return new ValidationError(Error.WRONG_FORMAT, null);
+        return new ValidationError(Error.WRONG_FORMAT);
     }
 
     public static ValidationError belowMinLength(int minLength) {
@@ -27,7 +31,11 @@ public record ValidationError(String error, Map<String, Object> details) {
         return new ValidationError(Error.BELOW_MIN_VALUE, Map.of("minValue", minValue));
     }
 
+    public static ValidationError invalidValue() {
+        return new ValidationError(Error.INVALID_VALUE);
+    }
+
     public enum Error {
-        NULL_VALUE, WRONG_FORMAT, BELOW_MIN_LENGTH, ABOVE_MAX_LENGTH, BELOW_MIN_VALUE
+        NULL_VALUE, WRONG_FORMAT, BELOW_MIN_LENGTH, ABOVE_MAX_LENGTH, BELOW_MIN_VALUE, INVALID_VALUE,
     }
 }

@@ -43,6 +43,19 @@ public class DriveController extends Controller {
                         )
                     ),
                     div(attrs(id("router"), clazz("left-top column")))
+                ),
+                div(attrs(clazz("background"), style("visibility: hidden; z-index: 1; background-color:rgba(0, 0, 0, 0.25);")),
+                    div(attrs(id("move"), clazz("modal on-top column")),
+                        div(attrs(id("move-dirs"))),
+                        div(attrs(clazz("row"), style("padding-top: 20px; justify-content: space-between;")),
+                            button(attrs(id("cancel-move"), clazz("main-button")),
+                                "Cancel"
+                            ),
+                            button(attrs(id("execute-move"), clazz("main-button")),
+                                "Move"
+                            )
+                        )
+                    )
                 )
             )
         );

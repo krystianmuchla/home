@@ -12,6 +12,7 @@ public enum Resource {
     DRIVE_SCRIPT("ui/script/drive.js"),
     DRIVE_STYLE("ui/style/drive.css"),
     FONT("ui/font/Rubik-Regular.ttf"),
+    INTERNAL_ROUTER("ui/script/internal-router.js"),
     ROUTER_SCRIPT("ui/script/router.js"),
     SIGN_IN_FORM_SCRIPT("ui/script/sign-in-form.js"),
     SIGN_IN_FORM_STYLE("ui/style/sign-in-form.css"),

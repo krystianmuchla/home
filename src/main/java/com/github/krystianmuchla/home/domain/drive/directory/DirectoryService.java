@@ -1,5 +1,6 @@
 package com.github.krystianmuchla.home.domain.drive.directory;
 
+import com.github.krystianmuchla.home.application.time.Time;
 import com.github.krystianmuchla.home.domain.drive.directory.error.DirectoryNotFoundException;
 import com.github.krystianmuchla.home.domain.drive.directory.error.DirectoryNotUpdatedException;
 import com.github.krystianmuchla.home.domain.drive.directory.error.DirectoryValidationException;
@@ -23,6 +24,13 @@ public class DirectoryService {
         return directory.id;
     }
 
+    public List<Directory> list(UUID userId, UUID parentId) throws DirectoryNotFoundException {
+        if (parentId != null) {
+            checkExistence(userId, parentId);
+        }
+        return DirectoryPersistence.readByParentIdAndStatus(userId, parentId, DirectoryStatus.CREATED);
+    }
+
     public Directory get(UUID userId, UUID directoryId) throws DirectoryNotFoundException {
         var directory = DirectoryPersistence.readByIdAndStatus(userId, directoryId, DirectoryStatus.CREATED);
         if (directory == null) {
@@ -36,11 +44,15 @@ public class DirectoryService {
     }
 
     public List<Directory> getHierarchy(UUID userId, UUID directoryId) throws DirectoryNotFoundException {
+        var nextDirectoryId = directoryId;
         var path = new LinkedList<Directory>();
-        while (directoryId != null) {
-            var directory = get(userId, directoryId);
+        while (nextDirectoryId != null) {
+            var directory = get(userId, nextDirectoryId);
             path.addFirst(directory);
-            directoryId = directory.parentId;
+            nextDirectoryId = directory.parentId;
+            if (directoryId.equals(nextDirectoryId)) {
+                throw new IllegalStateException("Detected invalid data causing infinite loop");
+            }
         }
         return path;
     }
@@ -48,12 +60,12 @@ public class DirectoryService {
     public void remove(
         UUID userId,
         UUID directoryId
-    ) throws DirectoryNotFoundException, DirectoryNotUpdatedException {
+    ) throws DirectoryNotFoundException, DirectoryValidationException, DirectoryNotUpdatedException {
         var directory = get(userId, directoryId);
         remove(directory);
     }
 
-    public void remove(Directory directory) throws DirectoryNotUpdatedException {
+    public void remove(Directory directory) throws DirectoryValidationException, DirectoryNotUpdatedException {
         if (!directory.isRemoved()) {
             directory.updateStatus(DirectoryStatus.REMOVED);
             update(directory);
@@ -64,17 +76,23 @@ public class DirectoryService {
         UUID userId,
         UUID directoryId,
         DirectoryUpdate update
-    ) throws DirectoryNotFoundException, DirectoryNotUpdatedException {
+    ) throws DirectoryNotFoundException, DirectoryValidationException, DirectoryNotUpdatedException {
         var directory = get(userId, directoryId);
-        if (update.name != null) {
-            directory.updateName(update.name);
+        if (update.parentId() != null) {
+            directory.updateParentId(update.parentId());
+        }
+        if (update.unsetParentId()) {
+            directory.updateParentId(null);
+        }
+        if (update.name() != null) {
+            directory.updateName(update.name());
         }
         update(directory);
     }
 
-    public void update(Directory directory) throws DirectoryNotUpdatedException {
-        directory.updateModificationTime();
-        directory.updateVersion();
+    public void update(Directory directory) throws DirectoryValidationException, DirectoryNotUpdatedException {
+        directory.updateModificationTime(new Time());
+        directory.updateVersion(directory.version + 1);
         var result = Transaction.run(() -> DirectoryPersistence.update(directory));
         if (!result) {
             throw new DirectoryNotUpdatedException();

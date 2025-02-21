@@ -31,7 +31,7 @@ export function closeToast(id) {
 export function queueToast(level, text) {
     /** @type {HTMLDivElement} */
     let toast = document.createElement('div');
-    toast.id = ++toastId;
+    toast.id = (++toastId).toString();
     toast.className = `toast toast-${level}`;
     /** @type {HTMLSpanElement} */
     let toastText = document.createElement('span');
@@ -44,7 +44,7 @@ export function queueToast(level, text) {
     toastClose.onmousedown = () => closeToast(toast.id);
     toastClose.textContent = 'close';
     toast.appendChild(toastClose);
-    /** @type {HTMLCollectionOf<HTMLDivElement>} */
+    /** @type {HTMLCollectionOf<Element>} */
     let toasts = document.getElementsByClassName('toast');
     if (toasts.length > 1) {
         pendingToasts.push(toast);

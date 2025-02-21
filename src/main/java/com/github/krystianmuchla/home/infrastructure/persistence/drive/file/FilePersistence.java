@@ -1,6 +1,5 @@
 package com.github.krystianmuchla.home.infrastructure.persistence.drive.file;
 
-import com.github.krystianmuchla.home.application.time.Time;
 import com.github.krystianmuchla.home.application.time.TimeFactory;
 import com.github.krystianmuchla.home.application.util.UUIDFactory;
 import com.github.krystianmuchla.home.domain.drive.file.File;
@@ -37,7 +36,6 @@ public class FilePersistence extends Persistence {
     }
 
     public static void create(File file) {
-        var creationTime = new Time();
         var sql = new Sql.Builder()
             .insertInto(TABLE)
             .values(
@@ -46,9 +44,9 @@ public class FilePersistence extends Persistence {
                 file.status,
                 file.directoryId,
                 file.name,
-                creationTime,
-                creationTime,
-                1
+                file.creationTime,
+                file.modificationTime,
+                file.version
             );
         executeUpdate(sql.build());
     }

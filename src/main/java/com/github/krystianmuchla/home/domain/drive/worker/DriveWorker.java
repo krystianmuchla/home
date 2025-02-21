@@ -7,11 +7,13 @@ import com.github.krystianmuchla.home.domain.drive.directory.DirectoryService;
 import com.github.krystianmuchla.home.domain.drive.directory.DirectoryStatus;
 import com.github.krystianmuchla.home.domain.drive.directory.error.DirectoryNotFoundException;
 import com.github.krystianmuchla.home.domain.drive.directory.error.DirectoryNotUpdatedException;
+import com.github.krystianmuchla.home.domain.drive.directory.error.DirectoryValidationException;
 import com.github.krystianmuchla.home.domain.drive.directory.error.IllegalDirectoryStatusException;
 import com.github.krystianmuchla.home.domain.drive.file.File;
 import com.github.krystianmuchla.home.domain.drive.file.FileService;
 import com.github.krystianmuchla.home.domain.drive.file.FileStatus;
 import com.github.krystianmuchla.home.domain.drive.file.error.FileNotUpdatedException;
+import com.github.krystianmuchla.home.domain.drive.file.error.FileValidationException;
 import com.github.krystianmuchla.home.domain.drive.file.error.IllegalFileStatusException;
 import com.github.krystianmuchla.home.infrastructure.persistence.drive.directory.DirectoryPersistence;
 import com.github.krystianmuchla.home.infrastructure.persistence.drive.file.FilePersistence;
@@ -52,7 +54,7 @@ public class DriveWorker extends Worker {
         if (Files.isRegularFile(path)) {
             try {
                 fileService.upload(file);
-            } catch (FileNotUpdatedException exception) {
+            } catch (FileValidationException | FileNotUpdatedException exception) {
                 LOG.warn("{}", exception.getMessage(), exception);
             }
         }
@@ -78,7 +80,7 @@ public class DriveWorker extends Worker {
         for (var file : files) {
             try {
                 fileService.remove(file);
-            } catch (FileNotUpdatedException exception) {
+            } catch (FileValidationException | FileNotUpdatedException exception) {
                 LOG.warn("{}", exception.getMessage(), exception);
             }
         }
@@ -88,7 +90,7 @@ public class DriveWorker extends Worker {
         removeDirectoryContent(directory);
         try {
             directoryService.remove(directory);
-        } catch (DirectoryNotUpdatedException exception) {
+        } catch (DirectoryValidationException | DirectoryNotUpdatedException exception) {
             LOG.warn("{}", exception.getMessage(), exception);
         }
     }
