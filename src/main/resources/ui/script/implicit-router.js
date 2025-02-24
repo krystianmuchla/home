@@ -1,17 +1,17 @@
 /**
- * @callback PostRouteCallback
+ * @callback RouteCallback
  * @param {URL} url
  * @returns {Promise<void>}
  */
 
-export class InternalRouter {
+export class ImplicitRouter {
     /**
      * @param {Element} anchor
-     * @param {PostRouteCallback} postCallback
+     * @param {RouteCallback} callback
      */
-    constructor(anchor, postCallback) {
+    constructor(anchor, callback) {
         this.anchor = anchor;
-        this.postCallback = postCallback;
+        this.callback = callback;
     }
 
     /**
@@ -22,7 +22,7 @@ export class InternalRouter {
         let response = await fetch(url.pathname + url.search);
         if (response.ok) {
             this.anchor.innerHTML = await response.text();
-            await this.postCallback(url);
+            await this.callback(url);
         }
     }
 }

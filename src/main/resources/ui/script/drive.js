@@ -1,7 +1,75 @@
 import { showContextMenu } from './context-menu.js';
-import { initRouter, refreshRoute, route } from './router.js';
+import { ExplicitRouter } from './explicit-router.js';
 import { queueToast, setToastLevel, setToastText } from './toast.js';
-import { InternalRouter } from './internal-router.js';
+import { ImplicitRouter } from './implicit-router.js';
+
+/** @type {ExplicitRouter} */
+let router = new ExplicitRouter(
+    document.getElementById('router'),
+    (url) => {
+        /** @type {URL} */
+        let contentUrl = new URL(url);
+        contentUrl.pathname = '/ui/drive';
+        return contentUrl;
+    },
+    () => {
+        /** @type {HTMLCollectionOf<Element>} */
+        let segments = document.getElementsByClassName('segment');
+        /** @type {URL} */
+        let url = new URL(location);
+        /** @type {URLSearchParams} */
+        let query = url.searchParams;
+        for (let segment of segments) {
+            if (segment.id !== (query.get('dir') ?? '')) {
+                segment.classList.add('path-nav');
+                segment.onmousedown = async () => {
+                    if (segment.id) {
+                        query.set('dir', segment.id);
+                    } else {
+                        query.delete('dir');
+                    }
+                    await router.route(url);
+                };
+            }
+        }
+        /** @type {HTMLCollectionOf<Element>} */
+        let dirs = document.getElementsByClassName('dir');
+        for (let dir of dirs) {
+            /** @type {HTMLDivElement} */
+            let name = [...dir.children].find((d) => d.classList.contains('dir-name'));
+            name.onmousedown = () => openDir(dir.id);
+            /** @type {HTMLDivElement} */
+            let menu = [...dir.children].find((d) => d.classList.contains('dir-menu'));
+            /** @param {MouseEvent} event */
+            menu.onmousedown = (event) => {
+                showContextMenu(event, [
+                    { name: 'Open', onmousedown: () => openDir(dir.id) },
+                    { name: 'Rename', onmousedown: () => renameDir(dir.id, name.textContent) },
+                    { name: 'Move', onmousedown: () => moveDir(dir.id) },
+                    { name: 'Delete', onmousedown: () => deleteDir(dir.id, name.textContent) },
+                ]);
+            };
+        }
+        /** @type {HTMLCollectionOf<Element>} */
+        let files = document.getElementsByClassName('file');
+        for (let file of files) {
+            /** @type {HTMLDivElement} */
+            let name = [...file.children].find((f) => f.classList.contains('file-name'));
+            /** @type {HTMLDivElement} */
+            let menu = [...file.children].find((f) => f.classList.contains('file-menu'));
+            /** @param {MouseEvent} event */
+            menu.onmousedown = (event) => {
+                showContextMenu(event, [
+                    { name: 'Download', onmousedown: () => downloadFile(file.id, name.textContent) },
+                    { name: 'Rename', onmousedown: () => renameFile(file.id, name.textContent) },
+                    { name: 'Move', onmousedown: () => moveFile(file.id) },
+                    { name: 'Delete', onmousedown: () => deleteFile(file.id, name.textContent) },
+                ]);
+            };
+        }
+    },
+);
+await router.refresh();
 
 /** @type {HTMLButtonElement} */
 let uploadFileButton = document.getElementById('upload-file');
@@ -44,7 +112,7 @@ uploadFileInput.onchange = async () => {
     }
     setToastText(toastId, `Uploaded ${count} of ${files.length} files.`);
     if (count > 0) {
-        await refreshRoute();
+        await router.refresh();
     } else {
         setToastLevel(toastId, 'error');
     }
@@ -85,7 +153,7 @@ createDirButton.onmousedown = async () => {
     );
     if (response.ok) {
         queueToast('success', 'Directory created.');
-        await refreshRoute();
+        await router.refresh();
         return;
     }
     switch (response.status) {
@@ -107,77 +175,6 @@ cancelMoveButton.onmousedown = async () => {
     hideMove();
 };
 
-await initRouter(async (url) => {
-    /** @type {Response} */
-    let response = await fetch('/ui/drive' + url.search);
-    if (!response.ok) {
-        switch (response.status) {
-            case 401:
-                location.replace('/id/sign_in');
-                break;
-            default:
-                queueToast('error', 'Something went wrong when listing a directory.');
-        }
-        return null;
-    }
-    return await response.text();
-}, async () => {
-    /** @type {HTMLCollectionOf<Element>} */
-    let segments = document.getElementsByClassName('segment');
-    /** @type {URL} */
-    let url = new URL(location);
-    /** @type {URLSearchParams} */
-    let query = url.searchParams;
-    for (let segment of segments) {
-        if (segment.id !== (query.get('dir') ?? '')) {
-            segment.classList.add('path-nav');
-            segment.onmousedown = async () => {
-                if (segment.id) {
-                    query.set('dir', segment.id);
-                } else {
-                    query.delete('dir');
-                }
-                await route(url);
-            };
-        }
-    }
-    /** @type {HTMLCollectionOf<Element>} */
-    let dirs = document.getElementsByClassName('dir');
-    for (let dir of dirs) {
-        /** @type {HTMLDivElement} */
-        let name = [...dir.children].find((d) => d.classList.contains('dir-name'));
-        name.onmousedown = () => openDir(dir.id);
-        /** @type {HTMLDivElement} */
-        let menu = [...dir.children].find((d) => d.classList.contains('dir-menu'));
-        /** @param {MouseEvent} event */
-        menu.onmousedown = (event) => {
-            showContextMenu(event, [
-                { name: 'Open', onmousedown: () => openDir(dir.id) },
-                { name: 'Rename', onmousedown: () => renameDir(dir.id, name.textContent) },
-                { name: 'Move', onmousedown: () => moveDir(dir.id) },
-                { name: 'Delete', onmousedown: () => deleteDir(dir.id, name.textContent) },
-            ]);
-        };
-    }
-    /** @type {HTMLCollectionOf<Element>} */
-    let files = document.getElementsByClassName('file');
-    for (let file of files) {
-        /** @type {HTMLDivElement} */
-        let name = [...file.children].find((f) => f.classList.contains('file-name'));
-        /** @type {HTMLDivElement} */
-        let menu = [...file.children].find((f) => f.classList.contains('file-menu'));
-        /** @param {MouseEvent} event */
-        menu.onmousedown = (event) => {
-            showContextMenu(event, [
-                { name: 'Download', onmousedown: () => downloadFile(file.id, name.textContent) },
-                { name: 'Rename', onmousedown: () => renameFile(file.id, name.textContent) },
-                { name: 'Move', onmousedown: () => moveFile(file.id) },
-                { name: 'Delete', onmousedown: () => deleteFile(file.id, name.textContent) },
-            ]);
-        };
-    }
-});
-
 /**
  * @param {string} id
  * @returns {Promise<void>}
@@ -188,7 +185,7 @@ async function openDir(id) {
     /** @type {URLSearchParams} */
     let query = url.searchParams;
     query.set('dir', id);
-    await route(url);
+    await router.route(url);
 }
 
 /**
@@ -217,7 +214,7 @@ async function renameDir(id, name) {
     );
     if (response.ok) {
         queueToast('success', 'Directory renamed.');
-        await refreshRoute();
+        await router.refresh();
         return;
     }
     switch (response.status) {
@@ -264,7 +261,7 @@ async function moveDir(id) {
         );
         if (response.ok) {
             queueToast('success', 'Directory moved.');
-            await refreshRoute();
+            await router.refresh();
         } else {
             switch (response.status) {
                 case 401:
@@ -293,7 +290,7 @@ async function deleteDir(id, name) {
     let response = await fetch(`/api/drive/directories?dir=${id}`, { method: 'DELETE' });
     if (response.ok) {
         queueToast('success', 'Directory deleted.');
-        await refreshRoute();
+        await router.refresh();
         return;
     }
     switch (response.status) {
@@ -344,7 +341,7 @@ async function renameFile(id, name) {
     );
     if (response.ok) {
         queueToast('success', 'File renamed.');
-        await refreshRoute();
+        await router.refresh();
         return;
     }
     switch (response.status) {
@@ -391,7 +388,7 @@ async function moveFile(id) {
         );
         if (response.ok) {
             queueToast('success', 'File moved.');
-            await refreshRoute();
+            await router.refresh();
         } else {
             switch (response.status) {
                 case 401:
@@ -420,7 +417,7 @@ async function deleteFile(id, name) {
     let response = await fetch(`/api/drive/files?file=${id}`, { method: 'DELETE' });
     if (response.ok) {
         queueToast('success', 'File deleted.');
-        await refreshRoute();
+        await router.refresh();
         return;
     }
     switch (response.status) {
@@ -435,10 +432,10 @@ async function deleteFile(id, name) {
 /**
  * @param {(URL) => void} routeCallback
  * @param {string[]} forbiddenDirs
- * @returns {InternalRouter}
+ * @returns {ImplicitRouter}
  */
 function createMoveRouter(routeCallback, forbiddenDirs) {
-    let router = new InternalRouter(
+    let router = new ImplicitRouter(
         document.getElementById('move-dirs'),
         async (url) => {
             routeCallback(url);
