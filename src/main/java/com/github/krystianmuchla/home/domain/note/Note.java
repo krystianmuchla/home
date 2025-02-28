@@ -1,12 +1,12 @@
 package com.github.krystianmuchla.home.domain.note;
 
 import com.github.krystianmuchla.home.application.time.Time;
-import com.github.krystianmuchla.home.domain.core.Model;
+import com.github.krystianmuchla.home.domain.core.Updatable;
 import com.github.krystianmuchla.home.domain.note.error.NoteValidationException;
 
 import java.util.UUID;
 
-public class Note extends Model<Note.Field> {
+public class Note extends Updatable<Note.Field> {
     public final UUID id;
     public final UUID userId;
     public final String title;

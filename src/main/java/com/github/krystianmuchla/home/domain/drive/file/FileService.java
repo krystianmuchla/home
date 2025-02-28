@@ -1,6 +1,8 @@
 package com.github.krystianmuchla.home.domain.drive.file;
 
 import com.github.krystianmuchla.home.application.time.Time;
+import com.github.krystianmuchla.home.application.util.StreamService;
+import com.github.krystianmuchla.home.domain.drive.DriveService;
 import com.github.krystianmuchla.home.domain.drive.directory.DirectoryService;
 import com.github.krystianmuchla.home.domain.drive.directory.error.DirectoryNotFoundException;
 import com.github.krystianmuchla.home.domain.drive.file.error.FileNotFoundException;
@@ -10,14 +12,19 @@ import com.github.krystianmuchla.home.domain.drive.file.error.IllegalFileStatusE
 import com.github.krystianmuchla.home.infrastructure.persistence.core.Transaction;
 import com.github.krystianmuchla.home.infrastructure.persistence.drive.file.FilePersistence;
 
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.UUID;
 
 public class FileService {
-    public static final FileService INSTANCE = new FileService(DirectoryService.INSTANCE);
+    public static final FileService INSTANCE = new FileService(DriveService.INSTANCE, DirectoryService.INSTANCE);
 
+    private final DriveService driveService;
     private final DirectoryService directoryService;
 
-    public FileService(DirectoryService directoryService) {
+    public FileService(DriveService driveService, DirectoryService directoryService) {
+        this.driveService = driveService;
         this.directoryService = directoryService;
     }
 
@@ -38,15 +45,28 @@ public class FileService {
         return file;
     }
 
-    public void upload(UUID userId, UUID fileId) throws FileNotFoundException, FileValidationException, FileNotUpdatedException {
+    public FileDto getDto(UUID userId, UUID fileId) throws FileNotFoundException {
+        var file = get(userId, fileId);
+        return new FileDto(file.name, getFile(userId, fileId));
+    }
+
+    public void upload(UUID userId, UUID fileId, InputStream fileContent) throws FileNotFoundException, FileValidationException, FileNotUpdatedException {
         var file = FilePersistence.readByIdAndStatus(userId, fileId, FileStatus.UPLOADING);
         if (file == null) {
             throw new FileNotFoundException();
         }
-        upload(file);
+        var path = driveService.path(userId, file.id);
+        try (var outputStream = new FileOutputStream(path.toString())) {
+            try (var inputStream = fileContent) {
+                StreamService.copy(inputStream, outputStream);
+            }
+        } catch (IOException exception) {
+            throw new RuntimeException(exception);
+        }
+        markAsUploaded(file);
     }
 
-    public void upload(File file) throws FileValidationException, FileNotUpdatedException {
+    public void markAsUploaded(File file) throws FileValidationException, FileNotUpdatedException {
         if (!file.isUploaded()) {
             file.updateStatus(FileStatus.UPLOADED);
             update(file);
@@ -55,12 +75,12 @@ public class FileService {
         }
     }
 
-    public void remove(UUID userId, UUID fileId) throws FileNotFoundException, FileValidationException, FileNotUpdatedException {
+    public void markAsRemoved(UUID userId, UUID fileId) throws FileNotFoundException, FileValidationException, FileNotUpdatedException {
         var file = get(userId, fileId);
-        remove(file);
+        markAsRemoved(file);
     }
 
-    public void remove(File file) throws FileValidationException, FileNotUpdatedException {
+    public void markAsRemoved(File file) throws FileValidationException, FileNotUpdatedException {
         if (!file.isRemoved()) {
             file.updateStatus(FileStatus.REMOVED);
             update(file);
@@ -102,5 +122,14 @@ public class FileService {
         if (!result) {
             throw new FileNotUpdatedException();
         }
+    }
+
+    private java.io.File getFile(UUID userId, UUID fileId) {
+        var path = driveService.path(userId, fileId);
+        var file = path.toFile();
+        if (!file.isFile()) {
+            throw new IllegalStateException();
+        }
+        return file;
     }
 }

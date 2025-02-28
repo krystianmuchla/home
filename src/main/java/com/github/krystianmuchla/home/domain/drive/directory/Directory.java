@@ -1,12 +1,12 @@
 package com.github.krystianmuchla.home.domain.drive.directory;
 
 import com.github.krystianmuchla.home.application.time.Time;
-import com.github.krystianmuchla.home.domain.core.Model;
+import com.github.krystianmuchla.home.domain.core.Updatable;
 import com.github.krystianmuchla.home.domain.drive.directory.error.DirectoryValidationException;
 
 import java.util.UUID;
 
-public class Directory extends Model<Directory.Field> {
+public class Directory extends Updatable<Directory.Field> {
     public final UUID id;
     public final UUID userId;
     public final DirectoryStatus status;

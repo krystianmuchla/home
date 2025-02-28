@@ -1,12 +1,12 @@
 package com.github.krystianmuchla.home.domain.drive.file;
 
 import com.github.krystianmuchla.home.application.time.Time;
-import com.github.krystianmuchla.home.domain.core.Model;
+import com.github.krystianmuchla.home.domain.core.Updatable;
 import com.github.krystianmuchla.home.domain.drive.file.error.FileValidationException;
 
 import java.util.UUID;
 
-public class File extends Model<File.Field> {
+public class File extends Updatable<File.Field> {
     public final UUID id;
     public final UUID userId;
     public final FileStatus status;

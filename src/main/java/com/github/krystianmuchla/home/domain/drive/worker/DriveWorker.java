@@ -53,7 +53,7 @@ public class DriveWorker extends Worker {
         var path = driveService.path(file.userId, file.id);
         if (Files.isRegularFile(path)) {
             try {
-                fileService.upload(file);
+                fileService.markAsUploaded(file);
             } catch (FileValidationException | FileNotUpdatedException exception) {
                 LOG.warn("{}", exception.getMessage(), exception);
             }
@@ -79,7 +79,7 @@ public class DriveWorker extends Worker {
         var files = FilePersistence.readByDirectoryIdAndStatus(directory.userId, directory.id, FileStatus.UPLOADED);
         for (var file : files) {
             try {
-                fileService.remove(file);
+                fileService.markAsRemoved(file);
             } catch (FileValidationException | FileNotUpdatedException exception) {
                 LOG.warn("{}", exception.getMessage(), exception);
             }

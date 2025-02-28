@@ -1,12 +1,12 @@
 package com.github.krystianmuchla.home.domain.note.removed;
 
 import com.github.krystianmuchla.home.application.time.Time;
-import com.github.krystianmuchla.home.domain.core.Model;
+import com.github.krystianmuchla.home.domain.core.Updatable;
 import com.github.krystianmuchla.home.domain.note.removed.error.RemovedNoteValidationException;
 
 import java.util.UUID;
 
-public class RemovedNote extends Model<RemovedNote.Field> {
+public class RemovedNote extends Updatable<RemovedNote.Field> {
     public final UUID id;
     public final UUID userId;
     public final Time removalTime;

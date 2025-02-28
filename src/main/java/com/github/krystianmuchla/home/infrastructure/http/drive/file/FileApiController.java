@@ -1,7 +1,6 @@
 package com.github.krystianmuchla.home.infrastructure.http.drive.file;
 
 import com.github.krystianmuchla.home.application.util.MultiValueHashMap;
-import com.github.krystianmuchla.home.domain.drive.DriveService;
 import com.github.krystianmuchla.home.domain.drive.directory.error.DirectoryNotFoundException;
 import com.github.krystianmuchla.home.domain.drive.file.FileDto;
 import com.github.krystianmuchla.home.domain.drive.file.FileService;
@@ -22,7 +21,6 @@ import java.util.UUID;
 public class FileApiController extends Controller {
     public static final FileApiController INSTANCE = new FileApiController();
 
-    private final DriveService driveService = DriveService.INSTANCE;
     private final FileService fileService = FileService.INSTANCE;
 
     public FileApiController() {
@@ -37,7 +35,7 @@ public class FileApiController extends Controller {
             throw new BadRequestException("file", ValidationError.nullValue());
         }
         try {
-            fileService.remove(user.id, request.file());
+            fileService.markAsRemoved(user.id, request.file());
         } catch (FileNotFoundException exception) {
             throw new NotFoundException();
         } catch (FileValidationException exception) {
@@ -57,7 +55,7 @@ public class FileApiController extends Controller {
         }
         FileDto fileDto;
         try {
-            fileDto = driveService.getFile(user.id, request.file());
+            fileDto = fileService.getDto(user.id, request.file());
         } catch (FileNotFoundException exception) {
             throw new NotFoundException();
         }
@@ -99,7 +97,6 @@ public class FileApiController extends Controller {
         new ResponseWriter(exchange).status(204).write();
     }
 
-    // todo put logic in a service
     @Override
     protected void post(HttpExchange exchange) throws IOException {
         var user = RequestReader.readUser(exchange);
@@ -130,9 +127,8 @@ public class FileApiController extends Controller {
                 throw new BadRequestException(errors);
             }
         }
-        driveService.uploadFile(user.id, fileId, fileContent);
         try {
-            fileService.upload(user.id, fileId);
+            fileService.upload(user.id, fileId, fileContent);
         } catch (FileNotFoundException | FileValidationException exception) {
             throw new InternalServerErrorException(exception);
         } catch (FileNotUpdatedException exception) {

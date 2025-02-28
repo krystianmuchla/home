@@ -8,7 +8,7 @@ import java.util.stream.Stream;
 
 public class StreamService {
     public static void copy(InputStream inputStream, OutputStream outputStream) throws IOException {
-        var buffer = new byte[512];
+        var buffer = new byte[1024];
         int length;
         while ((length = inputStream.read(buffer)) > 0) {
             outputStream.write(buffer, 0, length);
